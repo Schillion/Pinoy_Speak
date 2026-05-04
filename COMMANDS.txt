@@ -1,0 +1,144 @@
+PINOYSPEAK — COMMAND REFERENCE
+==============================
+All commands run from the project root unless noted.
+Project root: c:\Users\carlt\Desktop\PinoySpeak_Project
+
+
+-------------------------------------------------------------------------------
+1. ONE-TIME SETUP
+-------------------------------------------------------------------------------
+
+# Install Python dependencies (FastAPI backend)
+pip install -r api/requirements.txt
+
+# Install frontend dependencies (Next.js)
+cd frontend
+npm install
+cd ..
+
+
+-------------------------------------------------------------------------------
+2. RUN THE APP (typical day-to-day)
+-------------------------------------------------------------------------------
+
+# Terminal 1 — Backend (FastAPI on port 8000)
+uvicorn api.main:app --reload --port 8000
+
+# Terminal 2 — Frontend (Next.js on port 3000)
+cd frontend
+npm run dev
+
+# Then open: http://localhost:3000
+
+
+-------------------------------------------------------------------------------
+3. BACKEND WITH BACKGROUND LEARNER
+-------------------------------------------------------------------------------
+# Same as above, but also auto-scrapes Reddit every 10 min and retrains
+# whenever the corpus grows by ~200 KB.
+
+# Windows PowerShell
+$env:LEARNER_ENABLED="1"; uvicorn api.main:app --reload --port 8000
+
+# Bash
+LEARNER_ENABLED=1 uvicorn api.main:app --reload --port 8000
+
+
+-------------------------------------------------------------------------------
+4. TRAIN THE MODEL ON EXISTING CORPUS
+-------------------------------------------------------------------------------
+
+# Smart train (full first time, incremental afterwards)
+python model_pipeline.py
+
+# Force a full retrain (e.g. after enricher logic changes)
+rm data/raw_combined_trained_offset.txt
+python model_pipeline.py
+
+
+-------------------------------------------------------------------------------
+5. SCRAPE + TRAIN CONTINUOUSLY (standalone, no API server)
+-------------------------------------------------------------------------------
+
+python automate.py
+# Press Ctrl+C to stop. Data and model are saved between rounds.
+
+
+-------------------------------------------------------------------------------
+6. SLANG DISCOVERY (LLM enricher)
+-------------------------------------------------------------------------------
+
+# Preview candidates only — no LLM calls, no writes
+python scripts/run_learner.py --dry-run
+
+# Real run — calls LLM and writes new slang to data/discovered_slang.json
+python scripts/run_learner.py
+
+# Wider sweep (more candidates, lower frequency floor)
+python scripts/run_learner.py --top 50 --min-count 5
+
+# Full flag list
+python scripts/run_learner.py --help
+
+
+-------------------------------------------------------------------------------
+7. MAINTENANCE
+-------------------------------------------------------------------------------
+
+# Review/unflag entries flagged as suspect by the auditor
+python scripts/unflag_slang.py --suspects
+
+# Trigger a retrain via the running API
+curl -X POST http://localhost:8000/train
+
+# Health check
+curl http://localhost:8000/health
+
+
+-------------------------------------------------------------------------------
+8. ENVIRONMENT VARIABLES
+-------------------------------------------------------------------------------
+
+LEARNER_ENABLED=1        # Turns on the API server's background learner thread
+GEMINI_API_KEY=...       # Free tier; auto-loaded from frontend/.env.local
+GROQ_API_KEY=...         # Optional fallback for the slang enricher
+OLLAMA_MODEL=llama3.2    # Optional — used if a local Ollama instance is running
+
+
+-------------------------------------------------------------------------------
+9. OLLAMA — UNLIMITED FREE LOCAL LLM (optional)
+-------------------------------------------------------------------------------
+# The slang enricher already falls back to Ollama if Gemini/Groq fail.
+# Install once and you get unlimited free LLM calls — no daily quota.
+
+# Install: https://ollama.com/download
+# After install:
+ollama pull llama3.2
+ollama serve              # leave running in its own terminal
+
+# (Optional) point the enricher at a different model
+$env:OLLAMA_MODEL="qwen2.5"   # PowerShell
+export OLLAMA_MODEL=qwen2.5   # bash
+
+
+-------------------------------------------------------------------------------
+10. OFFLINE DATA FILES (auto-downloaded on first use)
+-------------------------------------------------------------------------------
+# These get fetched once and cached in data/. No action needed; listed for
+# reference if you want to seed them ahead of first run.
+
+data/english_words.txt          # ~4 MB, dwyl/english-words wordlist
+data/tagalog_words.txt          # ~2 MB, AustinZuniga/Filipino-wordlist
+
+# roberta-tagalog tokenizer (HuggingFace, ~5 MB) is cached under
+# ~/.cache/huggingface/ on first call — only the tokenizer, not the
+# 500 MB model weights.
+
+
+-------------------------------------------------------------------------------
+11. PRODUCTION BUILD (frontend)
+-------------------------------------------------------------------------------
+
+cd frontend
+npm run build
+npm run start             # serves the production build on port 3000

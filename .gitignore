@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Data & ML models (too large for Git — these are generated at runtime)
+data/*.db
+data/*.json
+!data/.gitkeep
+data/*.model
+data/*.npy
+data/*.txt
+!data/.gitkeep
+
+# Migration script (one-time use)
+migrate_to_sqlite.py
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,650 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #060c18;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --pink: #f472b6;
+}
+
+/* Base font size is managed by ThemeContext (settings → font size).
+   Default 17.5px is applied via JS on mount; this fallback covers SSR
+   before hydration and users with JS disabled. */
+html {
+  font-size: 17.5px;
+}
+
+html, body {
+  background: #050915;
+  font-family: "Outfit", sans-serif;
+  color: #e2e8f0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Light theme — polished counterpart to the dark theme
+   ────────────────────────────────────────────────────────────────────────── */
+html[data-theme="light"] {
+  background: #f4f6fb;
+}
+html[data-theme="light"] body {
+  background: linear-gradient(180deg, #f4f6fb 0%, #eef1f8 100%);
+  color: #0f172a;
+}
+html[data-theme="light"] ::selection { background: rgba(59,130,246,0.22); color: #0f172a; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(59,130,246,.35), rgba(139,92,246,.35));
+}
+
+/* Backdrop tones down for light mode */
+html[data-theme="light"] .backdrop-mesh::before {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(59,130,246,0.10), transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(139,92,246,0.10), transparent 45%),
+    radial-gradient(circle at 75% 85%, rgba(34,211,238,0.07), transparent 45%),
+    radial-gradient(circle at 20% 90%, rgba(244,114,182,0.06), transparent 40%);
+}
+html[data-theme="light"] .backdrop-grid {
+  background-image:
+    linear-gradient(rgba(15,23,42,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.04) 1px, transparent 1px);
+}
+html[data-theme="light"] .backdrop-noise { opacity: 0.02; }
+
+/* Sidebar — light surface (works for both desktop column and mobile bottom-bar) */
+html[data-theme="light"] aside[data-sidebar] {
+  background: linear-gradient(to bottom, #ffffff 0%, #f4f6fb 100%) !important;
+  border-color: rgba(15,23,42,0.10) !important;
+  box-shadow: 0 -2px 30px -16px rgba(15,23,42,0.18) !important;
+}
+@media (min-width: 768px) {
+  html[data-theme="light"] aside[data-sidebar] {
+    box-shadow: 1px 0 30px -16px rgba(15,23,42,0.18) !important;
+  }
+}
+html[data-theme="light"] aside[data-sidebar] a,
+html[data-theme="light"] aside[data-sidebar] button {
+  color: rgba(15,23,42,0.65);
+}
+html[data-theme="light"] aside[data-sidebar] a:hover,
+html[data-theme="light"] aside[data-sidebar] button:hover {
+  color: #0f172a;
+}
+html[data-theme="light"] aside[data-sidebar] a[class*="text-blue-200"],
+html[data-theme="light"] aside[data-sidebar] button[class*="text-blue-200"] {
+  color: #1d4ed8;
+}
+html[data-theme="light"] aside[data-sidebar] .text-shimmer {
+  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 25%, #0891b2 50%, #7c3aed 75%, #2563eb 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+
+/* Global gradient-text overrides — the dark-mode pastel endpoints
+   (#93c5fd / #c4b5fd / #67e8f9) wash out completely on white surfaces.
+   Switch to deeper blues/purples in light mode for readable contrast. */
+html[data-theme="light"] .text-shimmer {
+  background: linear-gradient(90deg, #1d4ed8 0%, #6d28d9 25%, #0e7490 50%, #6d28d9 75%, #1d4ed8 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+html[data-theme="light"] .text-gradient-static {
+  background: linear-gradient(120deg, #1d4ed8 0%, #6d28d9 50%, #0e7490 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+html[data-theme="light"] .text-gradient {
+  background: linear-gradient(to right, #1d4ed8, #6d28d9, #0e7490);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+/* Settings popover stays dark — hard-readable on either bg — but tone the
+   border for light-mode contrast */
+html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] {
+  background: #ffffff !important;
+  border-color: rgba(15,23,42,0.12) !important;
+  color: #0f172a;
+  box-shadow: 0 18px 40px -14px rgba(15,23,42,0.18), 0 0 28px -10px rgba(59,130,246,0.18) !important;
+}
+html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] .text-white\/35 { color: rgba(15,23,42,0.5); }
+html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] .text-white\/65 { color: #0f172a; }
+
+/* Re-tone the white-alpha text utilities to dark text on light surfaces (High Contrast) */
+html[data-theme="light"] .text-white\/20,
+html[data-theme="light"] .text-white\/25,
+html[data-theme="light"] .text-white\/30,
+html[data-theme="light"] .text-white\/35,
+html[data-theme="light"] .text-white\/40,
+html[data-theme="light"] .text-white\/45,
+html[data-theme="light"] .text-white\/50,
+html[data-theme="light"] .text-white\/55 { color: rgba(15,23,42,0.75); }
+html[data-theme="light"] .text-white\/60,
+html[data-theme="light"] .text-white\/65,
+html[data-theme="light"] .text-white\/70,
+html[data-theme="light"] .text-white\/75 { color: rgba(15,23,42,0.85); }
+html[data-theme="light"] .text-white\/80,
+html[data-theme="light"] .text-white\/85,
+html[data-theme="light"] .text-white\/90,
+html[data-theme="light"] .text-white { color: #0f172a; }
+
+/* Dark mode text contrast clamp (Senior Friendly Accessibility) */
+.text-white\/20, .text-white\/25, .text-white\/30, .text-white\/35,
+.text-white\/40, .text-white\/45, .text-white\/50, .text-white\/55 {
+  color: rgba(255, 255, 255, 0.70) !important;
+}
+html[data-theme="light"] .text-slate-200 { color: #1e293b; }
+
+/* Re-tone the white-alpha background utilities to subtle dark tints */
+html[data-theme="light"] .bg-white\/\[\.02\],
+html[data-theme="light"] .bg-white\/\[\.025\],
+html[data-theme="light"] .bg-white\/\[\.03\],
+html[data-theme="light"] .bg-white\/\[\.04\] { background-color: rgba(15,23,42,0.035); }
+html[data-theme="light"] .bg-white\/\[\.05\],
+html[data-theme="light"] .bg-white\/\[\.06\],
+html[data-theme="light"] .bg-white\/\[\.08\] { background-color: rgba(15,23,42,0.06); }
+html[data-theme="light"] .hover\:bg-white\/\[\.03\]:hover,
+html[data-theme="light"] .hover\:bg-white\/\[\.04\]:hover { background-color: rgba(15,23,42,0.05); }
+html[data-theme="light"] .hover\:bg-white\/\[\.05\]:hover,
+html[data-theme="light"] .hover\:bg-white\/\[\.06\]:hover { background-color: rgba(15,23,42,0.08); }
+
+/* Borders */
+html[data-theme="light"] .border-white\/\[\.03\],
+html[data-theme="light"] .border-white\/\[\.04\],
+html[data-theme="light"] .border-white\/\[\.05\],
+html[data-theme="light"] .border-white\/\[\.06\],
+html[data-theme="light"] .border-white\/\[\.07\],
+html[data-theme="light"] .border-white\/\[\.08\],
+html[data-theme="light"] .border-white\/\[\.09\],
+html[data-theme="light"] .border-white\/\[\.10\],
+html[data-theme="light"] .border-white\/10,
+html[data-theme="light"] .border-white\/15,
+html[data-theme="light"] .border-white\/20,
+html[data-theme="light"] .border-white\/25 { border-color: rgba(15,23,42,0.10); }
+html[data-theme="light"] .divide-white\/\[\.04\] > * + * { border-color: rgba(15,23,42,0.08); }
+
+/* Cards — solid white surface with subtle shadow instead of glass */
+html[data-theme="light"] .card {
+  background: linear-gradient(to bottom right, #ffffff, #f8fafc);
+  border-color: rgba(15,23,42,0.08);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.9) inset,
+    0 6px 24px -14px rgba(15,23,42,0.18);
+  backdrop-filter: none;
+}
+html[data-theme="light"] .card-hover:hover {
+  border-color: rgba(59,130,246,0.5);
+  box-shadow: 0 0 30px -10px rgba(59,130,246,0.25), 0 8px 30px -16px rgba(15,23,42,0.2);
+}
+
+/* Inputs */
+html[data-theme="light"] .input-glass {
+  background: #ffffff;
+  border-color: rgba(15,23,42,0.14);
+  color: #0f172a;
+  backdrop-filter: none;
+}
+html[data-theme="light"] .input-glass::placeholder { color: rgba(15,23,42,0.40); }
+html[data-theme="light"] .input-glass:focus {
+  border-color: rgba(59,130,246,0.55);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+html[data-theme="light"] textarea.bg-transparent { color: #0f172a; }
+html[data-theme="light"] input[type="number"].bg-transparent { color: #0f172a; }
+
+/* Badges */
+html[data-theme="light"] .badge-regular {
+  background: rgba(15,23,42,0.04);
+  border-color: rgba(15,23,42,0.10);
+  color: rgba(15,23,42,0.62);
+  backdrop-filter: none;
+}
+html[data-theme="light"] .badge-slang {
+  background: linear-gradient(to bottom right, rgba(59,130,246,0.14), rgba(99,102,241,0.10));
+  border-color: rgba(59,130,246,0.35);
+  color: #1d4ed8;
+}
+html[data-theme="light"] .badge-censored {
+  background: linear-gradient(to bottom right, rgba(239,68,68,0.12), rgba(220,38,38,0.08));
+  border-color: rgba(239,68,68,0.35);
+  color: #b91c1c;
+}
+
+/* Spotlight cursor highlight tinted for light bg */
+html[data-theme="light"] .spotlight::before {
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(59,130,246,0.10), transparent 40%);
+}
+
+/* Accent text colors — darken for legibility on light surfaces */
+html[data-theme="light"] .text-blue-100,
+html[data-theme="light"] .text-blue-200,
+html[data-theme="light"] .text-blue-300   { color: #1d4ed8; }
+html[data-theme="light"] .text-purple-200,
+html[data-theme="light"] .text-purple-300 { color: #6d28d9; }
+html[data-theme="light"] .text-violet-200,
+html[data-theme="light"] .text-violet-300 { color: #6d28d9; }
+html[data-theme="light"] .text-cyan-200,
+html[data-theme="light"] .text-cyan-300   { color: #0e7490; }
+html[data-theme="light"] .text-pink-200,
+html[data-theme="light"] .text-pink-300   { color: #be185d; }
+html[data-theme="light"] .text-amber-100,
+html[data-theme="light"] .text-amber-200,
+html[data-theme="light"] .text-amber-300  { color: #b45309; }
+html[data-theme="light"] .text-amber-300\/80,
+html[data-theme="light"] .text-amber-100\/80,
+html[data-theme="light"] .text-amber-200\/80 { color: #b45309; }
+html[data-theme="light"] .text-orange-300 { color: #c2410c; }
+html[data-theme="light"] .text-emerald-300,
+html[data-theme="light"] .text-green-300,
+html[data-theme="light"] .text-green-200,
+html[data-theme="light"] .text-green-100  { color: #047857; }
+html[data-theme="light"] .text-red-400    { color: #b91c1c; }
+html[data-theme="light"] .text-slate-400  { color: rgba(15,23,42,0.6); }
+html[data-theme="light"] .text-slate-200  { color: #1e293b; }
+html[data-theme="light"] .text-slate-300  { color: rgba(15,23,42,0.7); }
+
+/* Tab pill backgrounds & translucent gradient surfaces — strengthen on white */
+html[data-theme="light"] .from-blue-500\/25,
+html[data-theme="light"] .from-blue-500\/30 { --tw-gradient-from: rgba(59,130,246,0.30); }
+html[data-theme="light"] .to-purple-500\/15,
+html[data-theme="light"] .to-purple-500\/20 { --tw-gradient-to:   rgba(139,92,246,0.22); }
+html[data-theme="light"] .border-blue-400\/30,
+html[data-theme="light"] .border-blue-400\/35,
+html[data-theme="light"] .border-blue-400\/40 { border-color: rgba(59,130,246,0.55); }
+
+/* Recharts — axis text adapts to theme. Inline `tick={{ fill }}` props
+   were removed so the CSS rule wins by default. */
+.recharts-cartesian-axis-tick-value { fill: rgba(255,255,255,0.42); }
+.recharts-text { fill: rgba(255,255,255,0.55); }
+html[data-theme="light"] .recharts-cartesian-axis-tick-value { fill: rgba(15,23,42,0.65) !important; }
+html[data-theme="light"] .recharts-text { fill: rgba(15,23,42,0.75) !important; }
+html[data-theme="light"] .recharts-tooltip-wrapper * {
+  /* The tooltip uses inline styles; just nudge contents readable */
+}
+
+/* Status banner stays warm/amber but on light-friendly tint */
+html[data-theme="light"] code.bg-white\/\[\.08\] {
+  background: rgba(15,23,42,0.06);
+  color: #92400e;
+}
+
+/* Selection */
+::selection { background: rgba(96,165,250,0.35); color: #fff; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(96,165,250,.25), rgba(167,139,250,.25));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(96,165,250,.5), rgba(167,139,250,.5));
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes meshFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(3%, -2%) scale(1.05); }
+  66%      { transform: translate(-2%, 3%) scale(0.98); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+@keyframes gradShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes orbit1 {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(40px,-30px,0) scale(1.15); }
+  100% { transform: translate3d(0,0,0) scale(1); }
+}
+@keyframes orbit2 {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(-50px,40px,0) scale(.9); }
+  100% { transform: translate3d(0,0,0) scale(1); }
+}
+@keyframes orbit3 {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(30px,50px,0) scale(1.1); }
+  100% { transform: translate3d(0,0,0) scale(1); }
+}
+@keyframes shineSweep {
+  0%   { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%)  skewX(-20deg); }
+}
+@keyframes auroraSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1);   opacity: .9; }
+  50%      { transform: scale(1.03); opacity: 1; }
+}
+@keyframes shimmerText {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes tick {
+  0%   { transform: scale(.4); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Backdrop ───────────────────────────────────────────────────────────── */
+.backdrop-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.backdrop-mesh::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(96,165,250,0.10), transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(167,139,250,0.10), transparent 50%),
+    radial-gradient(circle at 75% 85%, rgba(34,211,238,0.06), transparent 50%),
+    radial-gradient(circle at 20% 90%, rgba(244,114,182,0.05), transparent 50%);
+  filter: blur(60px);
+  /* Static — no JS-driven animation. CSS-only meshFloat would still cost a
+     repaint; we just take the static version. */
+}
+.backdrop-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 75%);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: .55;
+  will-change: transform;
+}
+
+/* Subtle film grain overlay for the whole page */
+.backdrop-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.85'/></svg>");
+}
+
+/* ── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Glass card — subtle translucency + blurred backdrop + hover lift */
+  .card {
+    @apply relative rounded-2xl border
+           bg-gradient-to-br from-white/[0.04] to-white/[0.015]
+           border-white/[0.07]
+           backdrop-blur-xl
+           shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset];
+  }
+
+  /* Card that glows & lifts on hover */
+  .card-hover {
+    @apply card transition-all duration-300
+           hover:border-blue-400/25 hover:shadow-[0_0_40px_-12px_rgba(96,165,250,0.35)]
+           hover:-translate-y-0.5;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent
+           bg-gradient-to-r from-blue-300 via-purple-300 to-cyan-300;
+  }
+  .text-gradient-static {
+    background: linear-gradient(120deg, #93c5fd 0%, #c4b5fd 50%, #67e8f9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Badges */
+  .badge-slang {
+    @apply rounded-lg bg-gradient-to-br from-blue-500/25 to-blue-600/10
+           border border-blue-400/30 text-blue-200
+           px-2.5 py-2 text-xs font-semibold text-center leading-tight
+           shadow-[0_0_20px_-5px_rgba(96,165,250,0.4)];
+  }
+  .badge-regular {
+    @apply rounded-lg bg-white/[.03] border border-white/[.08] text-white/45
+           px-2.5 py-2 text-xs text-center leading-tight backdrop-blur-sm;
+  }
+  .badge-censored {
+    @apply rounded-lg bg-gradient-to-br from-red-500/25 to-red-700/10
+           border border-red-400/30 text-red-300
+           px-2.5 py-2 text-xs text-center leading-tight
+           shadow-[0_0_16px_-5px_rgba(248,113,113,0.35)];
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply relative w-full rounded-xl
+           bg-gradient-to-r from-blue-600 to-indigo-600
+           hover:from-blue-500 hover:to-indigo-500
+           text-white font-medium py-2.5 px-6 text-sm
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-200
+           shadow-[0_0_20px_-6px_rgba(99,102,241,0.6)]
+           hover:shadow-[0_0_30px_-4px_rgba(99,102,241,0.8)]
+           hover:-translate-y-px active:translate-y-0;
+  }
+  .btn-ghost {
+    @apply rounded-xl border border-white/10 bg-white/[.02]
+           text-white/55 hover:text-white/85 hover:border-white/20
+           hover:bg-white/[.05] transition-all duration-200
+           backdrop-blur-sm;
+  }
+
+  /* Input */
+  .input-glass {
+    @apply bg-white/[.03] border border-white/[.08] rounded-xl
+           text-white/80 placeholder:text-white/25
+           focus:outline-none focus:border-blue-400/40
+           focus:shadow-[0_0_0_3px_rgba(96,165,250,0.08)]
+           transition-all duration-200 backdrop-blur-sm;
+  }
+
+  .info-box {
+    @apply border-l-2 border-blue-400/50 pl-4 mb-6 text-slate-400 text-sm leading-relaxed;
+  }
+
+  /* Shimmer skeleton */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(255,255,255,0.10) 50%,
+      rgba(255,255,255,0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* Glow ring */
+  .glow-blue   { box-shadow: 0 0 24px -4px rgba(96,165,250,0.5); }
+  .glow-purple { box-shadow: 0 0 24px -4px rgba(167,139,250,0.5); }
+  .glow-green  { box-shadow: 0 0 24px -4px rgba(74,222,128,0.5); }
+
+  /* Animated gradient border via mask */
+  .grad-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .grad-border::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(96,165,250,0.6), rgba(167,139,250,0.6), rgba(34,211,238,0.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .grad-border:hover::before { opacity: 1; }
+
+  /* Floating animation utility */
+  .anim-float { animation: floaty 4s ease-in-out infinite; }
+  .anim-pulse-glow { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+  /* Lightweight fade-in for lists — replaces per-item framer-motion
+     stagger with a single CSS animation. Cheap on slow devices. */
+  .anim-fade-in {
+    animation: fadeInUp 0.35s ease-out both;
+  }
+  .anim-grad-shift {
+    background-size: 200% 200%;
+    animation: gradShift 8s ease infinite;
+  }
+  .anim-breathe { animation: breathe 4.5s ease-in-out infinite; }
+
+  /* Shimmering gradient text — used for headings */
+  .text-shimmer {
+    background: linear-gradient(
+      90deg,
+      #93c5fd 0%,
+      #c4b5fd 25%,
+      #67e8f9 50%,
+      #c4b5fd 75%,
+      #93c5fd 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    animation: shimmerText 6s linear infinite;
+  }
+
+  /* Diagonal shine sweep on hover (wrap target with relative overflow-hidden, add .shine child) */
+  .shine-parent { position: relative; overflow: hidden; }
+  .shine {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 40%;
+    left: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.12) 45%,
+      rgba(255,255,255,0.22) 50%,
+      rgba(255,255,255,0.12) 55%,
+      transparent 100%
+    );
+    transform: translateX(-120%) skewX(-20deg);
+    transition: opacity 0.2s;
+    opacity: 0;
+  }
+  .shine-parent:hover .shine {
+    opacity: 1;
+    animation: shineSweep 0.9s ease-out forwards;
+  }
+
+  /* Rotating aurora gradient border (use inside isolate container) */
+  .aurora-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .aurora-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from 0deg,
+      rgba(96,165,250,0.8),
+      rgba(167,139,250,0.8),
+      rgba(34,211,238,0.8),
+      rgba(244,114,182,0.8),
+      rgba(96,165,250,0.8)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: auroraSpin 8s linear infinite;
+    pointer-events: none;
+  }
+
+  /* Always-visible gradient border (no animation, stronger than grad-border hover) */
+  .grad-border-static {
+    position: relative;
+    isolation: isolate;
+  }
+  .grad-border-static::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(96,165,250,0.45), rgba(167,139,250,0.45), rgba(34,211,238,0.45));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* `.spotlight` was a cursor-tracking radial highlight on hover. Removed
+     because (a) it left a stuck circle of light at the card's center on
+     non-interactive surfaces (no JS sets --mx/--my for plain cards) and
+     (b) the cursor glow itself was already removed from the backdrop. The
+     class is kept as a no-op so existing usages don't need surgery. */
+  .spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+/* Ensure content sits above backdrop */
+main, aside { position: relative; z-index: 1; }
+
+/* Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

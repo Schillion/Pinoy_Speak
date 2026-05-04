@@ -1,0 +1,11 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+requests
+pandas
+numpy
+scipy
+gensim
+spacy
+calamancy
+rich
+# Optional: add GROQ_API_KEY to .env for Groq fallback (14 400 free req/day)

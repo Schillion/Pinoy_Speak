@@ -1,0 +1,15 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Slang detection / data pipeline
+pandas>=2.0
+gensim>=4.3
+calamancy>=0.1
+requests>=2.31
+rich>=13.0
+
+# Performance + quality
+orjson>=3.10           # 3-5x faster JSON for the 13MB raw_combined.json hot path
+rapidfuzz>=3.0         # fuzzy slang variant resolution (e.g. petmaluu -> petmalu)
+transformers>=4.36     # roberta-tagalog tokenizer for Tagalog vocab signal
+torch>=2.0             # transformers backend (CPU-only is fine)
