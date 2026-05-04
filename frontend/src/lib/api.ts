@@ -25,7 +25,7 @@ export async function fetchTopSlang(n = 15): Promise<SlangWord[]> {
   const res = await fetch(`${base}/api/top-slang?n=${n}`, { cache: "no-store" });
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
-  return data.words;
+  return data.words ?? [];
 }
 
 export interface WordTrendsResult {

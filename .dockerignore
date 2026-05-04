@@ -6,9 +6,6 @@
 frontend/
 
 # Data files (generated at runtime on the persistent volume)
-data/*.db
-data/*.model
-data/*.npy
 !data/.gitkeep
 
 # Python caches

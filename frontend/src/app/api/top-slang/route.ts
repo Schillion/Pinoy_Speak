@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(`${PY}/top-slang?n=${n}`, { cache: "no-store" });
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json({ error: "ML service unavailable" }, { status: 503 });
   }
