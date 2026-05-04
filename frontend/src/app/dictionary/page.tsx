@@ -6,22 +6,26 @@ export const metadata = {
   description: "Browse the complete, continuously updated dictionary of Filipino internet slang with definitions, examples, and origins."
 };
 
-// Revalidate this page in the background every 10 minutes so new slang gets SSR'd
-export const revalidate = 600;
+// Never pre-render at build time — always fetch fresh from the backend
+export const dynamic = "force-dynamic";
 
 export default async function DictionaryPage() {
   let initialLexicon: Record<string, LexiconEntry> = {};
   try {
-    // Next.js Server Components require an absolute URL to fetch.
     const PY = process.env.PYTHON_API_URL ?? "http://localhost:8000";
     const res = await fetch(`${PY}/lexicon`, {
       next: { revalidate: 600 },
+      signal: AbortSignal.timeout(5000),
     });
-    const data = await res.json();
-    initialLexicon = data.entries ?? {};
+    if (res.ok) {
+      const data = await res.json();
+      initialLexicon = data.entries ?? {};
+    }
   } catch (e) {
-    console.error("[SSR] Failed to fetch initial lexicon:", e);
+    // Backend offline — client will retry on mount
+    console.warn("[SSR] Lexicon fetch skipped (backend unavailable)");
   }
 
   return <DictionaryClient initialLexicon={initialLexicon} />;
 }
+
