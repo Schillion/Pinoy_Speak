@@ -26,6 +26,8 @@ frontend/.env.local
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
+.claude/
+.gemini/
