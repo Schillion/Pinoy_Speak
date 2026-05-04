@@ -18,14 +18,11 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def clean(word: str) -> str:
     return word.lower().strip(_STRIP_CHARS)
 
+import spacy
+
 # --- calamancy MODEL LOADING ---
 def _load_calamancy_model():
-    model_name = "tl_calamancy_md-0.1.0"
-    try:
-        return calamancy.load(model_name)
-    except IOError:
-        calamancy.loaders.download_model(model_name, ".")
-        return calamancy.load(model_name)
+    return spacy.load("tl_calamancy_md")
 
 NLP = _load_calamancy_model()
 
