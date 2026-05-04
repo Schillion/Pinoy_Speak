@@ -10,7 +10,7 @@ RUN python -m venv .venv
 COPY requirements.txt ./
 RUN .venv/bin/pip install --no-cache-dir -r requirements.txt && \
     .venv/bin/python -m spacy download en_core_web_sm && \
-    .venv/bin/python -m calamancy download tl_calamancy_md-0.1.0
+    .venv/bin/pip install --no-cache-dir https://huggingface.co/ljvmiranda921/tl_calamancy_md/resolve/main/tl_calamancy_md-0.1.0-py3-none-any.whl
 
 # ── Stage 2: Runtime ──
 FROM python:3.12.9-slim
