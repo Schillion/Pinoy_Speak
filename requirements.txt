@@ -9,3 +9,5 @@ spacy
 calamancy
 rich
 # Optional: add GROQ_API_KEY to .env for Groq fallback (14 400 free req/day)
+orjson  
+ 
