@@ -1,5 +1,35 @@
-fly.toml
+# Git
 .git/
+.gitignore
+
+# Frontend (not needed for backend deployment)
+frontend/
+
+# Data files (generated at runtime on the persistent volume)
+data/*.db
+data/*.json
+data/*.model
+data/*.npy
+data/*.txt
+!data/.gitkeep
+
+# Python caches
 __pycache__/
-.envrc
+*.pyc
+*.pyo
 .venv/
+venv/
+
+# IDE & OS
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+
+# Config
+fly.toml
+.envrc
+.env
+*.md
+migrate_to_sqlite.py
