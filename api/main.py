@@ -137,7 +137,12 @@ def _continuous_learner() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _detector
-    _detector = SlangDetector()
+    try:
+        _detector = SlangDetector()
+    except Exception as e:
+        print(f"[startup] SlangDetector init failed (no model/data yet): {e}")
+        print("[startup] API is running but analysis endpoints need data/social_model.model")
+        _detector = None
     if os.getenv("LEARNER_ENABLED", "0") == "1":
         print("[learner] background scraper + retrain loop enabled")
         threading.Thread(target=_continuous_learner, daemon=True, name="learner").start()
@@ -181,15 +186,20 @@ class LearnSlangRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    from slang_enricher import load_discovered
     loaded = _detector is not None and _detector.model is not None
     vocab  = len(_detector.model.wv) if loaded else 0
+    discovered = 0
+    try:
+        from slang_enricher import load_discovered
+        discovered = len(load_discovered())
+    except Exception:
+        pass
     return {
         "status": "ok",
         "model_loaded": loaded,
         "vocab_size": vocab,
-        "lexicon_size": len(__import__("dictionary_service").AMBIGUOUS_SLANG_SEEDS),
-        "discovered_slang": len(load_discovered()),
+        "lexicon_size": len(AMBIGUOUS_SLANG_SEEDS),
+        "discovered_slang": discovered,
     }
 
 
