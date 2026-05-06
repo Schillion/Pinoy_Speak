@@ -450,7 +450,7 @@ export default function Home() {
                     No data
                   </span>
                   <p className="text-[11px] text-white/35">
-                    Backend hasn&apos;t built a frequency map yet — start uvicorn and refresh
+                    Word trend data is still loading — refresh in a moment
                   </p>
                 </>
               )}

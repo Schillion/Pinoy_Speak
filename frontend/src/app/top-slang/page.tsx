@@ -260,7 +260,7 @@ export default function TopSlang() {
       setLexicon(lex);
     } catch {
       if (id !== reqId.current) return;
-      setError("Backend offline. Start it with `uvicorn api.main:app --port 8000`.");
+      setError("Could not load top slang — the ML model may still be warming up. Try refreshing in a moment.");
     } finally {
       if (id === reqId.current) setLoading(false);
     }
