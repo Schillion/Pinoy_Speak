@@ -177,12 +177,24 @@ function buildFallbackResponse(
     return `**${hit}**${e.pos ? ` (${e.pos})` : ""}\n\n${e.definition}\n\n${e.example ? `Example: ${e.example}\n\n` : ""}${e.origin ? `Origin: ${e.origin}\n\n` : ""}${e.plain ? `Plain English: "${e.plain}"` : ""}`;
   }
 
-  if (/^(hi|hello|hey|kumusta|kamusta|musta)/i.test(lower.trim())) {
+  if (/^(hi|hello|hey|kumusta|kamusta|musta|sup|yo\b)/i.test(lower.trim())) {
     return `Kumusta! I'm Kuya Slang — your Filipino slang tutor! 🤙\n\nI know ${allWords.length} slang words. Ask me about one like "grabe" or "kilig", or say "quiz me" to test yourself!`;
   }
 
+  if (/how are you|kamusta ka|musta ka|how's it going|how you doing/i.test(lower)) {
+    return `Ayos lang, salamat! 😄 More importantly — ready ka na ba matuto ng Filipino slang?\n\nAsk me about any word like "lodi", "petmalu", or "sana all", or say "quiz me" to test yourself!`;
+  }
+
+  if (/thank|salamat|thanks/i.test(lower)) {
+    return `Walang anuman! 🤙 Ask me about more slang anytime — or say "quiz me" to test yourself!`;
+  }
+
+  if (/what.*name|sino ka|who are you|what are you/i.test(lower)) {
+    return `Ako si Kuya Slang — your Filipino slang tutor on PinoySpeak! 🤙\n\nI know ${allWords.length} words. Ask me about one, or say "quiz me" to play!`;
+  }
+
   const samples = [pickRandom(allWords), pickRandom(allWords), pickRandom(allWords)];
-  return `Hindi ko gets, pero keri lang! 😄 Try asking about a specific word like "solid", "bet", or "kilig" — or say "quiz me" to play a quick game!\n\nI know: ${samples.join(", ")}, and ${allWords.length - 3} more.`;
+  return `Hindi ko gets, pero keri lang! 😄 Try asking about a specific slang word like "solid", "bet", or "kilig" — or say "quiz me" to play a quick game!\n\nI know: ${samples.join(", ")}, and ${allWords.length - 3} more.`;
 }
 
 // ── Log user message to training corpus (fire-and-forget) ────────────────────
@@ -424,16 +436,20 @@ export async function POST(req: NextRequest) {
     try {
       reply = await callGroq(messages, systemPrompt);
     } catch (err) {
-      console.error("Groq failed, trying Gemini:", err);
+      console.error("[chat] Groq failed:", String(err));
     }
+  } else {
+    console.warn("[chat] GROQ_API_KEY not set");
   }
 
   if (reply == null && process.env.GEMINI_API_KEY) {
     try {
       reply = await callGemini(messages, systemPrompt);
     } catch (err) {
-      console.error("Gemini failed, using fallback:", err);
+      console.error("[chat] Gemini failed:", String(err));
     }
+  } else if (reply == null) {
+    console.warn("[chat] GEMINI_API_KEY not set — using fallback");
   }
 
   if (reply == null) {
