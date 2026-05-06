@@ -283,7 +283,7 @@ def analyze(req: AnalyzeRequest, _ = Depends(rate_limit)):
 
         # Fetch neighbors once — reused by classify_word and response fields
         neighbors = wv.most_similar(clean_tok, topn=20) if clean_tok in wv else []
-        classification, reason = _detector.classify_word(clean_tok, _neighbors=neighbors)
+        classification, reason = _detector.classify_word(clean_tok, _neighbors=tuple(neighbors))
         z = _detector.get_burstiness(clean_tok)
 
         # Resolve alias → canonical so variants (char → charot, chariz → charot)
@@ -458,9 +458,11 @@ def top_slang(n: int = 15):
 
 @app.get("/corpus-stats")
 def corpus_stats():
+    from slang_enricher import load_discovered
     counts, total = scan_corpus()
     top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS), "—")
-    return {"total_posts": total, "top_slang": top, "slang_count": len(AMBIGUOUS_SLANG_SEEDS)}
+    lexicon_count = len(SEED_LEXICON) + sum(1 for w in load_discovered() if w not in SEED_LEXICON)
+    return {"total_posts": total, "top_slang": top, "slang_count": lexicon_count}
 
 
 @app.post("/log-chat")
@@ -921,17 +923,24 @@ def lexicon():
 
 @app.get("/posts")
 def posts(page: int = 1, limit: int = 50, search: str = ""):
-    from api.corpus_utils import _DATA_PATH
-    if not os.path.exists(_DATA_PATH):
-        return {"posts": [], "total": 0}
     try:
-        df = pd.read_json(_DATA_PATH, dtype=False, convert_dates=False)
-        df["date"] = df["date"].apply(lambda d: d if isinstance(d, str) and len(d) == 10 else None)
+        all_posts = load_posts()
         if search.strip():
-            df = df[df["text"].str.contains(search.strip(), case=False, na=False)]
-        total = len(df)
-        df = df.sort_values("date", ascending=False).iloc[(page - 1) * limit : page * limit]
-        records = df.rename(columns={"user": "author"})[["text", "date", "author", "likes", "source"]].to_dict("records")
+            kw = search.strip().lower()
+            all_posts = [p for p in all_posts if kw in (p.get("text") or "").lower()]
+        total = len(all_posts)
+        all_posts = sorted(all_posts, key=lambda p: p.get("date") or "", reverse=True)
+        page_posts = all_posts[(page - 1) * limit : page * limit]
+        records = [
+            {
+                "text":   p.get("text"),
+                "date":   p.get("date"),
+                "author": p.get("user"),
+                "likes":  p.get("likes"),
+                "source": p.get("source"),
+            }
+            for p in page_posts
+        ]
         return {"posts": records, "total": total}
     except Exception as e:
         raise HTTPException(500, str(e))
