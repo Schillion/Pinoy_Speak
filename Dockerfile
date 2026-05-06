@@ -23,6 +23,13 @@ COPY --from=builder /app/.venv .venv/
 # Copy application code only (data lives on the persistent volume)
 COPY . .
 
+# Stash static seed/reference files in /app/seeds so they survive the
+# volume mount that shadows /app/data at runtime.  The entrypoint copies
+# any missing seeds to the volume on every start.
+RUN mkdir -p /app/seeds && \
+    find /app/data -maxdepth 1 -type f \( -name "*.json" -o -name "*.txt" \) \
+         -exec cp {} /app/seeds/ \;
+
 # Ensure runtime data directory exists (Fly volume mounts here)
 RUN mkdir -p /app/data
 
