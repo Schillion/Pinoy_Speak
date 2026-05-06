@@ -407,7 +407,7 @@ function DictionaryEntry({
             {formatType(entry.formation_type)}
           </span>
         )}
-        {entry.is_ambiguous && (
+        {entry.is_ambiguous && entry.formation_type !== "semantic_shift" && (
           <span className="text-[11px] text-purple-300 bg-purple-500/[.12] border border-purple-400/30
                            px-2 py-0.5 rounded-md uppercase tracking-widest">
             semantic shift

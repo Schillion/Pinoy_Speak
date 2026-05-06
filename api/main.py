@@ -506,13 +506,18 @@ def import_online_slang(req: ImportOnlineRequest):
     sources = req.sources or DEFAULT_SOURCES
     max_new = max(1, min(req.max_new or 30, 60))
 
-    candidates, diagnostics = gather_candidates_from_sources(sources)
-
-    # Drop anything already in the lexicon or in standard dictionaries
+    # Build the already-known set first so we can pass it to the gatherer,
+    # letting the LLM brainstorm skip words we already have.
     discovered_now = load_discovered()
     already_known = (
         set(KNOWN_SLANG) | set(SEED_LEXICON) | set(discovered_now)
     )
+
+    candidates, diagnostics = gather_candidates_from_sources(
+        sources, known_words=already_known
+    )
+
+    # Drop anything already in the lexicon or in standard dictionaries
 
     fresh: list[str] = []
     for word in candidates:

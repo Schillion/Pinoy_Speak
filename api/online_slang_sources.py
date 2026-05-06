@@ -2,12 +2,13 @@
 Gathers Filipino slang word candidates from external sources.
 
 Three source types:
-  • Reddit search — queries Reddit's public search.json for slang-related
-    threads in r/Tagalog, r/Philippines, r/AskPilipinas. Walks each
-    matching thread's comments. No auth needed.
+  • Static slang reference pages — publicly accessible pages listing Filipino
+    slang (Wikipedia, wikitonary, curated blogs). No auth needed.
   • Reddit threads — direct URLs (used when the user has a specific link).
+    Note: Reddit's search.json API returns 403 without OAuth; thread fetches
+    still work for direct URLs.
   • LLMs — asks each available provider (Gemini / Groq / Ollama) for a
-    list of common Filipino slang. Adds whatever they return to the pool.
+    list of Filipino slang NOT already in the lexicon.
 
 Each source returns text snippets / explicit word lists; the caller filters
 against the existing lexicon and re-verifies via the standard pipeline.
@@ -22,22 +23,30 @@ import requests
 from urllib.parse import urlparse, quote_plus
 
 
-# A direct-URL fallback. Mostly useful for ad-hoc imports — the search-based
-# gatherer below finds far more threads dynamically.
+# Default static sources — publicly accessible Filipino slang reference pages.
+# Reddit thread URLs still work for direct links; it's the search.json API
+# that requires OAuth now.
 DEFAULT_SOURCES: list[str] = [
+    # Reddit threads with direct links (fetching a known thread URL still works)
     "https://www.reddit.com/r/Tagalog/comments/17magha/tagalog_slang_words/",
+    "https://www.reddit.com/r/Philippines/comments/131v8ue/common_filipino_slang/",
+    # Wikipedia article on Philippine English slang
+    "https://en.wikipedia.org/wiki/Philippine_English",
+    # Publicly indexed slang lists / blog pages
+    "https://www.omniglot.com/language/phrases/tagalog.htm",
 ]
 
-# Subreddits where Filipino slang lists tend to surface
+# Reddit search is no longer used by default — requires OAuth since 2023.
+# Kept here so callers can opt in if they have credentials via env:
+#   REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET / REDDIT_USER_AGENT
 SEARCH_SUBREDDITS: list[str] = [
     "Tagalog", "Philippines", "AskPilipinas", "Pilipinas", "studytips",
 ]
-# Search queries to fan out across each subreddit
 SEARCH_QUERIES: list[str] = [
     "slang words", "filipino slang", "tagalog slang", "internet slang",
     "gen z slang", "common slang",
 ]
-SEARCH_LIMIT_PER_QUERY = 4   # threads to pull per subreddit × query combo
+SEARCH_LIMIT_PER_QUERY = 4
 
 # Real Filipino words that aren't slang — exclude even when extracted as
 # candidates. Conservative list to avoid filtering genuine slang variants.
@@ -211,14 +220,28 @@ def _reddit_search_thread_urls(
 
 # ─── LLM brainstorming (Gemini / Groq / Ollama) ─────────────────────────────
 
-_LLM_PROMPT = (
-    "List the 40 most common modern Filipino internet slang words used on "
-    "social media (Twitter, Reddit, TikTok). Include both Tagalog-origin "
-    "coinages (petmalu, lodi, werpa, charot, sana all, jowa, gigil) and "
-    "English-origin slang adopted by Filipinos (basic, lit, slay, sus). "
+_LLM_PROMPT_BASE = (
+    "List 50 modern Filipino internet slang words used on social media "
+    "(Twitter/X, TikTok, Facebook). Include Tagalog-origin coinages and "
+    "English-origin words adopted by Filipinos. Focus on {era} slang that "
+    "is genuinely Filipino or Filipino-online-culture-specific. "
+    "{exclusion}"
     "Return ONLY a JSON array of single-word strings — no definitions, "
     "no commentary. Example format: [\"lodi\", \"petmalu\", \"werpa\"]"
 )
+
+
+def _build_llm_prompt(known_words: set[str] | None = None) -> str:
+    exclusion = ""
+    if known_words:
+        sample = sorted(known_words)[:60]
+        exclusion = (
+            f"Do NOT include any of these already-known words: "
+            f"{', '.join(sample)}{'...' if len(known_words) > 60 else ''}. "
+            "Focus on words NOT in that list. "
+        )
+    era = "2020s–2025"
+    return _LLM_PROMPT_BASE.format(era=era, exclusion=exclusion)
 
 
 def _post_json(url: str, payload: dict, headers: dict | None = None,
@@ -228,7 +251,7 @@ def _post_json(url: str, payload: dict, headers: dict | None = None,
     return res.json()
 
 
-def _gemini_brainstorm() -> list[str]:
+def _gemini_brainstorm(known_words: set[str] | None = None) -> list[str]:
     key = os.environ.get("GEMINI_API_KEY", "")
     if not key:
         return []
@@ -236,25 +259,27 @@ def _gemini_brainstorm() -> list[str]:
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"gemini-2.0-flash:generateContent?key={key}"
     )
+    prompt = _build_llm_prompt(known_words)
     data = _post_json(url, {
-        "contents": [{"parts": [{"text": _LLM_PROMPT}]}],
-        "generationConfig": {"maxOutputTokens": 400, "temperature": 0.7},
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 500, "temperature": 0.8},
     })
     raw = data["candidates"][0]["content"]["parts"][0]["text"]
     return _parse_llm_word_list(raw)
 
 
-def _groq_brainstorm() -> list[str]:
+def _groq_brainstorm(known_words: set[str] | None = None) -> list[str]:
     key = os.environ.get("GROQ_API_KEY", "")
     if not key:
         return []
+    prompt = _build_llm_prompt(known_words)
     data = _post_json(
         "https://api.groq.com/openai/v1/chat/completions",
         {
             "model": "llama-3.3-70b-versatile",
-            "messages": [{"role": "user", "content": _LLM_PROMPT}],
-            "max_tokens": 400,
-            "temperature": 0.7,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 500,
+            "temperature": 0.8,
         },
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
     )
@@ -262,14 +287,15 @@ def _groq_brainstorm() -> list[str]:
     return _parse_llm_word_list(raw)
 
 
-def _ollama_brainstorm() -> list[str]:
+def _ollama_brainstorm(known_words: set[str] | None = None) -> list[str]:
     model = os.environ.get("OLLAMA_MODEL", "llama3.2")
+    prompt = _build_llm_prompt(known_words)
     try:
         data = _post_json(
             "http://localhost:11434/api/chat",
             {
                 "model": model,
-                "messages": [{"role": "user", "content": _LLM_PROMPT}],
+                "messages": [{"role": "user", "content": prompt}],
                 "stream": False,
             },
             timeout=60,
@@ -307,7 +333,9 @@ def _parse_llm_word_list(raw: str) -> list[str]:
     return out
 
 
-def gather_from_llms() -> tuple[list[str], list[dict]]:
+def gather_from_llms(
+    known_words: set[str] | None = None,
+) -> tuple[list[str], list[dict]]:
     """Asks each configured LLM provider for a brainstormed slang list."""
     providers: list[tuple[str, callable]] = [
         ("gemini",  _gemini_brainstorm),
@@ -318,7 +346,7 @@ def gather_from_llms() -> tuple[list[str], list[dict]]:
     pooled: list[str] = []
     for name, fn in providers:
         try:
-            words = fn()
+            words = fn(known_words)
             if words:
                 pooled.extend(words)
                 diagnostics.append({"kind": "llm", "provider": name, "ok": True, "words": len(words)})
@@ -335,20 +363,23 @@ def gather_candidates_from_sources(
     sources: list[str] | None = None,
     *,
     delay_seconds: float = 0.6,
-    use_search: bool = True,
+    use_search: bool = False,   # Reddit search.json requires OAuth — disabled by default
     use_llms: bool = True,
+    known_words: set[str] | None = None,
 ) -> tuple[list[str], list[dict]]:
     """
     Fetches every source, extracts candidate words, and returns:
       • flat ranked list of candidate words (most-cited first)
       • per-source diagnostics for each fetch attempt
+
+    Pass known_words so the LLM brainstorm avoids suggesting duplicates.
     """
     explicit_sources = sources or DEFAULT_SOURCES
     diagnostics: list[dict] = []
     all_text: list[str] = []
     explicit_words: list[str] = []
 
-    # 1) Dynamically discover slang threads on Reddit
+    # 1) Dynamically discover slang threads on Reddit (requires OAuth — opt-in only)
     discovered_urls: list[str] = []
     if use_search:
         discovered_urls, search_diags = _reddit_search_thread_urls(
@@ -375,16 +406,16 @@ def gather_candidates_from_sources(
             diagnostics.append({"kind": "url", "url": url, "ok": False, "error": str(e)[:120]})
         time.sleep(delay_seconds)
 
-    # 3) Brainstorm via available LLMs
+    # 3) Brainstorm via available LLMs, excluding already-known words
     if use_llms:
-        llm_words, llm_diags = gather_from_llms()
+        llm_words, llm_diags = gather_from_llms(known_words=known_words)
         explicit_words.extend(llm_words)
         diagnostics.extend(llm_diags)
 
-    # Combine: heuristic-extracted Reddit candidates + LLM-listed words
-    reddit_candidates = extract_candidates(all_text)
+    # Combine: heuristic-extracted web candidates + LLM-listed words
+    web_candidates = extract_candidates(all_text)
     combined: dict[str, int] = {}
-    for w in reddit_candidates:
+    for w in web_candidates:
         combined[w] = combined.get(w, 0) + 2     # heuristic-extracted: high signal
     for w in explicit_words:
         if _is_plausible(w):
