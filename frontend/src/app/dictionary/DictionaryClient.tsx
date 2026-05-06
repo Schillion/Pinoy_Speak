@@ -19,6 +19,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const [loading, setLoading] = useState(false);
   const [search,  setSearch]  = useState("");
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
   const [sweeping,  setSweeping]  = useState(false);
   const [importing, setImporting] = useState(false);
   const [growMsg,   setGrowMsg]   = useState<string | null>(null);
@@ -172,6 +173,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
             onClose={() => setSelected(null)}
           />
         )}
+        {showGuide && <FormationGuide onClose={() => setShowGuide(false)} />}
       </AnimatePresence>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -285,11 +287,20 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
               >×</button>
             )}
           </div>
-          <p className="text-xs text-white/45 whitespace-nowrap">
-            <span className="text-gradient-static font-semibold text-sm">{totalShown}</span>
-            {" "}of {Object.keys(lexicon).length} entries
-            {q && <span className="ml-1 italic">match &ldquo;{search}&rdquo;</span>}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-white/45 whitespace-nowrap">
+              <span className="text-gradient-static font-semibold text-sm">{totalShown}</span>
+              {" "}of {Object.keys(lexicon).length} entries
+              {q && <span className="ml-1 italic">match &ldquo;{search}&rdquo;</span>}
+            </p>
+            <button
+              onClick={() => setShowGuide(true)}
+              title="Formation types guide"
+              className="flex-shrink-0 w-6 h-6 rounded-full border border-blue-400/40
+                         text-blue-300/70 hover:text-blue-200 hover:border-blue-400/70
+                         text-[11px] font-bold transition-colors flex items-center justify-center"
+            >?</button>
+          </div>
         </div>
 
         {/* A–Z jump strip — horizontally scrollable on mobile so 26 letters
@@ -462,6 +473,77 @@ const FORMATION_LABELS: Record<string, string> = {
 
 function formatType(type: string): string {
   return FORMATION_LABELS[type] ?? type;
+}
+
+const GUIDE_ENTRIES: { label: string; key: string; desc: string; example: string }[] = [
+  { key: "binaliktad",     label: "Binaliktad",          desc: "Syllables of a word are reversed.",                                          example: "\"naks\" ← skan (scandal)" },
+  { key: "contraction",    label: "Contraction",         desc: "A phrase compressed into a single word.",                                    example: "\"nako\" ← inay ko" },
+  { key: "phonetic",       label: "Phonetic respelling", desc: "A word spelled the way it sounds in Filipino.",                              example: "\"shet\" ← shit" },
+  { key: "affixation",     label: "Affixation",          desc: "A foreign root with a Filipino suffix attached.",                            example: "\"feelingera\" ← feeling + -era" },
+  { key: "clipping",       label: "Clipping",            desc: "A longer word cut short.",                                                   example: "\"grabe\" ← grabado" },
+  { key: "blending",       label: "Blending",            desc: "Two words fused into one.",                                                  example: "\"chillax\" ← chill + relax" },
+  { key: "coinage",        label: "Coinage",             desc: "A brand-new word invented on the internet.",                                 example: "\"lodi\" ← idol (reversed)" },
+  { key: "native",         label: "Native coinage",      desc: "An original Filipino word with no direct English equivalent.",               example: "\"kilig\" (romantic giddiness)" },
+  { key: "semantic_shift", label: "Semantic shift",      desc: "A standard word that took on a new meaning online.",                         example: "\"solid\" now means reliable/great" },
+  { key: "borrowing",      label: "Borrowing",           desc: "A word adopted from another language.",                                      example: "\"werpa\" ← power (Bekimon)" },
+  { key: "jejemon",        label: "Jejemon",             desc: "Deliberate leet-speak letter substitution style.",                           example: "\"eow\" for hi/ow" },
+  { key: "number_syllable",label: "Number-as-syllable",  desc: "Digits replace syllable sounds.",                                            example: "\"su10\" ← sutin, \"gr8\" ← grabe" },
+  { key: "multi_word",     label: "Multi-word phrase",   desc: "A multi-word expression detected as a single slang unit.",                   example: "\"ano ba \'yan\"" },
+];
+
+function FormationGuide({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 340, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex flex-col w-full max-w-lg max-h-[88vh] overflow-hidden
+                   bg-gradient-to-br from-[#0a1424] to-[#070d1a]
+                   border border-white/[.08] shadow-[0_0_80px_-20px_rgba(96,165,250,0.4)]
+                   rounded-t-3xl sm:rounded-3xl"
+      >
+        <div className="sm:hidden flex justify-center pt-2 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
+        </div>
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
+
+        <div className="flex items-center justify-between px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-white/[.06] flex-shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-white/90">Formation Types</h2>
+            <p className="text-xs text-white/45 mt-0.5">How Filipino slang words are built</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full border border-white/[.08] text-white/45
+                       hover:text-white/80 hover:border-white/20 transition-colors
+                       flex items-center justify-center text-lg leading-none"
+          >×</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 px-5 sm:px-7 py-4 space-y-4">
+          {GUIDE_ENTRIES.map(({ key, label, desc, example }) => (
+            <div key={key} className="flex gap-3">
+              <span className="flex-shrink-0 mt-0.5 text-[11px] font-bold uppercase tracking-widest
+                               text-blue-300 bg-blue-500/[.12] border border-blue-400/30
+                               px-2 py-0.5 rounded-md h-fit whitespace-nowrap">
+                {label}
+              </span>
+              <div>
+                <p className="text-sm text-white/75">{desc}</p>
+                <p className="text-xs text-white/40 mt-0.5 italic">{example}</p>
+              </div>
+            </div>
+          ))}
+          <div className="pb-2" />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 function Highlight({ text, q }: { text: string; q: string }) {

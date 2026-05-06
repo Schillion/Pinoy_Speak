@@ -41,7 +41,7 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
           variants={modalContent}
           initial="hidden" animate="show" exit="exit"
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[85vh] overflow-hidden rounded-3xl
+          className="relative flex flex-col w-full max-w-md max-h-[85vh] overflow-hidden rounded-3xl
                      bg-gradient-to-br from-[#0a1424] to-[#070d1a]
                      border border-white/[.08]
                      shadow-[0_0_80px_-20px_rgba(96,165,250,0.4)]"
@@ -51,7 +51,7 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 pointer-events-none"
                style={{ background: "radial-gradient(circle, rgba(96,165,250,0.35), transparent 70%)", filter: "blur(30px)" }} />
 
-          <div className="relative overflow-y-auto max-h-[85vh]">
+          <div className="relative flex-1 overflow-y-auto min-h-0">
             {/* Header */}
             <div className="flex items-start justify-between p-6 pb-4 border-b border-white/[.06]">
               <div>
