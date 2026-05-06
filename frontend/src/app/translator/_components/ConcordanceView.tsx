@@ -362,10 +362,9 @@ export default function ConcordanceView() {
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card overflow-hidden"
+          className="card overflow-x-auto"
         >
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed">
+          <table className="w-full text-sm table-fixed">
               <colgroup>
                 <col style={{ width: "5%" }} />
                 <col style={{ width: "37%" }} />
@@ -426,7 +425,6 @@ export default function ConcordanceView() {
                 ))}
               </tbody>
             </table>
-          </div>
 
           {sorted.length >= 500 && (
             <p className="text-[11px] text-white/30 text-center py-2.5 border-t border-white/[.04]">

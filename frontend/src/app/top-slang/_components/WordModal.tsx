@@ -110,13 +110,13 @@ export default function WordModal({
           initial="hidden" animate="show" exit="exit"
           onClick={(e) => e.stopPropagation()}
           style={anchorStyle ?? undefined}
-          className={`relative overflow-hidden
+          className={`relative flex flex-col
                      bg-gradient-to-br from-[#0a1424] to-[#070d1a]
                      border border-white/[.08]
                      shadow-[0_0_80px_-20px_rgba(167,139,250,0.4)]
                      ${isAnchored
-                        ? "rounded-3xl"
-                        : "w-full max-w-lg max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-3xl"}`}
+                        ? "rounded-3xl overflow-hidden"
+                        : "w-full max-w-lg max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-3xl overflow-hidden"}`}
         >
           {/* Mobile drag indicator — gives the sheet a clear "swipe down to close" affordance */}
           {!isAnchored && (
@@ -128,7 +128,7 @@ export default function WordModal({
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 pointer-events-none"
                style={{ background: "radial-gradient(circle, rgba(167,139,250,0.4), transparent 70%)", filter: "blur(32px)" }} />
 
-          <div className="relative overflow-y-auto max-h-[inherit]">
+          <div className="relative flex-1 overflow-y-auto min-h-0">
             <div className="flex items-start justify-between px-5 sm:px-7 pt-5 sm:pt-7 pb-4 sm:pb-5 border-b border-white/[.06]">
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
