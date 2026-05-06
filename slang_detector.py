@@ -35,18 +35,29 @@ class SlangDetector:
                  model_path: str = "data/social_model.model",
                  data_path: str = "data/corpus.db"):
         console.print("[bold blue]Initializing Slang Detector...[/bold blue]")
-        self.model        = self._load_model(model_path)
-        self.word_freq_map = self._build_frequency_map(data_path)
+        self._data_path    = data_path
+        self.model         = self._load_model(model_path)
+        self._freq_map_cache: pd.DataFrame | None = None
 
     # ------------------------------------------------------------------
     # Initialisation helpers
     # ------------------------------------------------------------------
 
+    @property
+    def word_freq_map(self) -> pd.DataFrame:
+        if self._freq_map_cache is None:
+            self._freq_map_cache = self._build_frequency_map(self._data_path)
+        return self._freq_map_cache
+
+    @word_freq_map.setter
+    def word_freq_map(self, value: pd.DataFrame | None) -> None:
+        self._freq_map_cache = value
+
     def _load_model(self, model_path: str):
         if os.path.exists(model_path):
             console.print(f"Loading model from [cyan]{model_path}[/cyan]")
             try:
-                return FastText.load(model_path)
+                return FastText.load(model_path, mmap='r')
             except Exception as e:
                 console.print(f"[red]Failed to load model: {e}[/red]")
                 return None

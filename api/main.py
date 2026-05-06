@@ -88,8 +88,8 @@ def _continuous_learner() -> None:
                 if _detector and _detector.model is None:
                     # Model missing/corrupt at startup — load now that file exists
                     try:
-                        _detector.model = _FastText.load(_MODEL_PATH)
-                        _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                        _detector.model = _FastText.load(_MODEL_PATH, mmap='r')
+                        _detector.word_freq_map = None  # invalidate; rebuilt lazily on demand
                         try:
                             _detector.classify_word.cache_clear()
                         except AttributeError:
@@ -98,8 +98,8 @@ def _continuous_learner() -> None:
                     except Exception as load_err:
                         print(f"[learner] Model load attempt failed: {load_err}")
                 elif last_model_mtime and m_mtime != last_model_mtime and _detector:
-                    _detector.model = _FastText.load(_MODEL_PATH)
-                    _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                    _detector.model = _FastText.load(_MODEL_PATH, mmap='r')
+                    _detector.word_freq_map = None  # invalidate; rebuilt lazily on demand
                     try:
                         _detector.classify_word.cache_clear()
                     except AttributeError:
@@ -110,8 +110,8 @@ def _continuous_learner() -> None:
                 print("[learner] No model found but corpus exists — training now …")
                 ok = pipeline.train(data_path=_DATA_PATH, model_path=_MODEL_PATH)
                 if ok and os.path.exists(_MODEL_PATH):
-                    _detector.model = _FastText.load(_MODEL_PATH)
-                    _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                    _detector.model = _FastText.load(_MODEL_PATH, mmap='r')
+                    _detector.word_freq_map = None  # invalidate; rebuilt lazily on demand
                     try:
                         _detector.classify_word.cache_clear()
                     except AttributeError:
@@ -133,8 +133,8 @@ def _continuous_learner() -> None:
                 elif c_size - last_corpus_size >= SIZE_DELTA:
                     ok = pipeline.train(data_path=_DATA_PATH, model_path=_MODEL_PATH)
                     if ok and _detector and os.path.exists(_MODEL_PATH):
-                        _detector.model = _FastText.load(_MODEL_PATH)
-                        _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                        _detector.model = _FastText.load(_MODEL_PATH, mmap='r')
+                        _detector.word_freq_map = None  # invalidate; rebuilt lazily on demand
                         try:
                             _detector.classify_word.cache_clear()
                         except AttributeError:
@@ -786,8 +786,8 @@ def train():
     try:
         ok = PinoySpeakPipeline().train(data_path=_DATA_PATH, model_path=_MODEL_PATH)
         if ok and _detector and os.path.exists(_MODEL_PATH):
-            _detector.model = _FastText.load(_MODEL_PATH)
-            _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+            _detector.model = _FastText.load(_MODEL_PATH, mmap='r')
+            _detector.word_freq_map = None  # invalidate; rebuilt lazily on demand
         vocab = len(_detector.model.wv) if _detector and _detector.model else 0
         return {"success": ok, "vocab": vocab}
     except Exception as e:
