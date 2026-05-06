@@ -5,7 +5,9 @@
 # Frontend (not needed for backend deployment)
 frontend/
 
-# Data files (large ML models & corpus — persisted on Fly.io volume after first boot)
+# Data files — only static seed/reference files go into the image.
+# The ML model, corpus DB, and shards live on the Fly.io persistent volume
+# and are never bundled into the Docker image.
 data/
 !data/.gitkeep
 !data/english_words.txt
@@ -13,8 +15,6 @@ data/
 !data/multi_word_slang.json
 !data/slang_seeds.json
 !data/discovered_slang.json
-!data/social_model.model*
-!data/corpus.db
 # Python caches
 __pycache__/
 *.pyc
