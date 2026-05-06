@@ -85,7 +85,19 @@ def _continuous_learner() -> None:
             # ── 1. Hot-reload when model updated externally ──────────────────
             if os.path.exists(_MODEL_PATH):
                 m_mtime = os.path.getmtime(_MODEL_PATH)
-                if last_model_mtime and m_mtime != last_model_mtime and _detector:
+                if _detector and _detector.model is None:
+                    # Model missing/corrupt at startup — load now that file exists
+                    try:
+                        _detector.model = _FastText.load(_MODEL_PATH)
+                        _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                        try:
+                            _detector.classify_word.cache_clear()
+                        except AttributeError:
+                            pass
+                        print("[learner] Model hot-loaded after startup (was missing)")
+                    except Exception as load_err:
+                        print(f"[learner] Model load attempt failed: {load_err}")
+                elif last_model_mtime and m_mtime != last_model_mtime and _detector:
                     _detector.model = _FastText.load(_MODEL_PATH)
                     _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
                     try:
@@ -93,6 +105,18 @@ def _continuous_learner() -> None:
                     except AttributeError:
                         pass
                 last_model_mtime = m_mtime
+            elif not os.path.exists(_MODEL_PATH) and os.path.exists(_DATA_PATH) and _detector and _detector.model is None:
+                # No model at all — train from existing corpus
+                print("[learner] No model found but corpus exists — training now …")
+                ok = pipeline.train(data_path=_DATA_PATH, model_path=_MODEL_PATH)
+                if ok and os.path.exists(_MODEL_PATH):
+                    _detector.model = _FastText.load(_MODEL_PATH)
+                    _detector.word_freq_map = _detector._build_frequency_map(_DATA_PATH)
+                    try:
+                        _detector.classify_word.cache_clear()
+                    except AttributeError:
+                        pass
+                    print("[learner] Model trained and loaded from existing corpus")
 
             # ── 2. Scrape new Reddit posts every SCRAPE_INTERVAL ────────────
             now = _time.time()

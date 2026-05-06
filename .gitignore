@@ -12,6 +12,7 @@ data/*.json
 data/*.model
 data/*.npy
 data/*.txt
+data/shard_*
 !data/.gitkeep
 
 # Migration script (one-time use)
