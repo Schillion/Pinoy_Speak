@@ -23,9 +23,22 @@ COPY --from=builder /app/.venv .venv/
 # Copy application code only (data lives on the persistent volume)
 COPY . .
 
-# Ensure data directory exists (Fly volume mounts here)
+# Bundle the ML model files into a separate path so the Fly.io volume
+# mount at /app/data does NOT shadow them.  The entrypoint copies any
+# missing files from the bundle → volume on first boot.
+RUN if [ -d /app/data ]; then \
+      mkdir -p /app/model_bundle && \
+      cp -n /app/data/social_model.model* /app/model_bundle/ 2>/dev/null || true && \
+      cp -n /app/data/corpus.db           /app/model_bundle/ 2>/dev/null || true && \
+      cp -n /app/data/discovered_slang.json /app/model_bundle/ 2>/dev/null || true; \
+    fi
+
+# Ensure runtime data directory exists (Fly volume mounts here)
 RUN mkdir -p /app/data
+
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["/app/.venv/bin/uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/entrypoint.sh"]

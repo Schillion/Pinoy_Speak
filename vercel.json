@@ -1,2 +1,5 @@
 {
+  "env": {
+    "PYTHON_API_URL": "https://pinoyspeak-project.fly.dev"
+  }
 }

@@ -5,9 +5,16 @@
 # Frontend (not needed for backend deployment)
 frontend/
 
-# Data files (generated at runtime on the persistent volume)
+# Data files (large ML models & corpus — persisted on Fly.io volume after first boot)
+data/
 !data/.gitkeep
-
+!data/english_words.txt
+!data/tagalog_words.txt
+!data/multi_word_slang.json
+!data/slang_seeds.json
+!data/discovered_slang.json
+!data/social_model.model*
+!data/corpus.db
 # Python caches
 __pycache__/
 *.pyc
