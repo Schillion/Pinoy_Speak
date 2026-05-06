@@ -116,7 +116,7 @@ export default function WordModal({
                      shadow-[0_0_80px_-20px_rgba(167,139,250,0.4)]
                      ${isAnchored
                         ? "rounded-3xl overflow-hidden"
-                        : "w-full max-w-lg max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-3xl overflow-hidden"}`}
+                        : "w-full max-w-lg max-h-[78vh] sm:max-h-[88vh] mb-[calc(68px+env(safe-area-inset-bottom))] sm:mb-0 rounded-t-3xl sm:rounded-3xl overflow-hidden"}`}
         >
           {/* Mobile drag indicator — gives the sheet a clear "swipe down to close" affordance */}
           {!isAnchored && (
