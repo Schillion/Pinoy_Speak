@@ -55,7 +55,7 @@ function ModelStatusBanner() {
         <span className="w-3.5 h-3.5 border-2 border-amber-400/30 border-t-amber-300
                          rounded-full animate-spin flex-shrink-0" />
         <span className="flex-1">
-          Backend offline — start the API with <code className="bg-white/[.08] px-1.5 py-0.5 rounded text-amber-100">uvicorn api.main:app --port 8000</code>.
+          Service temporarily unavailable. Please try again in a moment.
         </span>
         <button
           onClick={check}

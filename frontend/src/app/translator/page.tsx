@@ -95,7 +95,7 @@ export default function Translator() {
     try {
       setResult(await analyzeText(input, profanityFilter));
     } catch {
-      setError("Backend offline. Start it with `uvicorn api.main:app --port 8000`.");
+      setError("Service temporarily unavailable. Please try again later.");
     } finally {
       setLoading(false);
     }

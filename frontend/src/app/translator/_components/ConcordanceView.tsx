@@ -108,7 +108,7 @@ export default function ConcordanceView() {
       setPosts(postsData.posts ?? []);
       if (defineData) setWordInfo(defineData);
     } catch {
-      setError("Could not load corpus. Start the backend with `uvicorn api.main:app --port 8000`.");
+      setError("Could not load corpus. Please try again later.");
     } finally {
       setLoading(false);
     }
