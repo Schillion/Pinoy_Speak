@@ -466,9 +466,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (reply == null) {
-    const debugInfo = process.env.NODE_ENV === "development"
-      ? `\n\n⚠️ [DEV — LLM offline] Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`
-      : "";
+    const debugInfo = `\n\n⚠️ [LLM offline] Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`;
     reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon) + debugInfo;
   }
 
