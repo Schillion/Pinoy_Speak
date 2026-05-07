@@ -226,15 +226,16 @@ html[data-theme="light"] .card-hover:hover {
 
 /* Ghost button — dark-mode defaults use white-alpha tints that vanish on white */
 html[data-theme="light"] .btn-ghost {
-  border-color: rgba(15,23,42,0.20) !important;
-  background-color: rgba(15,23,42,0.04) !important;
-  color: rgba(15,23,42,0.70) !important;
+  border-color: rgba(15,23,42,0.30) !important;
+  background-color: #ffffff !important;
+  color: rgba(15,23,42,0.72) !important;
   backdrop-filter: none;
+  box-shadow: 0 1px 4px -1px rgba(15,23,42,0.10);
 }
 html[data-theme="light"] .btn-ghost:hover {
-  border-color: rgba(15,23,42,0.35) !important;
-  background-color: rgba(15,23,42,0.08) !important;
-  color: rgba(15,23,42,0.90) !important;
+  border-color: rgba(15,23,42,0.50) !important;
+  background-color: #f1f5f9 !important;
+  color: rgba(15,23,42,0.92) !important;
 }
 
 /* Inputs */
