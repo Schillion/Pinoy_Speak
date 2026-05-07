@@ -106,7 +106,7 @@ async function callGemini(
     });
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -376,7 +376,7 @@ async function lookupUnknown(word: string): Promise<VerifyResult | null> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ word }),
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) return null;
     return (await res.json()) as VerifyResult;
