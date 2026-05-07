@@ -74,6 +74,28 @@ _STANDARD_FIL_BLOCKLIST: frozenset[str] = frozenset({
     "ba",        # question particle — not slang
     "na",        # already / now particle — not slang
     "pa",        # still/yet particle — not slang
+    "muna",      # "first/for now" — fundamental Filipino adverb/particle
+    "sayo",      # "to you/yours" — standard Tagalog pronoun contraction (sa + iyo)
+    "natin",     # "ours (inclusive)" — standard pronoun
+    "namin",     # "ours (exclusive)" — standard pronoun
+    "niyo",      # "your (plural)" — standard pronoun
+    "niya",      # "his/her/its" — standard pronoun
+    "sana",      # "hopefully/I wish" — standard Filipino expression
+    "para",      # "for/in order to" — standard preposition
+    "kung",      # "if/when" — standard conjunction
+    "pag",       # "when/if" — standard conjunction
+    "kapag",     # "when/if" — standard conjunction
+    "dahil",     # "because" — standard conjunction
+    "kahit",     # "even if/though" — standard conjunction
+    "hanggang",  # "until/up to" — standard preposition
+    "habang",    # "while" — standard conjunction
+    "bagay",     # "suitable/fitting" — standard adjective/verb
+    "tapos",     # "then/after/done" — standard conjunction/adjective
+    "parang",    # "like/seems" — standard comparative particle
+    "siguro",    # "maybe/probably" — standard adverb
+    "mismo",     # "exactly/itself" — standard adverb
+    "lahat",     # "everyone/everything/all" — standard pronoun
+    "talagang",  # inflected form of talaga — still standard
 })
 
 import spacy

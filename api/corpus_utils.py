@@ -22,6 +22,10 @@ _STOP_WORDS = {
     'sobrang','talaga','grabe','naman','kasi','kahit','hanggang','habang',
     'dahil','ngayon','gawa','gabi','umaga','hapon','tanghali','bukas','kahapon',
     'taon','araw','bata','tao','lugar','bahay','puso','isip','buhay',
+    # High-frequency standard Tagalog particles / pronouns / conjunctions
+    'muna','sayo','natin','namin','niyo','niya','sana','para','kung',
+    'pag','kapag','tapos','parang','siguro','mismo','lahat','talagang',
+    'bagay','mismo','talaga','ngayon','yun','iyon','ito','yan','doon',
 }
 
 _RE_WORD = re.compile(r"\b[a-z]{3,}\b")

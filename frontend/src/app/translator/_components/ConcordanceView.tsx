@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchPosts, fetchDefine } from "@/lib/api";
 import { FORMATION_LABELS } from "@/lib/slang-data";
@@ -89,6 +89,13 @@ export default function ConcordanceView() {
   const [error,       setError]       = useState("");
   const [contextSize, setContextSize] = useState<number>(8);
   const [sortMode,    setSortMode]    = useState<SortMode>("none");
+  const [showBackTop, setShowBackTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleSearch = useCallback(async () => {
     const kw = input.trim().toLowerCase();
@@ -440,6 +447,28 @@ export default function ConcordanceView() {
           )}
         </motion.div>
       )}
+
+      <AnimatePresence>
+        {showBackTop && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-[calc(80px+env(safe-area-inset-bottom))] sm:bottom-8 right-4 sm:right-6
+                       z-40 w-10 h-10 rounded-full
+                       bg-blue-500/80 hover:bg-blue-500 backdrop-blur-sm
+                       border border-blue-400/40
+                       shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)]
+                       text-white flex items-center justify-center
+                       transition-colors"
+            aria-label="Back to top"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {!keyword && !loading && (
         <motion.div
