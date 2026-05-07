@@ -661,6 +661,12 @@ def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
     if not word or " " in word or len(word) < 2 or len(word) > 40:
         return {"is_slang": False, "reason": "invalid word"}
 
+    # Standard Filipino/English words are never slang — skip LLM entirely.
+    # is_standard_word returns False for words in AMBIGUOUS_SLANG_SEEDS (genuine
+    # ambiguous words like "grabe", "solid"), so this gate won't block them.
+    if is_standard_word(word):
+        return {"is_slang": False, "reason": "standard_word"}
+
     # Already known — no need to verify
     if word in KNOWN_SLANG or word in SEED_LEXICON:
         meta = SEED_LEXICON.get(word, {})
