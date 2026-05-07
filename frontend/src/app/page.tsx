@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Sector, Brush, CartesianGrid,
+  PieChart, Pie, Cell, Sector, CartesianGrid,
 } from "recharts";
 import MetricCard from "@/components/MetricCard";
 import TiltCard from "@/components/TiltCard";
@@ -552,24 +552,6 @@ export default function Home() {
                 labelStyle={{ color: "#e2e8f0", fontWeight: 500 }}
                 itemStyle={{ color: "#e2e8f0" }}
               />
-              <Brush
-                dataKey="day"
-                height={22}
-                stroke="rgba(96,165,250,0.35)"
-                fill="rgba(7,14,28,0.4)"
-                travellerWidth={8}
-                tickFormatter={tickFormatter}
-                startIndex={zoomDom ? zoomIndices()[0] : 0}
-                endIndex={zoomDom ? zoomIndices()[1] : Math.max(0, trendData.length - 1)}
-                onChange={(e: any) => {
-                  if (!e || typeof e.startIndex !== 'number' || typeof e.endIndex !== 'number') return;
-                  if (e.startIndex === 0 && e.endIndex >= trendData.length - 1) {
-                    setZoomDom(null);
-                  } else {
-                    setZoomDom([trendData[e.startIndex].day, trendData[e.endIndex].day]);
-                  }
-                }}
-              />
               {topWords.map((w, i) => (
                 <Area key={w.word} type="monotone" dataKey={w.word}
                       stroke={COLORS[i % COLORS.length]}
@@ -581,17 +563,6 @@ export default function Home() {
               ))}
             </AreaChart>
           </ResponsiveContainer>
-          {/* Brush hint — shown below the timeline strip so users know it's draggable */}
-          <div className="flex items-center justify-center gap-1.5 mt-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                 className="text-white/35">
-              <path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4" />
-            </svg>
-            <p className="text-[10px] text-white/35 italic">
-              Drag the handles on the strip above to zoom into a time range · scroll the chart to pan
-            </p>
-          </div>
           </div>
         </motion.div>
 

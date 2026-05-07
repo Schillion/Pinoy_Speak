@@ -132,12 +132,14 @@ class SlangDetector:
             is_known_tagalog,
         )
         clean_word = clean(word)
-        if clean_word in AMBIGUOUS_SLANG_SEEDS:
-            return False
+        # Blocklist/prefix take priority over AMBIGUOUS_SLANG_SEEDS — a word
+        # that was mistakenly auto-learned must not override these hard rules.
         if clean_word in _STANDARD_FIL_BLOCKLIST:
             return True
         if _STANDARD_FIL_PREFIX_RE.match(clean_word):
             return True
+        if clean_word in AMBIGUOUS_SLANG_SEEDS:
+            return False
         # Stable, widely-seen word in our own corpus → almost certainly a real
         # word we just don't have a dictionary for. Threshold deliberately
         # leaves a wide grey zone (≈100–300 count, ≈30–50 days) for the LLM
@@ -258,6 +260,13 @@ class SlangDetector:
             return "unknown", "Model not loaded — run automate.py to train."
 
         clean_word = clean(word)
+
+        # 0. Hard blocklist / morphological prefix — wins over everything including
+        # the lexicon. Prevents auto-learned standard words (sobrang, kagabi, etc.)
+        # from being returned as slang even if they ended up in KNOWN_SLANG.
+        from dictionary_service import _STANDARD_FIL_BLOCKLIST, _STANDARD_FIL_PREFIX_RE
+        if clean_word in _STANDARD_FIL_BLOCKLIST or _STANDARD_FIL_PREFIX_RE.match(clean_word):
+            return "standard", "Standard Filipino word — not slang."
 
         # 1. Profanity check first (ethical gate)
         if is_profane(clean_word):

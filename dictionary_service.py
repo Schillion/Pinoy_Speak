@@ -115,11 +115,9 @@ def _merge_entry(word: str, meta: dict, overwrite: bool = False) -> None:
         FORMATION_TYPE[word] = meta["formation_type"]
     if meta.get("plain") and (overwrite or word not in PLAIN_WORD):
         PLAIN_WORD[word] = meta["plain"]
-    if meta.get("is_ambiguous", False):
-        AMBIGUOUS_SLANG_SEEDS.add(word)
-    else:
-        # Genuine novel coinages also go into the seed set so _is_standard_cleaned
-        # returns False for them (they're not standard words).
+    # Never seed standard/blocklisted words — they should stay standard even if
+    # the auto-learn pipeline mistakenly tries to add them.
+    if word not in _STANDARD_FIL_BLOCKLIST and not _STANDARD_FIL_PREFIX_RE.match(word):
         AMBIGUOUS_SLANG_SEEDS.add(word)
     # Alias registration — each alias resolves back to the canonical entry,
     # so char/chariz/chz all share charot's definition + plain translation.
@@ -502,14 +500,14 @@ def _check_english_api(word: str) -> bool:
 
 @lru_cache(maxsize=MAX_CACHE_SIZE)
 def _is_standard_cleaned(clean_word: str) -> bool:
-    if clean_word in AMBIGUOUS_SLANG_SEEDS:
-        return False
-    # Explicit blocklist of words commonly misclassified as slang.
+    # Blocklist and prefix regex take priority — even if the word was
+    # auto-learned and added to AMBIGUOUS_SLANG_SEEDS, these hard rules win.
     if clean_word in _STANDARD_FIL_BLOCKLIST:
         return True
-    # Standard Filipino morphological conjugations (naka-, nakaka-, napaka-, …)
     if _STANDARD_FIL_PREFIX_RE.match(clean_word):
         return True
+    if clean_word in AMBIGUOUS_SLANG_SEEDS:
+        return False
     if not NLP(clean_word)[0].is_oov:
         return True
     # Real Tagalog words (e.g. "kagabi" = "last night") were getting flagged
