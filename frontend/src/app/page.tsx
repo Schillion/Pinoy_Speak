@@ -73,6 +73,14 @@ export default function Home() {
   // Wheel-zoom + drag-to-pan state for the area chart
   const [zoomDom, setZoomDom] = useState<[string, string] | null>(null);
   const [hoverDay, setHoverDay] = useState<string | null>(null);
+  const [hiddenWords, setHiddenWords] = useState(new Set<string>());
+  const toggleWord = useCallback((word: string) => {
+    setHiddenWords((prev) => {
+      const next = new Set(prev);
+      next.has(word) ? next.delete(word) : next.add(word);
+      return next;
+    });
+  }, []);
   // Active drag — pixel-anchored. Using data coordinates fails because the
   // chart's visible domain shifts mid-drag (when we call setZoomDom), which
   // means the same screen pixel maps to a different `activeLabel` after each
@@ -107,11 +115,12 @@ export default function Home() {
       .catch(() => null);
   }, [topN]);
 
-  // Reset zoom when the underlying range or word count changes
+  // Reset zoom + hidden-word filter when the underlying range or word count changes
   useEffect(() => {
     setZoomDom(null);
     panRef.current = null;
     setPanning(false);
+    setHiddenWords(new Set());
   }, [range, topN]);
 
   // Real per-day trends fetched from the backend's word_freq_map. Falls
@@ -424,21 +433,37 @@ export default function Home() {
               </div>
             </div>
           </div>
-          {/* Word legend — explicit color → word mapping so readers don't
-              confuse this with the categorical Language Mix donut beside it. */}
+          {/* Word legend — click to toggle a series on/off */}
           {topWords.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 mb-3 overflow-x-auto">
-              {topWords.map((w, i) => (
-                <div key={w.word} className="flex items-center gap-1.5">
-                  <span
-                    className="w-3 h-3 rounded-sm"
-                    style={{ background: COLORS[i % COLORS.length] }}
-                  />
-                  <span className="text-xs text-white/70 font-medium tracking-tight">
-                    {w.word}
-                  </span>
-                </div>
-              ))}
+              {topWords.map((w, i) => {
+                const hidden = hiddenWords.has(w.word);
+                return (
+                  <button
+                    key={w.word}
+                    onClick={() => toggleWord(w.word)}
+                    title={hidden ? `Show ${w.word}` : `Hide ${w.word}`}
+                    className={`flex items-center gap-1.5 transition-opacity hover:opacity-80
+                                ${hidden ? "opacity-30" : "opacity-100"}`}
+                  >
+                    <span
+                      className="w-6 h-[3px] rounded-full flex-shrink-0"
+                      style={{ background: COLORS[i % COLORS.length] }}
+                    />
+                    <span className="text-xs text-white/70 font-medium tracking-tight">
+                      {w.word}
+                    </span>
+                  </button>
+                );
+              })}
+              {hiddenWords.size > 0 && (
+                <button
+                  onClick={() => setHiddenWords(new Set())}
+                  className="text-[10px] text-white/30 hover:text-white/60 transition-colors ml-1"
+                >
+                  show all
+                </button>
+              )}
             </div>
           )}
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -542,25 +567,45 @@ export default function Home() {
                      type="category" />
               <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.4)" }} width={24} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{
-                  background: "rgba(7,14,28,0.9)",
-                  backdropFilter: "blur(12px)",
-                  border: "1px solid rgba(96,165,250,0.2)",
-                  borderRadius: 12,
-                  boxShadow: "0 0 30px -8px rgba(96,165,250,0.35)",
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const items = (payload as Array<{ name: string; value: number; color: string }>)
+                    .filter((p) => p.value > 0);
+                  if (items.length === 0) return null;
+                  return (
+                    <div style={{
+                      background: "rgba(7,14,28,0.96)",
+                      backdropFilter: "blur(12px)",
+                      border: "1px solid rgba(96,165,250,0.2)",
+                      borderRadius: 12,
+                      padding: "10px 14px",
+                      boxShadow: "0 0 30px -8px rgba(96,165,250,0.35)",
+                      minWidth: 130,
+                    }}>
+                      <p style={{ color: "rgba(226,232,240,0.55)", fontSize: 11, marginBottom: 8 }}>{String(label)}</p>
+                      {items.map(({ name, value, color }) => (
+                        <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ display: "inline-block", width: 20, height: 3, borderRadius: 99, background: color, flexShrink: 0 }} />
+                          <span style={{ color: "rgba(226,232,240,0.85)", fontSize: 12, flex: 1 }}>{name}</span>
+                          <span style={{ color: "rgba(226,232,240,0.55)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
                 }}
-                labelStyle={{ color: "#e2e8f0", fontWeight: 500 }}
-                itemStyle={{ color: "#e2e8f0" }}
               />
-              {topWords.map((w, i) => (
-                <Area key={w.word} type="monotone" dataKey={w.word}
-                      stroke={COLORS[i % COLORS.length]}
-                      fill={`url(#grad-${i % COLORS.length})`}
-                      strokeWidth={2.5}
-                      activeDot={{ r: 4, strokeWidth: 0, fill: COLORS[i % COLORS.length] }}
-                      animationDuration={1200}
-                      animationEasing="ease-out" />
-              ))}
+              {topWords.map((w, i) => {
+                if (hiddenWords.has(w.word)) return null;
+                return (
+                  <Area key={w.word} type="monotone" dataKey={w.word}
+                        stroke={COLORS[i % COLORS.length]}
+                        fill={`url(#grad-${i % COLORS.length})`}
+                        strokeWidth={2.5}
+                        activeDot={{ r: 4, strokeWidth: 0, fill: COLORS[i % COLORS.length] }}
+                        animationDuration={1200}
+                        animationEasing="ease-out" />
+                );
+              })}
             </AreaChart>
           </ResponsiveContainer>
           </div>

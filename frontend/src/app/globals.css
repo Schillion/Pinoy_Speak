@@ -212,7 +212,12 @@ html[data-theme="light"] .card {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-/* MetricCard: solid white, no backdrop blur that would show the mesh gradient */
+/* MetricCard dark mode — opaque dark surface prevents purple mesh bleeding through glass */
+.metric-card {
+  background: rgba(8, 14, 28, 0.94) !important;
+  background-image: none !important;
+}
+/* MetricCard light mode: solid white, no backdrop blur */
 html[data-theme="light"] .metric-card {
   background: #ffffff !important;
   background-image: none !important;
