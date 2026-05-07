@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { LexiconEntry } from "@/types";
 
+export const maxDuration = 30; // Vercel: allow up to 30s (default 10s is too tight)
+
 const PY = process.env.PYTHON_API_URL ?? "http://localhost:8000";
 
 // ── Lexicon cache (5-minute TTL) ──────────────────────────────────────────────
@@ -14,7 +16,7 @@ async function getLexicon(): Promise<Record<string, LexiconEntry>> {
   }
   try {
     const res = await fetch(`${PY}/lexicon`, {
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(3000),
       cache: "no-store",
     });
     if (res.ok) {
