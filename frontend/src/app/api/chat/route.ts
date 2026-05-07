@@ -70,9 +70,10 @@ async function callGroq(
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
-        ...messages.map((m) => ({
+        ...messages.slice(-10).map((m: { role: string; content: string }) => ({
           role: m.role === "assistant" ? "assistant" : "user",
-          content: m.content,
+          // Truncate individual messages to 800 chars to prevent runaway context
+          content: String(m.content).slice(0, 800),
         })),
       ],
       max_tokens: 512,
@@ -94,9 +95,10 @@ async function callGemini(
   if (!apiKey) throw new Error("No GEMINI_API_KEY");
 
   const contents = messages
-    .map((m) => ({
+    .slice(-10)
+    .map((m: { role: string; content: string }) => ({
       role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
+      parts: [{ text: String(m.content).slice(0, 800) }],
     }))
     .filter((_, i, arr) => {
       const firstUser = arr.findIndex((m) => m.role === "user");
