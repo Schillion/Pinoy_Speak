@@ -476,7 +476,7 @@ export default function Home() {
           <div ref={chartWrapRef} style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart
-              data={trendData}
+              data={zoomDom ? trendData.slice(zoomIndices()[0], zoomIndices()[1] + 1) : trendData}
               margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
               onMouseDown={(e) => {
                 if (!e || trendData.length === 0) return;

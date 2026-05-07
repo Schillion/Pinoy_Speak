@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useMotionTemplate, useSpring } from "framer-motion";
 import { useRef, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import AnimatedNumber from "./AnimatedNumber";
 
 interface Props {
@@ -26,6 +27,8 @@ function isNumeric(v: string | number): boolean {
 }
 
 export default function MetricCard({ label, value, sub, onClick, accent = "blue" }: Props) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const a = ACCENTS[accent];
   const numeric = isNumeric(value);
   const numVal = numeric
@@ -74,6 +77,7 @@ export default function MetricCard({ label, value, sub, onClick, accent = "blue"
       style={interactive
         ? { rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 1000 }
         : undefined}
+      style={isLight ? { background: "#ffffff", backdropFilter: "none", WebkitBackdropFilter: "none" } : undefined}
       className={`card metric-card relative overflow-hidden rounded-2xl p-5
                   transition-colors duration-300 group
                   ${interactive ? "cursor-pointer hover:border-white/25" : ""}`}
