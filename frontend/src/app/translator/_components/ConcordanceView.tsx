@@ -302,23 +302,30 @@ export default function ConcordanceView() {
                 <span className="text-white font-semibold">{freqPer1k}</span>{" "}
                 per 1,000 words in corpus
               </span>
+              {formationLabel && (
+                <span className="text-[11px] text-blue-200 bg-blue-500/[.12] border
+                                 border-blue-400/30 px-2 py-0.5 rounded-md">
+                  {formationLabel}
+                </span>
+              )}
+              {wordInfo?.plain && (
+                <span className="text-[11px] text-white/40 italic">
+                  ≈ {wordInfo.plain}
+                </span>
+              )}
             </div>
           ) : (
             <p className="text-sm text-white/40">
               No occurrences of &ldquo;{keyword}&rdquo; found in the corpus.
+              {wordInfo && (
+                <span className="ml-2 text-white/30 text-xs">
+                  (word is in the dictionary
+                  {wordInfo.plain ? ` — ≈ ${wordInfo.plain}` : ""}
+                  {formationLabel ? `, ${formationLabel}` : ""}
+                  )
+                </span>
+              )}
             </p>
-          )}
-
-          {formationLabel && (
-            <span className="text-[11px] text-blue-200 bg-blue-500/[.12] border
-                             border-blue-400/30 px-2 py-0.5 rounded-md">
-              {formationLabel}
-            </span>
-          )}
-          {wordInfo?.plain && (
-            <span className="text-[11px] text-white/40 italic">
-              ≈ {wordInfo.plain}
-            </span>
           )}
         </motion.div>
       )}
@@ -364,7 +371,7 @@ export default function ConcordanceView() {
           transition={{ delay: 0.1 }}
           className="card overflow-x-auto"
         >
-          <table className="w-full text-sm table-fixed">
+          <table className="w-full min-w-[640px] text-sm table-fixed">
               <colgroup>
                 <col style={{ width: "5%" }} />
                 <col style={{ width: "37%" }} />
