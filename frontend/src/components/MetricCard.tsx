@@ -74,7 +74,7 @@ export default function MetricCard({ label, value, sub, onClick, accent = "blue"
       style={interactive
         ? { rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 1000 }
         : undefined}
-      className={`card relative overflow-hidden rounded-2xl p-5
+      className={`card metric-card relative overflow-hidden rounded-2xl p-5
                   transition-colors duration-300 group
                   ${interactive ? "cursor-pointer hover:border-white/25" : ""}`}
     >
