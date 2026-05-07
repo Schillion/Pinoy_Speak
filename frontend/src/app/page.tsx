@@ -273,6 +273,11 @@ export default function Home() {
             Baños — combining FastText embeddings, calamanCy NLP, and free LLM APIs to
             keep a living, self-updating dictionary of how Filipinos really speak online.
           </p>
+          <p className="text-xs text-white/35 mt-2">
+            <span className="font-medium text-white/55">Data sources:</span>{" "}
+            Posts are scraped from Filipino communities on Reddit (r/Tagalog, r/Philippines, r/AskPilipinas, r/Pilipinas).
+            New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
+          </p>
         </div>
       </motion.div>
 
@@ -352,7 +357,7 @@ export default function Home() {
               <MetricCard
                 label="Posts collected"
                 value={stats?.total_posts ?? 0}
-                sub="From Filipino subreddits"
+                sub="r/Tagalog · r/Philippines · r/AskPilipinas"
                 accent="cyan"
               />
             </motion.div>
@@ -576,9 +581,17 @@ export default function Home() {
               ))}
             </AreaChart>
           </ResponsiveContainer>
-          <p className="hidden sm:block text-[10px] text-white/30 text-center mt-1 italic">
-            Drag the strip above ↑ to navigate the time range
-          </p>
+          {/* Brush hint — shown below the timeline strip so users know it's draggable */}
+          <div className="flex items-center justify-center gap-1.5 mt-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                 className="text-white/35">
+              <path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4" />
+            </svg>
+            <p className="text-[10px] text-white/35 italic">
+              Drag the handles on the strip above to zoom into a time range · scroll the chart to pan
+            </p>
+          </div>
           </div>
         </motion.div>
 

@@ -22,7 +22,8 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const [showGuide, setShowGuide] = useState(false);
   const [sweeping,  setSweeping]  = useState(false);
   const [importing, setImporting] = useState(false);
-  const [growMsg,   setGrowMsg]   = useState<string | null>(null);
+  const [growMsg,     setGrowMsg]     = useState<string | null>(null);
+  const [showSources, setShowSources] = useState(false);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const growMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showBackTop, setShowBackTop] = useState(false);
@@ -32,6 +33,20 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!showSources) return;
+    const close = (e: MouseEvent) => {
+      setShowSources(false);
+      e.stopPropagation();
+    };
+    // Delay so the opening click doesn't immediately close the popover
+    const id = setTimeout(() => document.addEventListener("click", close, { capture: true }), 10);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("click", close, { capture: true });
+    };
+  }, [showSources]);
 
   useEffect(() => () => {
     if (growMsgTimer.current) clearTimeout(growMsgTimer.current);
@@ -203,6 +218,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
 
         {/* Grow-the-dictionary actions */}
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative">
           <button
             onClick={runImport}
             disabled={importing || sweeping}
@@ -228,6 +244,51 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
               </>
             )}
           </button>
+          {/* Sources info icon */}
+          <button
+            onClick={() => setShowSources((v) => !v)}
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full
+                       bg-white/[.08] border border-white/[.15]
+                       text-[9px] text-white/45 hover:text-white/80 hover:bg-white/[.15]
+                       flex items-center justify-center transition-colors"
+            aria-label="Show import sources"
+          >ℹ</button>
+          <AnimatePresence>
+            {showSources && (
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full mt-1 left-0 z-50 w-72
+                           bg-[#0a1224]/95 backdrop-blur-xl rounded-xl p-3
+                           border border-white/[.10]
+                           shadow-[0_12px_30px_-8px_rgba(0,0,0,0.6)]"
+              >
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-2">
+                  Import from web — sources checked
+                </p>
+                <ul className="space-y-1.5 text-[12px] text-white/70">
+                  <li className="flex items-start gap-2">
+                    <span className="text-orange-300 mt-0.5">●</span>
+                    <span><span className="text-white/85 font-medium">Reddit threads</span> — r/Tagalog, r/Philippines slang lists (direct URLs, no search auth needed)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 mt-0.5">●</span>
+                    <span><span className="text-white/85 font-medium">Wikipedia</span> — Philippine English article</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-300 mt-0.5">●</span>
+                    <span><span className="text-white/85 font-medium">LLM brainstorm</span> — Gemini / Groq asked to suggest slang <em>not</em> already in the dictionary</span>
+                  </li>
+                </ul>
+                <p className="text-[11px] text-white/30 mt-2 pt-2 border-t border-white/[.06]">
+                  Each candidate is verified by the LLM before being added.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          </div>
           <button
             onClick={runSweep}
             disabled={sweeping || importing}
