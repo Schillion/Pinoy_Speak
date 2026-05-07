@@ -126,10 +126,18 @@ class SlangDetector:
         have a dictionary for. For code-switched tokens we fall back to the
         English dictionary API (lru-cached, may also fail closed on network).
         """
-        from dictionary_service import AMBIGUOUS_SLANG_SEEDS, _check_english_api
+        from dictionary_service import (
+            AMBIGUOUS_SLANG_SEEDS, _check_english_api,
+            _STANDARD_FIL_BLOCKLIST, _STANDARD_FIL_PREFIX_RE,
+            is_known_tagalog,
+        )
         clean_word = clean(word)
         if clean_word in AMBIGUOUS_SLANG_SEEDS:
             return False
+        if clean_word in _STANDARD_FIL_BLOCKLIST:
+            return True
+        if _STANDARD_FIL_PREFIX_RE.match(clean_word):
+            return True
         # Stable, widely-seen word in our own corpus → almost certainly a real
         # word we just don't have a dictionary for. Threshold deliberately
         # leaves a wide grey zone (≈100–300 count, ≈30–50 days) for the LLM
@@ -137,6 +145,8 @@ class SlangDetector:
         # than silently filter out real slang.
         if (self._word_corpus_count(clean_word) >= 300
                 and self._word_days_present(clean_word) >= 50):
+            return True
+        if is_known_tagalog(clean_word):
             return True
         return _check_english_api(clean_word)
 

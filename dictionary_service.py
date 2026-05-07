@@ -18,6 +18,64 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def clean(word: str) -> str:
     return word.lower().strip(_STRIP_CHARS)
 
+
+# ---------------------------------------------------------------------------
+# Standard Filipino morphological patterns
+# ---------------------------------------------------------------------------
+# Filipino is an agglutinative language — standard words are heavily affixed.
+# Words following these patterns are regular conjugations/derivations, NOT slang:
+#
+#   naka-    stative/perfective aspect of Actor-Focus verbs
+#             nakapunta (went), nakaalis (left), nakakain (ate)
+#   nakaka-  experiential aspect (nakakahiya, nakakagigil, nakakatawa)
+#   napaka-  superlative intensifier — napakaganda, napakabuti
+#   pinaka-  most/superlative — pinakamahusay, pinakamabait
+#   maka-    abilitative — makatulog, makarating
+#   naipa-   involuntary perfective — naipaliwanag, naipasok
+#   nagpa-   causative completed — nagpatulog, nagpaaral
+#   nagpaka- intensive causative — nagpakamatay
+#   mapag-   agentive adj — mapagmahal, mapagbigay
+#
+# Minimum root length (4 chars after the prefix) keeps very short combos from
+# matching accidental false positives.
+_STANDARD_FIL_PREFIX_RE = re.compile(
+    r'^(?:'
+    r'naka[a-z]{4,}'          # nakapunta, nakaalis, nakakita
+    r'|nakaka[a-z]{3,}'       # nakakahiya, nakakagigil
+    r'|naipag[a-z]{3,}'       # naipagawa, naipagkaloob
+    r'|naipa[a-z]{3,}'        # naipaliwanag, naipasok
+    r'|napaka[a-z]{3,}'       # napakaganda, napakabuti
+    r'|pinaka[a-z]{3,}'       # pinakamahusay, pinakamagaling
+    r'|nagpaka[a-z]{3,}'      # nagpakamatay, nagpakabait
+    r'|nagpa[a-z]{3,}'        # nagpatulog, nagpaaral
+    r'|mapag[a-z]{3,}'        # mapagmahal, mapagbigay
+    r'|makapag[a-z]{3,}'      # makapagsalita, makapag-aral
+    r'|maka[a-z]{4,}'         # makatulog, makarating
+    r')$'
+)
+
+# Hard blocklist — words the ML model repeatedly misclassifies as slang despite
+# being standard Filipino. Extend as new false positives are discovered.
+_STANDARD_FIL_BLOCKLIST: frozenset[str] = frozenset({
+    # Common Filipino words that look "novel" to English-only NLP
+    "nakapunta", "nakaalis", "nakakain", "nakatulog", "nakakita",
+    "nakabalik", "nakapasok", "nakaupo", "nakatayo", "nakalakad",
+    "nakasulat", "nakainom", "nakabasa",
+    "sobrang",   # standard intensifier (from Spanish "sobra"), not slang
+    "talaga",    # "really/truly" — fundamental Filipino adverb
+    "naman",     # discourse particle — not slang
+    "pala",      # discovery particle — not slang
+    "kasi",      # "because" — not slang
+    "lang",      # "just/only" — not slang
+    "din", "rin", # "also/too" — not slang
+    "daw", "raw", # reported speech particle — not slang
+    "nga",       # emphatic particle — not slang
+    "po", "ho",  # honorific particles — not slang
+    "ba",        # question particle — not slang
+    "na",        # already / now particle — not slang
+    "pa",        # still/yet particle — not slang
+})
+
 import spacy
 
 # --- calamancy MODEL LOADING ---
@@ -446,6 +504,12 @@ def _check_english_api(word: str) -> bool:
 def _is_standard_cleaned(clean_word: str) -> bool:
     if clean_word in AMBIGUOUS_SLANG_SEEDS:
         return False
+    # Explicit blocklist of words commonly misclassified as slang.
+    if clean_word in _STANDARD_FIL_BLOCKLIST:
+        return True
+    # Standard Filipino morphological conjugations (naka-, nakaka-, napaka-, …)
+    if _STANDARD_FIL_PREFIX_RE.match(clean_word):
+        return True
     if not NLP(clean_word)[0].is_oov:
         return True
     # Real Tagalog words (e.g. "kagabi" = "last night") were getting flagged
