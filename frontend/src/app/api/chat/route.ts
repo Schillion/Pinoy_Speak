@@ -223,8 +223,14 @@ function buildFallbackResponse(
     return `Ako si Kuya Slang — your Filipino slang tutor on PinoySpeak! 🤙\n\nI know ${allWords.length} words. Ask me about one, or say "quiz me" to play!`;
   }
 
-  const samples = [pickRandom(allWords), pickRandom(allWords), pickRandom(allWords)];
-  return `Hindi ko gets, pero keri lang! 😄 Try asking about a specific slang word like "solid", "bet", or "kilig" — or say "quiz me" to play a quick game!\n\nI know: ${samples.join(", ")}, and ${allWords.length - 3} more.`;
+  if (allWords.length === 0) {
+    return `Hindi ko gets right now, and the dictionary is still loading. Try again in a moment — or ask me about "grabe", "lodi", or "kilig"!`;
+  }
+  const samples = allWords.length >= 3
+    ? [pickRandom(allWords), pickRandom(allWords), pickRandom(allWords)]
+    : allWords.slice(0, allWords.length);
+  const extra = allWords.length > samples.length ? `, and ${allWords.length - samples.length} more` : "";
+  return `Hindi ko gets, pero keri lang! 😄 Try asking about a specific slang word like "solid", "bet", or "kilig" — or say "quiz me" to play a quick game!\n\nI know: ${samples.join(", ")}${extra}.`;
 }
 
 // ── Log user message to training corpus (fire-and-forget) ────────────────────
@@ -529,9 +535,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (reply == null) {
-    const err = `Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"} | Ollama: ${ollamaErr || (process.env.OLLAMA_URL ? "ok" : "not configured")}`;
-    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon)
-      + `\n\n⚠️ ${err}`;
+    const allErrs = [groqErr, geminiErr, ollamaErr].join(" ");
+    const isRateLimit = /429|rate.?limit|quota.?exceed|RESOURCE_EXHAUSTED|tokens.?per.?day/i.test(allErrs);
+    const fallback = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
+    const note = isRateLimit
+      ? "\n\n⚠️ The AI hit its daily free-tier limit — answering from the local dictionary for now. Full AI responses reset tomorrow."
+      : "\n\n⚠️ AI is temporarily unavailable — answering from the local dictionary.";
+    reply = fallback + note;
   }
 
   // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured.
