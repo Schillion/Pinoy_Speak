@@ -125,6 +125,36 @@ async function callGemini(
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "Ay, wala akong masabi ngayon. Try again!";
 }
 
+// ── Ollama — local / self-hosted fallback ─────────────────────────────────────
+async function callOllama(
+  messages: { role: string; content: string }[],
+  systemPrompt: string,
+): Promise<string> {
+  const base  = (process.env.OLLAMA_URL ?? "http://localhost:11434").replace(/\/$/, "");
+  const model = process.env.OLLAMA_MODEL ?? "llama3.2";
+
+  const res = await fetch(`${base}/v1/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages.slice(-10).map((m: { role: string; content: string }) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content).slice(0, 800),
+        })),
+      ],
+      stream: false,
+    }),
+    signal: AbortSignal.timeout(25_000),
+  });
+
+  if (!res.ok) throw new Error(`Ollama error ${res.status}`);
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? "Ay, wala akong masabi ngayon. Try again!";
+}
+
 // ── Rule-based fallback ───────────────────────────────────────────────────────
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -442,6 +472,7 @@ export async function POST(req: NextRequest) {
   let reply: string | null = null;
   let groqErr = "";
   let geminiErr = "";
+  let ollamaErr = "";
 
   if (process.env.GROQ_API_KEY) {
     try {
@@ -464,18 +495,25 @@ export async function POST(req: NextRequest) {
     }
   } else if (reply == null) {
     geminiErr = "GEMINI_API_KEY not set";
-    console.warn("[chat] GEMINI_API_KEY not set — using fallback");
+  }
+
+  if (reply == null && process.env.OLLAMA_URL) {
+    try {
+      reply = await callOllama(messages, systemPrompt);
+    } catch (err) {
+      ollamaErr = String(err);
+      console.error("[chat] Ollama failed:", ollamaErr);
+    }
   }
 
   if (reply == null) {
-    const err = `Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`;
+    const err = `Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"} | Ollama: ${ollamaErr || (process.env.OLLAMA_URL ? "ok" : "not configured")}`;
     reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon)
       + `\n\n⚠️ ${err}`;
   }
 
-  // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured;
-  // skip when we're on the rule-based fallback (it just echoes the lexicon).
-  if (last?.role === "user" && (process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY)) {
+  // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured.
+  if (last?.role === "user" && (process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OLLAMA_URL)) {
     autoLearn(last.content, reply, lexicon).catch(() => {});
   }
 
