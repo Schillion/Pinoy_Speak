@@ -120,7 +120,24 @@ html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] {
 html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] .text-white\/35 { color: rgba(15,23,42,0.5); }
 html[data-theme="light"] aside[data-sidebar] [class*="bg-\[\#0a1224\]"] .text-white\/65 { color: #0f172a; }
 
-/* Re-tone the white-alpha text utilities to dark text on light surfaces (High Contrast) */
+/* Dark mode text contrast clamp (Senior Friendly Accessibility) —
+   kept here but must NOT apply in light mode; light-mode rules below
+   use !important so they win. */
+html:not([data-theme="light"]) .text-white\/20,
+html:not([data-theme="light"]) .text-white\/25,
+html:not([data-theme="light"]) .text-white\/30,
+html:not([data-theme="light"]) .text-white\/35,
+html:not([data-theme="light"]) .text-white\/40,
+html:not([data-theme="light"]) .text-white\/45,
+html:not([data-theme="light"]) .text-white\/50,
+html:not([data-theme="light"]) .text-white\/55 {
+  color: rgba(255, 255, 255, 0.70) !important;
+}
+
+/* Re-tone ALL white-alpha text utilities to dark text on light surfaces.
+   !important is required to beat any dark-mode clamps that leaked through. */
+html[data-theme="light"] .text-white\/10,
+html[data-theme="light"] .text-white\/15,
 html[data-theme="light"] .text-white\/20,
 html[data-theme="light"] .text-white\/25,
 html[data-theme="light"] .text-white\/30,
@@ -128,22 +145,16 @@ html[data-theme="light"] .text-white\/35,
 html[data-theme="light"] .text-white\/40,
 html[data-theme="light"] .text-white\/45,
 html[data-theme="light"] .text-white\/50,
-html[data-theme="light"] .text-white\/55 { color: rgba(15,23,42,0.75); }
+html[data-theme="light"] .text-white\/55 { color: rgba(15,23,42,0.72) !important; }
 html[data-theme="light"] .text-white\/60,
 html[data-theme="light"] .text-white\/65,
 html[data-theme="light"] .text-white\/70,
-html[data-theme="light"] .text-white\/75 { color: rgba(15,23,42,0.85); }
+html[data-theme="light"] .text-white\/75 { color: rgba(15,23,42,0.85) !important; }
 html[data-theme="light"] .text-white\/80,
 html[data-theme="light"] .text-white\/85,
 html[data-theme="light"] .text-white\/90,
-html[data-theme="light"] .text-white { color: #0f172a; }
-
-/* Dark mode text contrast clamp (Senior Friendly Accessibility) */
-.text-white\/20, .text-white\/25, .text-white\/30, .text-white\/35,
-.text-white\/40, .text-white\/45, .text-white\/50, .text-white\/55 {
-  color: rgba(255, 255, 255, 0.70) !important;
-}
-html[data-theme="light"] .text-slate-200 { color: #1e293b; }
+html[data-theme="light"] .text-white     { color: #0f172a !important; }
+html[data-theme="light"] .text-slate-200 { color: #1e293b !important; }
 
 /* Re-tone the white-alpha background utilities to subtle dark tints */
 html[data-theme="light"] .bg-white\/\[\.02\],
@@ -157,6 +168,23 @@ html[data-theme="light"] .hover\:bg-white\/\[\.03\]:hover,
 html[data-theme="light"] .hover\:bg-white\/\[\.04\]:hover { background-color: rgba(15,23,42,0.05); }
 html[data-theme="light"] .hover\:bg-white\/\[\.05\]:hover,
 html[data-theme="light"] .hover\:bg-white\/\[\.06\]:hover { background-color: rgba(15,23,42,0.08); }
+
+/* Near-transparent white gradient stops (used in MetricCard, skeleton loaders,
+   and inline card divs that don't carry the .card class).
+   Repaint them to a proper white/light surface so cards are visible. */
+html[data-theme="light"] .from-white\/\[\.01\],
+html[data-theme="light"] .from-white\/\[\.02\],
+html[data-theme="light"] .from-white\/\[\.03\],
+html[data-theme="light"] .from-white\/\[\.04\],
+html[data-theme="light"] .from-white\/\[\.05\] {
+  --tw-gradient-from: #ffffff !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(255,255,255,0)) !important;
+}
+html[data-theme="light"] .to-white\/\[\.01\],
+html[data-theme="light"] .to-white\/\[\.015\],
+html[data-theme="light"] .to-white\/\[\.02\] {
+  --tw-gradient-to: #f1f5f9 !important;
+}
 
 /* Borders */
 html[data-theme="light"] .border-white\/\[\.03\],

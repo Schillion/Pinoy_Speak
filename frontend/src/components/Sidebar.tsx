@@ -213,12 +213,14 @@ function SettingsButton({ open, onClick }: { open: boolean; onClick: () => void 
   );
 }
 
+import type { FontSize } from "@/context/ThemeContext";
+
 interface SettingsPopoverProps {
   open: boolean;
   theme: "dark" | "light";
   toggleTheme: () => void;
-  fontSize: "small" | "medium" | "large" | "xlarge";
-  setFontSize: (s: "small" | "medium" | "large" | "xlarge") => void;
+  fontSize: FontSize;
+  setFontSize: (s: FontSize) => void;
   onAbout: () => void;
   placement: "right" | "up";
 }
@@ -259,31 +261,26 @@ function SettingsPopover({
           {/* Font size */}
           <div className="pt-3 mt-2 border-t border-white/[.06]">
             <p className="text-[11px] text-white/55 mb-2">Font size</p>
-            <div className="flex rounded-lg overflow-hidden border border-white/[.08] relative">
+            <div className="grid grid-cols-3 gap-1">
               {([
-                ["small",  "S",  "text-[11px]"],
-                ["medium", "M",  "text-[13px]"],
-                ["large",  "L",  "text-[15px]"],
-                ["xlarge", "XL", "text-[17px]"],
+                ["small",    "S",   "text-[11px]"],
+                ["medium",   "M",   "text-[13px]"],
+                ["large",    "L",   "text-[15px]"],
+                ["xlarge",   "XL",  "text-[15px]"],
+                ["xxlarge",  "2XL", "text-[15px]"],
+                ["xxxlarge", "3XL", "text-[15px]"],
               ] as const).map(([size, label, sizeCls]) => (
                 <button
                   key={size}
                   onClick={() => setFontSize(size)}
-                  className={`relative flex-1 py-1.5 transition-colors ${sizeCls} font-semibold
+                  className={`relative rounded-lg py-1.5 transition-colors ${sizeCls} font-semibold
+                              border
                     ${fontSize === size
-                      ? "text-blue-200"
-                      : "text-white/55 hover:text-white/85"}`}
+                      ? "text-blue-200 border-blue-400/40 bg-gradient-to-r from-blue-500/30 to-indigo-500/25"
+                      : "text-white/55 hover:text-white/85 border-white/[.06] hover:border-white/[.15]"}`}
                   aria-pressed={fontSize === size}
                 >
-                  {fontSize === size && (
-                    <motion.span
-                      layoutId={`font-size-pill-${placement}`}
-                      className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-indigo-500/25
-                                 border border-blue-400/40"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative">{label}</span>
+                  {label}
                 </button>
               ))}
             </div>

@@ -3,7 +3,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
 type Theme    = "dark" | "light";
-type FontSize = "small" | "medium" | "large" | "xlarge";
+type FontSize = "small" | "medium" | "large" | "xlarge" | "xxlarge" | "xxxlarge";
+
+export type { FontSize };
 
 interface ThemeContextType {
   theme: Theme;
@@ -25,10 +27,12 @@ const THEME_KEY = "pinoyspeak_theme";
 const FONT_KEY  = "pinoyspeak_font_size";
 
 const FONT_PX: Record<FontSize, number> = {
-  small:  15,
-  medium: 17.5,
-  large:  19.5,
-  xlarge: 22,
+  small:    15,
+  medium:   17.5,
+  large:    19.5,
+  xlarge:   22,
+  xxlarge:  25,
+  xxxlarge: 28,
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
