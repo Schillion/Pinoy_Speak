@@ -258,6 +258,11 @@ html[data-theme="light"] .spotlight::before {
 html[data-theme="light"] .text-blue-100,
 html[data-theme="light"] .text-blue-200,
 html[data-theme="light"] .text-blue-300   { color: #1d4ed8; }
+/* Opacity variants of blue text (e.g. text-blue-300/80 on section labels) */
+html[data-theme="light"] .text-blue-300\/80,
+html[data-theme="light"] .text-blue-300\/70,
+html[data-theme="light"] .text-blue-200\/80,
+html[data-theme="light"] .text-blue-200\/70 { color: rgba(29,78,216,0.9) !important; }
 html[data-theme="light"] .text-purple-200,
 html[data-theme="light"] .text-purple-300 { color: #6d28d9; }
 html[data-theme="light"] .text-violet-200,
@@ -277,6 +282,7 @@ html[data-theme="light"] .text-emerald-300,
 html[data-theme="light"] .text-green-300,
 html[data-theme="light"] .text-green-200,
 html[data-theme="light"] .text-green-100  { color: #047857; }
+html[data-theme="light"] .text-red-300,
 html[data-theme="light"] .text-red-400    { color: #b91c1c; }
 html[data-theme="light"] .text-slate-400  { color: rgba(15,23,42,0.6); }
 html[data-theme="light"] .text-slate-200  { color: #1e293b; }
@@ -313,6 +319,7 @@ html[data-theme="light"] code.bg-white\/\[\.08\] {
    These overrides swap the gradient stops to a light surface instead. */
 html[data-theme="light"] .from-\[\#0a1424\],
 html[data-theme="light"] .from-\[\#0b1628\],
+html[data-theme="light"] .from-\[\#0c1630\],
 html[data-theme="light"] .from-\[\#0a1228\],
 html[data-theme="light"] .from-\[\#060c18\],
 html[data-theme="light"] .from-\[\#050915\] {
@@ -325,6 +332,9 @@ html[data-theme="light"] .to-\[\#050915\] {
   --tw-gradient-to: #f0f4ff !important;
 }
 html[data-theme="light"] .bg-\[\#0a1224\] { background-color: #ffffff !important; }
+/* Opacity variants of hardcoded dark backgrounds (dropdowns, sticky table headers) */
+html[data-theme="light"] .bg-\[\#0a1224\]\/95 { background-color: rgba(255,255,255,0.97) !important; }
+html[data-theme="light"] .bg-\[\#080f1c\]\/90 { background-color: rgba(255,255,255,0.95) !important; }
 html[data-theme="light"] .bg-\[\#050915\] { background-color: #f4f6fb !important; }
 
 /* Selection */
