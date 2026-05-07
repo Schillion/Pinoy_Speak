@@ -31,20 +31,17 @@ export default function Sidebar() {
           the aside's backdrop-filter creates a containing block, which traps
           a nested position:fixed and pins it to the bottom bar instead of
           the viewport. */}
-      <motion.button
-        type="button"
-        onClick={() => setAboutOpen(true)}
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
+      <Link
+        href="/about"
         className="md:hidden fixed top-3 left-3 z-30
                    w-10 h-10 rounded-xl flex items-center justify-center
                    bg-gradient-to-br from-blue-500 to-purple-600
                    shadow-[0_0_24px_-4px_rgba(99,102,241,0.75)]
                    text-white font-bold text-base select-none aurora-border"
-        aria-label="About the creator"
+        aria-label="About PinoySpeak"
       >
         P
-      </motion.button>
+      </Link>
 
       <aside
         data-sidebar
@@ -71,16 +68,12 @@ export default function Sidebar() {
         {/* Logo — desktop only (mobile uses About link inside Settings).
             Sized to match the nav buttons below: same padding, same gap,
             same icon footprint, single-line label. */}
-        <motion.button
-          type="button"
-          onClick={() => setAboutOpen(true)}
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        <Link
+          href="/about"
           className="hidden md:flex flex-col items-center justify-center gap-1
                      mx-2 mt-3 mb-2 py-3 rounded-xl
                      hover:bg-white/[.04] transition-colors group"
-          aria-label="About the creator"
+          aria-label="About PinoySpeak"
         >
           <motion.div
             whileHover={{ rotate: [0, -8, 8, 0], scale: 1.10 }}
@@ -95,7 +88,7 @@ export default function Sidebar() {
           <span className="text-[11px] font-semibold text-shimmer tracking-tight leading-tight">
             Pinoy Speak
           </span>
-        </motion.button>
+        </Link>
 
         {/* Nav — horizontal on mobile, vertical on desktop */}
         <nav className="

@@ -76,7 +76,7 @@ export default function MetricCard({ label, value, sub, onClick, accent = "blue"
       onClick={onClick}
       style={{
         ...(interactive ? { rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 1000 } : {}),
-        ...(isLight ? { background: "#ffffff", backdropFilter: "none", WebkitBackdropFilter: "none" } : {}),
+        ...(isLight ? { backgroundColor: "#ffffff", backgroundImage: "none", backdropFilter: "none", WebkitBackdropFilter: "none" } : {}),
       }}
       className={`card metric-card relative overflow-hidden rounded-2xl p-5
                   transition-colors duration-300 group
