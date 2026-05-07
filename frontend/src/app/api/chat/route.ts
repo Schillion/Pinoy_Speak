@@ -88,7 +88,7 @@ async function callGroq(
   return data.choices[0].message.content ?? "Ay, wala akong masabi ngayon. Try again!";
 }
 
-// ── Gemini — free tier, 500 req/day ──────────────────────────────────────────
+// ── Gemini — OpenAI-compatible endpoint (avoids generateContent quota issues) ─
 async function callGemini(
   messages: { role: string; content: string }[],
   systemPrompt: string,
@@ -96,33 +96,32 @@ async function callGemini(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("No GEMINI_API_KEY");
 
-  const contents = messages
-    .slice(-10)
-    .map((m: { role: string; content: string }) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: String(m.content).slice(0, 800) }],
-    }))
-    .filter((_, i, arr) => {
-      const firstUser = arr.findIndex((m) => m.role === "user");
-      return firstUser === -1 || i >= firstUser;
-    });
-
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: { maxOutputTokens: 512, temperature: 0.8 },
+        model: "gemini-2.0-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.slice(-10).map((m: { role: string; content: string }) => ({
+            role: m.role === "assistant" ? "assistant" : "user",
+            content: String(m.content).slice(0, 800),
+          })),
+        ],
+        max_tokens: 512,
+        temperature: 0.8,
       }),
     },
   );
 
   if (!res.ok) throw new Error(`Gemini error ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "Ay, wala akong masabi ngayon. Try again!";
+  return data.choices?.[0]?.message?.content ?? "Ay, wala akong masabi ngayon. Try again!";
 }
 
 // ── Ollama — local / self-hosted fallback ─────────────────────────────────────
