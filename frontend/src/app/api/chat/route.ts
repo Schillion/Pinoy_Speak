@@ -29,36 +29,27 @@ async function getLexicon(): Promise<Record<string, LexiconEntry>> {
 }
 
 function buildSystemPrompt(lexicon: Record<string, LexiconEntry>): string {
-  const words = Object.entries(lexicon);
-  const wordList = words
-    .map(([w, e]) =>
-      `- **${w}**${e.pos ? ` (${e.pos})` : ""}: ${e.definition}${e.plain ? ` Plain English: "${e.plain}".` : ""}${e.origin ? ` Origin: ${e.origin}` : ""}${e.example ? ` Example: ${e.example}` : ""}`
-    )
-    .join("\n");
+  const wordNames = Object.keys(lexicon).join(", ");
+  const count = Object.keys(lexicon).length;
+  // Only word names here — full definitions are injected per-turn via lookupNote
+  // to keep the prompt small and avoid token-rate-limit failures (~7k → ~200 tokens).
+  return `You are Kuya Slang, a friendly Filipino slang tutor chatbot on Pinoy Speak. Warm, encouraging, uses Taglish naturally.
 
-  return `You are Kuya Slang, a friendly and fun Filipino slang tutor chatbot on the Pinoy Speak app. Your personality is warm, encouraging, and uses a mix of Filipino and English (Taglish) naturally.
+FACTS:
+- Created by Carl Timothy Clemente, CS student from UPLB (University of the Philippines Los Baños)
+- You are an AI with general knowledge — answer any question naturally
+- "Who made you / who created you / sino gumawa sayo" → credit Carl Timothy Clemente
 
-IMPORTANT FACTS ABOUT YOURSELF — always answer these correctly:
-- You were created by Carl Timothy Clemente, a computer science student from UPLB (University of the Philippines Los Baños)
-- The Pinoy Speak app is his project to track and explore Filipino internet slang
-- If anyone asks "who made you", "who created you", "sino gumawa sayo", "your creator", "your developer" — answer with the above facts clearly and naturally
-- You are powered by an AI language model and have general knowledge beyond just slang
+You know ${count} Filipino slang words: ${wordNames}
 
-You help users learn Filipino internet slang. You currently know exactly ${words.length} slang words. Here is the dictionary:
+When asked about a specific word you will receive its definition in a [SYSTEM NOTE] — use it. For words not in your list, explain from your knowledge or admit uncertainty.
 
-${wordList}
-
-Guidelines:
-- Be conversational and natural, not robotic
-- Use light Taglish expressions like "Ay grabe!", "Charot!", "Keri lang!" to feel authentic
-- When explaining a word, give: the definition, a natural example sentence, its origin, and plain English equivalent
-- If a user asks about a Filipino slang word that is NOT in the dictionary above, do your best to explain it from your own knowledge (definition, example, origin, plain English). Never refuse just because it's not in the list — the dictionary auto-learns new entries from your replies.
-- IMPORTANT: when asked to "list all" / "what words do you know" / "give me all" / similar requests, do NOT dump a long list. Instead, mention the total count, give 2-3 random examples, and direct them to the **Dictionary** page (book icon in the sidebar) which has the full alphabetical browse with definitions and origins.
-- When asked to quiz the user, give ONE word at a time and wait for their answer
-- Grade quiz answers generously — accept synonyms and partial answers
-- Keep responses concise and friendly
-- You can answer questions about yourself, the Pinoy Speak app, Filipino culture, or general knowledge naturally — you have a mind of your own, not just a slang dictionary
-- Pinoy Speak was created by Carl Timothy Clemente, a computer science student from UPLB (University of the Philippines Los Baños), as a project to document and explore Filipino internet slang. Answer any "who made you / who created you / who is your creator" questions with this naturally`;
+Rules:
+- Conversational Taglish: "Ay grabe!", "Charot!", "Keri lang!"
+- Word explanation: definition + example + origin + plain English
+- "List all / what do you know": mention count, give 2-3 examples, point to Dictionary page (book icon in sidebar)
+- Quiz: one word at a time, grade generously
+- Keep responses concise`;
 }
 
 // ── Groq — free tier, 14 400 req/day, Llama 3.3 70B ─────────────────────────
@@ -347,8 +338,7 @@ function detectUnknownWord(
     if (!m) continue;
     const word = (m[1] || "").trim().replace(/^['"]+|['"]+$/g, "");
     if (!word || word.length < 3 || COMMON_WORDS.has(word)) continue;
-    if (lexicon[word]) return null;   // already known — let LLM answer normally
-    return word;
+    return word;  // return known words too so their definition gets injected via lookupNote
   }
 
   // Pass 2 — short messages with a single non-stopword unknown token.
@@ -408,29 +398,37 @@ export async function POST(req: NextRequest) {
   if (last?.role === "user") {
     const targetWord = detectUnknownWord(last.content, lexicon);
     if (targetWord) {
-      const verified = await lookupUnknown(targetWord);
-      if (verified?.is_slang && verified.definition) {
-        // Bust the local lexicon cache so the fresh entry is visible to
-        // future requests on this server instance.
-        _lexiconCacheAt = 0;
+      const known = lexicon[targetWord];
+      if (known) {
+        // Known word — inject from local cache, zero extra latency or API tokens
         lookupNote =
-          `\n\n[INTERNAL — system note for this turn]\n` +
-          `The user is asking about "${targetWord}". This word was NOT in your ` +
-          `dictionary, but we just searched the corpus + web and confirmed:\n` +
-          `  • Definition: ${verified.definition}\n` +
-          (verified.plain ? `  • Plain English: ${verified.plain}\n` : "") +
-          (verified.formation_type ? `  • Formation: ${verified.formation_type}\n` : "") +
-          `Use this in your reply, naturally — and mention casually that you just ` +
-          `learned it (e.g. "Ay grabe, bago ko 'to nalaman!" / "I just picked this up!").`;
+          `\n\n[SYSTEM NOTE — word definition for this turn]\n` +
+          `The user is asking about "${targetWord}". Stored entry:\n` +
+          `  • Definition: ${known.definition}\n` +
+          (known.plain  ? `  • Plain English: ${known.plain}\n`  : "") +
+          (known.origin ? `  • Origin: ${known.origin}\n`        : "") +
+          (known.example ? `  • Example: ${known.example}\n`     : "") +
+          `Use this information naturally in your reply.`;
       } else {
-        lookupNote =
-          `\n\n[INTERNAL — system note for this turn]\n` +
-          `The user is asking about "${targetWord}". It is NOT in your dictionary ` +
-          `and our online search could not confirm it as Filipino slang. Reply honestly: ` +
-          `tell them you don't recognize "${targetWord}" yet, ask if they can describe how ` +
-          `they've heard it used, and suggest they try the "Find missed slang" or "Import ` +
-          `from web" buttons on the Top Slang page so the dictionary can grow. Do NOT invent ` +
-          `a definition.`;
+        // Unknown word — verify via backend
+        const verified = await lookupUnknown(targetWord);
+        if (verified?.is_slang && verified.definition) {
+          _lexiconCacheAt = 0;
+          lookupNote =
+            `\n\n[SYSTEM NOTE — word definition for this turn]\n` +
+            `The user is asking about "${targetWord}". Just confirmed from corpus + web:\n` +
+            `  • Definition: ${verified.definition}\n` +
+            (verified.plain ? `  • Plain English: ${verified.plain}\n` : "") +
+            (verified.formation_type ? `  • Formation: ${verified.formation_type}\n` : "") +
+            `Use this naturally — mention casually you just learned it.`;
+        } else {
+          lookupNote =
+            `\n\n[SYSTEM NOTE]\n` +
+            `The user is asking about "${targetWord}". It is NOT in your dictionary ` +
+            `and could not be confirmed as Filipino slang. Tell them you don't recognize it yet, ` +
+            `ask how they heard it used, and suggest "Find missed slang" or "Import from web" on ` +
+            `the Top Slang page. Do NOT invent a definition.`;
+        }
       }
     }
   }
@@ -466,8 +464,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (reply == null) {
-    const debugInfo = `\n\n⚠️ [LLM offline] Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`;
-    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon) + debugInfo;
+    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
   }
 
   // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured;
