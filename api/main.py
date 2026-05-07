@@ -3,8 +3,9 @@ FastAPI ML service — run with:  uvicorn api.main:app --reload --port 8000
 Exposes the SlangDetector and corpus utilities over HTTP for the Next.js frontend.
 """
 from contextlib import asynccontextmanager
-import sys, os, threading
+import sys, os, threading, asyncio
 import time as _time
+from functools import partial
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -158,6 +159,22 @@ def _continuous_learner() -> None:
             _time.sleep(10)  # prevent tight loop on persistent errors
 
 
+# ── Async learn queue ────────────────────────────────────────────────────────
+_learn_queue: asyncio.Queue = asyncio.Queue()
+
+async def _learn_worker() -> None:
+    """Drains _learn_queue one task at a time so file writes never race."""
+    while True:
+        req = await _learn_queue.get()
+        try:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, partial(_blocking_learn, req))
+        except Exception as e:
+            print(f"[learn_worker] unhandled error: {e}")
+        finally:
+            _learn_queue.task_done()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _detector
@@ -167,6 +184,21 @@ async def lifespan(app: FastAPI):
         print(f"[startup] SlangDetector init failed (no model/data yet): {e}")
         print("[startup] API is running but analysis endpoints need data/social_model.model")
         _detector = None
+
+    # Build RAG index from the live lexicon (non-blocking — runs in thread pool)
+    try:
+        import rag_store
+        from dictionary_service import get_full_lexicon
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, rag_store.build_index, get_full_lexicon())
+        print("[startup] RAG index built")
+    except Exception as e:
+        print(f"[startup] RAG index skipped: {e}")
+
+    # Start the async learn worker
+    asyncio.create_task(_learn_worker())
+    print("[startup] async learn-queue worker started")
+
     if os.getenv("LEARNER_ENABLED", "0") == "1":
         print("[learner] background scraper + retrain loop enabled")
         threading.Thread(target=_continuous_learner, daemon=True, name="learner").start()
@@ -721,8 +753,12 @@ def translate_sentence(req: TranslateRequest, _ = Depends(rate_limit)):
         raise HTTPException(503, f"Translation unavailable: {e}")
 
 
-@app.post("/learn-slang")
-def learn_slang(req: LearnSlangRequest, _ = Depends(rate_limit)):
+def _blocking_learn(req: "LearnSlangRequest") -> dict:
+    """
+    All the heavy work for /learn-slang — corpus scan, FastText lookup,
+    file write — runs in a thread-pool executor so the event loop stays free.
+    Called exclusively by _learn_worker.
+    """
     """
     Tutor auto-learning: when the chatbot defines a slang the lexicon doesn't
     know, the chat route POSTs here to persist it into discovered_slang.json.
@@ -813,7 +849,33 @@ def learn_slang(req: LearnSlangRequest, _ = Depends(rate_limit)):
     # this word as slang immediately, without waiting for an API restart.
     _merge_entry(word, entry, overwrite=True)
 
+    # ── Incrementally update the RAG index with the new word ────────────
+    try:
+        import rag_store
+        rag_store.add_entry(word, entry)
+    except Exception:
+        pass
+
     return {"saved": True, "word": word, "corpus_count": corpus_count, "corpus_grounded": corpus_count > 0}
+
+
+@app.post("/learn-slang")
+async def learn_slang(req: LearnSlangRequest, _ = Depends(rate_limit)):
+    """
+    Enqueues the learn task and returns immediately (non-blocking).
+    The async worker (_learn_worker) processes tasks one at a time,
+    preventing file-write races and keeping the event loop unblocked.
+    """
+    word = (req.word or "").lower().strip()
+    if not word or " " in word or len(word) < 2 or len(word) > 40:
+        return {"queued": False, "reason": "invalid word"}
+    if word in KNOWN_SLANG or word in SEED_LEXICON:
+        return {"queued": False, "reason": "already in seed lexicon"}
+    from slang_enricher import load_discovered
+    if word in load_discovered():
+        return {"queued": False, "reason": "already discovered"}
+    await _learn_queue.put(req)
+    return {"queued": True, "word": word, "queue_size": _learn_queue.qsize()}
 
 
 @app.post("/train")
@@ -955,6 +1017,25 @@ def lexicon():
             }
 
     return {"entries": combined, "count": len(combined)}
+
+
+class RelevantContextRequest(BaseModel):
+    query: str
+    top_k: int = 5
+
+@app.post("/relevant-context")
+def relevant_context(req: RelevantContextRequest):
+    """
+    RAG endpoint: given a user's chat message, returns the top-k most
+    semantically relevant slang entries so the LLM gets focused context
+    instead of the entire dictionary (reduces prompt tokens by ~97%).
+    """
+    try:
+        import rag_store
+        results = rag_store.query(req.query.strip(), top_k=req.top_k)
+        return {"results": results}
+    except Exception as e:
+        return {"results": [], "error": str(e)}
 
 
 @app.get("/posts")

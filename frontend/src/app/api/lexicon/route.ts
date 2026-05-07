@@ -1,16 +1,30 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
 const PY = process.env.PYTHON_API_URL ?? "http://localhost:8000";
 
-export async function GET() {
-  try {
+// Cache the full lexicon for 1 hour. Tagged so a POST to /api/revalidate
+// can purge it immediately after a new word is learned.
+const getCachedLexicon = unstable_cache(
+  async () => {
     const res = await fetch(`${PY}/lexicon`, {
-      cache: "no-store",
       signal: AbortSignal.timeout(6000),
     });
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    if (!res.ok) throw new Error(`Backend ${res.status}`);
+    return res.json();
+  },
+  ["lexicon"],
+  { revalidate: 3600, tags: ["lexicon"] },
+);
+
+export async function GET() {
+  try {
+    const data = await getCachedLexicon();
+    return NextResponse.json(data);
   } catch {
-    return NextResponse.json({ error: "ML service unavailable", entries: {}, count: 0 }, { status: 503 });
+    return NextResponse.json(
+      { error: "ML service unavailable", entries: {}, count: 0 },
+      { status: 503 },
+    );
   }
 }

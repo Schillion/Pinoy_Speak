@@ -319,6 +319,25 @@ async function autoLearn(
   }
 }
 
+// ── RAG: fetch semantically relevant entries for the user's message ───────────
+async function getRelevantContext(userMsg: string): Promise<string> {
+  try {
+    const res = await fetch(`${PY}/relevant-context`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: userMsg, top_k: 3 }),
+      signal: AbortSignal.timeout(3_000),
+    });
+    if (!res.ok) return "";
+    const data = await res.json() as { results: { word: string; context: string }[] };
+    if (!data.results?.length) return "";
+    const lines = data.results.map((r) => `  • ${r.word}: ${r.context}`).join("\n");
+    return `\n\n[SYSTEM NOTE — semantically relevant entries]\n${lines}\nUse these naturally if they fit the conversation.`;
+  } catch {
+    return "";
+  }
+}
+
 // ── Pre-flight: detect a target word and look it up if unknown ──────────────
 // When the user asks about a word the lexicon doesn't have, we hit
 // /verify-slang (which already does corpus + LLM verification) BEFORE
@@ -464,6 +483,11 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+  }
+
+  // If no specific word was targeted, use RAG to surface relevant entries
+  if (!lookupNote && last?.role === "user") {
+    lookupNote = await getRelevantContext(last.content);
   }
 
   const systemPrompt = buildSystemPrompt(lexicon) + lookupNote;

@@ -13,3 +13,5 @@ orjson>=3.10           # 3-5x faster JSON for the 13MB raw_combined.json hot pat
 rapidfuzz>=3.0         # fuzzy slang variant resolution (e.g. petmaluu -> petmalu)
 transformers>=4.36     # roberta-tagalog tokenizer for Tagalog vocab signal
 torch>=2.0             # transformers backend (CPU-only is fine)
+sentence-transformers>=2.7  # RAG: semantic search over slang dictionary
+numpy>=1.24            # RAG: cosine similarity via dot-product
