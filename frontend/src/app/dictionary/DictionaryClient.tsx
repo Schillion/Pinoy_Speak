@@ -247,9 +247,9 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           {/* Sources info icon */}
           <button
             onClick={() => setShowSources((v) => !v)}
-            className="absolute -top-1 -right-1 w-4 h-4 rounded-full
+            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full
                        bg-white/[.08] border border-white/[.15]
-                       text-[9px] text-white/45 hover:text-white/80 hover:bg-white/[.15]
+                       text-[11px] text-white/45 hover:text-white/80 hover:bg-white/[.15]
                        flex items-center justify-center transition-colors"
             aria-label="Show import sources"
           >ℹ</button>
@@ -271,11 +271,15 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
                 <ul className="space-y-1.5 text-[12px] text-white/70">
                   <li className="flex items-start gap-2">
                     <span className="text-orange-300 mt-0.5">●</span>
-                    <span><span className="text-white/85 font-medium">Reddit threads</span> — r/Tagalog, r/Philippines slang lists (direct URLs, no search auth needed)</span>
+                    <span><span className="text-white/85 font-medium">Reddit threads</span> — r/Tagalog &amp; r/Philippines direct links (Reddit search API requires OAuth since 2023; direct thread URLs still work)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-300 mt-0.5">●</span>
                     <span><span className="text-white/85 font-medium">Wikipedia</span> — Philippine English article</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-cyan-300 mt-0.5">●</span>
+                    <span><span className="text-white/85 font-medium">Omniglot</span> — Tagalog phrases &amp; vocabulary list</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-purple-300 mt-0.5">●</span>
@@ -283,7 +287,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
                   </li>
                 </ul>
                 <p className="text-[11px] text-white/30 mt-2 pt-2 border-t border-white/[.06]">
-                  Each candidate is verified by the LLM before being added.
+                  Each candidate is verified by the LLM before being added. More Reddit threads can be added to the backend source list.
                 </p>
               </motion.div>
             )}

@@ -75,16 +75,16 @@ export default function MetricCard({ label, value, sub, onClick, accent = "blue"
       onMouseLeave={interactive ? onLeave : undefined}
       onClick={onClick}
       style={{
-        ...(interactive ? { rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 1000 } : {}),
+        ...(interactive && !isLight ? { rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 1000 } : {}),
         ...(isLight ? { backgroundColor: "#ffffff", backgroundImage: "none", backdropFilter: "none", WebkitBackdropFilter: "none" } : {}),
       }}
       className={`card metric-card relative overflow-hidden rounded-2xl p-5
                   transition-colors duration-300 group
                   ${interactive ? "cursor-pointer hover:border-white/25" : ""}`}
     >
-      {/* Cursor spotlight + ambient glow only fire on clickable cards, so the
-          hover affordance matches the actual behavior. */}
-      {interactive && (
+      {/* Cursor spotlight + ambient glow — dark mode only; skipped in light
+          mode to prevent the accent-colour radial bleed showing on white. */}
+      {interactive && !isLight && (
         <>
           <motion.div
             aria-hidden
@@ -114,7 +114,7 @@ export default function MetricCard({ label, value, sub, onClick, accent = "blue"
         {sub && (
           <p className="text-xs text-white/35 mt-1.5">
             {onClick ? (
-              <span className="group-hover:text-white/60 transition-colors">
+              <span className={`transition-colors ${isLight ? "group-hover:text-slate-600" : "group-hover:text-white/60"}`}>
                 {sub} · <span className={`${a.text} opacity-70`}>view →</span>
               </span>
             ) : sub}

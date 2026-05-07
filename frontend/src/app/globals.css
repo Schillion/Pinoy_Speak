@@ -224,6 +224,19 @@ html[data-theme="light"] .card-hover:hover {
   box-shadow: 0 0 30px -10px rgba(59,130,246,0.25), 0 8px 30px -16px rgba(15,23,42,0.2);
 }
 
+/* Ghost button — dark-mode defaults use white-alpha tints that vanish on white */
+html[data-theme="light"] .btn-ghost {
+  border-color: rgba(15,23,42,0.20) !important;
+  background-color: rgba(15,23,42,0.04) !important;
+  color: rgba(15,23,42,0.70) !important;
+  backdrop-filter: none;
+}
+html[data-theme="light"] .btn-ghost:hover {
+  border-color: rgba(15,23,42,0.35) !important;
+  background-color: rgba(15,23,42,0.08) !important;
+  color: rgba(15,23,42,0.90) !important;
+}
+
 /* Inputs */
 html[data-theme="light"] .input-glass {
   background: #ffffff;
