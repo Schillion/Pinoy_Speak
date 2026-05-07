@@ -466,7 +466,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (reply == null) {
-    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
+    const err = `Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`;
+    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon)
+      + `\n\n⚠️ ${err}`;
   }
 
   // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured;
