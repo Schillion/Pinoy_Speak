@@ -438,14 +438,18 @@ export async function POST(req: NextRequest) {
   const systemPrompt = buildSystemPrompt(lexicon) + lookupNote;
 
   let reply: string | null = null;
+  let groqErr = "";
+  let geminiErr = "";
 
   if (process.env.GROQ_API_KEY) {
     try {
       reply = await callGroq(messages, systemPrompt);
     } catch (err) {
-      console.error("[chat] Groq failed:", String(err));
+      groqErr = String(err);
+      console.error("[chat] Groq failed:", groqErr);
     }
   } else {
+    groqErr = "GROQ_API_KEY not set";
     console.warn("[chat] GROQ_API_KEY not set");
   }
 
@@ -453,14 +457,19 @@ export async function POST(req: NextRequest) {
     try {
       reply = await callGemini(messages, systemPrompt);
     } catch (err) {
-      console.error("[chat] Gemini failed:", String(err));
+      geminiErr = String(err);
+      console.error("[chat] Gemini failed:", geminiErr);
     }
   } else if (reply == null) {
+    geminiErr = "GEMINI_API_KEY not set";
     console.warn("[chat] GEMINI_API_KEY not set — using fallback");
   }
 
   if (reply == null) {
-    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
+    const debugInfo = process.env.NODE_ENV === "development"
+      ? `\n\n⚠️ [DEV — LLM offline] Groq: ${groqErr || "ok"} | Gemini: ${geminiErr || "ok"}`
+      : "";
+    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon) + debugInfo;
   }
 
   // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured;
