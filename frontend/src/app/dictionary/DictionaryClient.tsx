@@ -25,6 +25,13 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const [growMsg,   setGrowMsg]   = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const growMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showBackTop, setShowBackTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => () => {
     if (growMsgTimer.current) clearTimeout(growMsgTimer.current);
@@ -68,7 +75,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const runImport = useCallback(async () => {
     if (importing) return;
     setImporting(true);
-    setGrowMsg("Fetching Reddit threads + asking LLMs for slang lists — this takes 1–2 minutes…");
+    setGrowMsg("Fetching web sources + asking LLMs for slang lists — this takes 1–2 minutes…");
     try {
       const res = await importOnlineSlang({ maxNew: 30 });
       if (res.error) {
@@ -199,7 +206,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           <button
             onClick={runImport}
             disabled={importing || sweeping}
-            title="Pull candidate slang from public Reddit threads + LLM brainstorm and verify each"
+            title="Pull candidate slang from public web sources + LLM brainstorm and verify each"
             className="btn-ghost w-auto px-3 md:px-4 py-2 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 disabled:opacity-50"
           >
             {importing ? (
@@ -373,6 +380,29 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           })}
         </div>
       )}
+
+      {/* Back-to-top — appears after scrolling 400 px */}
+      <AnimatePresence>
+        {showBackTop && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-[calc(80px+env(safe-area-inset-bottom))] sm:bottom-8 right-4 sm:right-6
+                       z-40 w-10 h-10 rounded-full
+                       bg-blue-500/80 hover:bg-blue-500 backdrop-blur-sm
+                       border border-blue-400/40
+                       shadow-[0_0_20px_-6px_rgba(96,165,250,0.7)]
+                       text-white flex items-center justify-center
+                       transition-colors"
+            aria-label="Back to top"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

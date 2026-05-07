@@ -279,6 +279,26 @@ html[data-theme="light"] code.bg-white\/\[\.08\] {
   color: #92400e;
 }
 
+/* Hardcoded dark-only gradient surfaces — repaint to white in light mode.
+   Components like modals, quiz cards, word cards use from-[#0a1424]/to-[#070d1a]
+   which stay dark while light mode overrides text colors to dark → invisible text.
+   These overrides swap the gradient stops to a light surface instead. */
+html[data-theme="light"] .from-\[\#0a1424\],
+html[data-theme="light"] .from-\[\#0b1628\],
+html[data-theme="light"] .from-\[\#0a1228\],
+html[data-theme="light"] .from-\[\#060c18\],
+html[data-theme="light"] .from-\[\#050915\] {
+  --tw-gradient-from: #f8fafc !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(248,250,252,0)) !important;
+}
+html[data-theme="light"] .to-\[\#070d1a\],
+html[data-theme="light"] .to-\[\#060c18\],
+html[data-theme="light"] .to-\[\#050915\] {
+  --tw-gradient-to: #f0f4ff !important;
+}
+html[data-theme="light"] .bg-\[\#0a1224\] { background-color: #ffffff !important; }
+html[data-theme="light"] .bg-\[\#050915\] { background-color: #f4f6fb !important; }
+
 /* Selection */
 ::selection { background: rgba(96,165,250,0.35); color: #fff; }
 

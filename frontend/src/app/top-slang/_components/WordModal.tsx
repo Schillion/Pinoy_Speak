@@ -147,10 +147,14 @@ export default function WordModal({
                   <span className="text-[11px] text-purple-300 uppercase tracking-widest font-medium">
                     Filipino slang
                   </span>
-                  <span className="text-white/15">·</span>
-                  <span className="text-[11px] text-white/30">
-                    {word.count.toLocaleString()} mentions in corpus
-                  </span>
+                  {word.count > 0 && (
+                    <>
+                      <span className="text-white/15">·</span>
+                      <span className="text-[11px] text-white/30">
+                        {word.count.toLocaleString()} mentions in scraped posts
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <button

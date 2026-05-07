@@ -207,6 +207,9 @@ class LearnSlangRequest(BaseModel):
     example: str | None = None
     formation_type: str | None = None
 
+class TranslateRequest(BaseModel):
+    sentence: str
+
 
 @app.get("/health")
 def health():
@@ -688,6 +691,34 @@ def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
         "plain":      parsed.get("plain"),
         "formation_type": parsed.get("formation_type") or get_formation_type(word),
     }
+
+
+@app.post("/translate")
+def translate_sentence(req: TranslateRequest, _ = Depends(rate_limit)):
+    """
+    Full English translation of a Filipino/Taglish sentence.
+    Uses the LLM to produce a natural, fluent English rendering —
+    not just slang-word substitution.
+    """
+    from slang_enricher import _call_llm
+
+    sentence = (req.sentence or "").strip()
+    if not sentence:
+        raise HTTPException(400, "No sentence provided")
+    if len(sentence) > 1000:
+        raise HTTPException(400, "Sentence too long (max 1000 chars)")
+
+    prompt = (
+        "Translate the following Filipino/Tagalog sentence into natural, fluent English. "
+        "Output ONLY the English translation — no explanation, no quotation marks, no extra text.\n\n"
+        f"Filipino: {sentence}\nEnglish:"
+    )
+    try:
+        raw = _call_llm(prompt)
+        translation = raw.strip().strip('"').strip("'").strip()
+        return {"translation": translation}
+    except Exception as e:
+        raise HTTPException(503, f"Translation unavailable: {e}")
 
 
 @app.post("/learn-slang")

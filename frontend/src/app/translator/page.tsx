@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { analyzeText, fetchPosts, verifySlang } from "@/lib/api";
+import { analyzeText, fetchPosts, verifySlang, translateSentence } from "@/lib/api";
 import { useProfanityFilter } from "@/context/ProfanityContext";
 import { FORMATION_LABELS } from "@/lib/slang-data";
 import type { AnalyzeResponse, WordResult } from "@/types";
@@ -39,6 +39,8 @@ export default function Translator() {
   const [error,    setError]    = useState("");
   const [examples, setExamples] = useState<Record<string, string[]>>({});
   const [verifying, setVerifying] = useState<Set<string>>(new Set());
+  const [fullTranslation, setFullTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
   const { profanityFilter } = useProfanityFilter();
   const exReqId = useRef(0);
   const verifyReqId = useRef(0);
@@ -91,9 +93,22 @@ export default function Translator() {
     if (!input.trim() || loading) return;
     setLoading(true);
     setError("");
+    setFullTranslation(null);
     verifiedWords.current = new Set();   // reset for the new sentence
     try {
-      setResult(await analyzeText(input, profanityFilter));
+      const res = await analyzeText(input, profanityFilter);
+      setResult(res);
+      // Kick off full translation in parallel — don't block the analyze result
+      const hasSlang = Object.values(res.results ?? {}).some(
+        (r) => r.classification === "slang"
+      );
+      if (hasSlang) {
+        setTranslating(true);
+        translateSentence(input).then((t) => {
+          setFullTranslation(t);
+          setTranslating(false);
+        });
+      }
     } catch {
       setError("Service temporarily unavailable. Please try again later.");
     } finally {
@@ -345,7 +360,7 @@ export default function Translator() {
               </div>
             </motion.section>
 
-            {/* Step 2 */}
+            {/* Step 2 — Full English Translation */}
             {(() => {
               const hasSlang = result.tokens.some((t) => {
                 const clean = t.replace(/[.,!?'"]/g, "");
@@ -353,38 +368,20 @@ export default function Translator() {
               });
               if (!hasSlang) return null;
 
-              const translated = result.tokens.map((t) => {
-                const clean = t.replace(/[.,!?'"]/g, "");
-                const trailing = t.slice(clean.length);
-                const info  = result.results[clean];
-                if (info?.classification === "slang") {
-                  let sub: string | null = null;
-                  if (info.plain_word) {
-                    sub = info.plain_word;
-                  } else if (info.definition) {
-                    const main = info.definition.split(" — ")[0];
-                    const firstSegment = main.split(/[,/(]/)[0].trim();
-                    if (firstSegment) sub = firstSegment;
-                  }
-                  // Fall back to the original word when we have no confident
-                  // translation — never invent one from FastText neighbors.
-                  return { word: t, sub: (sub ?? clean) + trailing, isSlang: sub != null };
-                }
-                return { word: t, sub: t, isSlang: false };
-              });
-
               return (
                 <motion.section variants={fadeUp}>
-                  <SectionLabel num={2} title="Plain Translation" sub="Slang replaced with standard equivalents" />
-                  <div className="card spotlight p-5 text-slate-200 text-sm leading-relaxed">
-                    {translated.map((item, i) => (
-                      <span key={i}>
-                        {i > 0 && " "}
-                        {item.isSlang
-                          ? <span className="text-gradient-static font-semibold">{item.sub}</span>
-                          : item.word}
+                  <SectionLabel num={2} title="Full English Translation" sub="Natural English rendering of the whole sentence" />
+                  <div className="card spotlight p-5 text-slate-200 text-sm leading-relaxed min-h-[56px] flex items-center">
+                    {translating && !fullTranslation ? (
+                      <span className="flex items-center gap-2 text-white/35 italic text-sm">
+                        <span className="w-3 h-3 border-2 border-blue-400/30 border-t-blue-300 rounded-full animate-spin shrink-0" />
+                        Translating…
                       </span>
-                    ))}
+                    ) : fullTranslation ? (
+                      <span>{fullTranslation}</span>
+                    ) : (
+                      <span className="text-white/30 italic text-sm">Translation unavailable — LLM provider may be offline.</span>
+                    )}
                   </div>
                 </motion.section>
               );

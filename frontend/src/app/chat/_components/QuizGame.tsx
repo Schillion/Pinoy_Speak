@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shuffle, WordEntry } from "./words-data";
 
@@ -10,6 +10,13 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
   const [score, setScore]   = useState({ right: 0, wrong: 0 });
   const [picked, setPicked] = useState<string | null>(null);
   const [done, setDone]     = useState(false);
+  const nextBtnRef          = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (picked) {
+      setTimeout(() => nextBtnRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 280);
+    }
+  }, [picked]);
 
   const current = deck[qIdx];
 
@@ -154,6 +161,7 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
       <AnimatePresence>
         {picked && (
           <motion.button
+            ref={nextBtnRef}
             initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             onClick={next}
             className="btn-primary w-full py-2.5 text-sm"

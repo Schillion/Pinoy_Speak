@@ -153,6 +153,21 @@ export async function importOnlineSlang(opts?: {
   return res.json();
 }
 
+export async function translateSentence(sentence: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${base}/api/translate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sentence }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.translation ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchDefine(word: string): Promise<DefineResult> {
   const res = await fetch(
     `${base}/api/define?word=${encodeURIComponent(word.toLowerCase().trim())}`,
