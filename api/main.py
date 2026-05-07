@@ -495,7 +495,7 @@ def top_slang(n: int = 15):
 def corpus_stats():
     from slang_enricher import load_discovered
     counts, total = scan_corpus()
-    top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS), "—")
+    top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS and not is_standard_word(w)), "—")
     lexicon_count = len(SEED_LEXICON) + sum(1 for w in load_discovered() if w not in SEED_LEXICON)
     return {"total_posts": total, "top_slang": top, "slang_count": lexicon_count}
 

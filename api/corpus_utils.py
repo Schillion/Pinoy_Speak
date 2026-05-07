@@ -18,6 +18,10 @@ _STOP_WORDS = {
     'just','like','into','over','after','about','very',
     # short function words caught by 2-char corpus patterns
     'an','is','it','in','of','to','be','si','ni','po','ung','dun','sana',
+    # Common standard Tagalog words that are OOV for English NLP models but not slang
+    'sobrang','talaga','grabe','naman','kasi','kahit','hanggang','habang',
+    'dahil','ngayon','gawa','gabi','umaga','hapon','tanghali','bukas','kahapon',
+    'taon','araw','bata','tao','lugar','bahay','puso','isip','buhay',
 }
 
 _RE_WORD = re.compile(r"\b[a-z]{3,}\b")
@@ -90,7 +94,7 @@ def get_top_slang(model, n: int = 15) -> list[dict]:
     for word, count in counts.most_common():
         if count < 3:
             break
-        if word in AMBIGUOUS_SLANG_SEEDS and word not in seen:
+        if word in AMBIGUOUS_SLANG_SEEDS and word not in seen and not is_standard_word(word):
             results.append((word, count))
             seen.add(word)
 
@@ -106,7 +110,7 @@ def get_top_slang(model, n: int = 15) -> list[dict]:
             for (word, count), is_oov in zip(candidates, oov_flags):
                 if len(results) >= n:
                     break
-                if is_oov:
+                if is_oov and not is_standard_word(word):
                     results.append((word, count))
                     seen.add(word)
         results.sort(key=lambda x: x[1], reverse=True)
