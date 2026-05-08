@@ -11,7 +11,7 @@ console = Console()
 # Constants
 # ---------------------------------------------------------------------------
 
-SCRAPE_SINCE      = date(2025, 8, 1)   # ignore posts older than this
+SCRAPE_SINCE      = date(2025, 5, 1)   # ignore posts older than this
 COMMENT_MIN_SCORE = 3                   # only fetch comments for posts with score >= this
 REQUEST_TIMEOUT   = 15                  # seconds
 

@@ -140,22 +140,30 @@ def upload_posts(posts: list[dict], key: str) -> int:
     return total_new
 
 
-def run_scrapers():
-    console.print("\n[bold cyan]─── Scraping Reddit (local IP — no block) ───[/bold cyan]")
+def run_scrapers(backfill: bool = False):
     from data_collection import scrape_reddit, REDDIT_SUBREDDITS
-    scrape_reddit(REDDIT_SUBREDDITS, limit=100, pages=10, workers=5)
-
-    console.print("\n[bold cyan]─── Scraping YouTube ───[/bold cyan]")
     from youtube_scraper import scrape_youtube
-    scrape_youtube()
+
+    if backfill:
+        console.print("\n[bold cyan]─── Backfill: Reddit (May 2025 → now) ───[/bold cyan]")
+        # 50 pages × 100 posts = up to 5,000 posts/subreddit
+        scrape_reddit(REDDIT_SUBREDDITS, limit=100, pages=50, workers=5)
+        console.print("\n[bold cyan]─── Backfill: YouTube (10 videos, 500 comments each) ───[/bold cyan]")
+        scrape_youtube(videos_per_channel=10, comments_per_video=500)
+    else:
+        console.print("\n[bold cyan]─── Scraping Reddit (local IP — no block) ───[/bold cyan]")
+        scrape_reddit(REDDIT_SUBREDDITS, limit=100, pages=10, workers=5)
+        console.print("\n[bold cyan]─── Scraping YouTube ───[/bold cyan]")
+        scrape_youtube()
 
 
-def run_once(key: str, upload_only: bool = False, scrape_only: bool = False):
+def run_once(key: str, upload_only: bool = False, scrape_only: bool = False,
+             backfill: bool = False):
     """Run one scrape+upload cycle. Returns number of new posts added to server."""
     last_id = int(_last_sync_ts())
 
     if not upload_only:
-        run_scrapers()
+        run_scrapers(backfill=backfill)
 
     if scrape_only:
         console.print("[yellow]--scrape-only set, skipping upload.[/yellow]")
@@ -187,12 +195,15 @@ def main():
     parser.add_argument("--scrape-only", action="store_true", help="Scrape but don't upload")
     parser.add_argument("--loop", action="store_true",
                         help=f"Run every {LOOP_INTERVAL // 3600}h forever (Ctrl+C to stop)")
+    parser.add_argument("--backfill", action="store_true",
+                        help="Deep scrape May 2025 → now (50 pages/sub), then upload")
     args = parser.parse_args()
 
     key = _ingest_key()
 
     if not args.loop:
-        run_once(key, upload_only=args.upload_only, scrape_only=args.scrape_only)
+        run_once(key, upload_only=args.upload_only, scrape_only=args.scrape_only,
+                 backfill=args.backfill)
         return
 
     # ── Loop mode ──────────────────────────────────────────────────────────────
