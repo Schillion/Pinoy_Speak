@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { fadeUp, staggerContainer } from "@/lib/motion";
+import PinoyLogo from "@/components/PinoyLogo";
 
 const FEATURES = [
   {
@@ -47,11 +48,11 @@ export default function AboutPage() {
     >
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center gap-4 mb-10">
-        <div className="aurora-border w-14 h-14 rounded-2xl flex items-center justify-center
+        <div className="aurora-border w-14 h-14 rounded-2xl flex items-center justify-center p-2.5
                         bg-gradient-to-br from-blue-500 to-purple-600
                         shadow-[0_0_32px_-6px_rgba(99,102,241,0.7)]
-                        text-white font-bold text-2xl select-none flex-shrink-0">
-          P
+                        select-none flex-shrink-0">
+          <PinoyLogo />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-shimmer leading-tight">Pinoy Speak</h1>

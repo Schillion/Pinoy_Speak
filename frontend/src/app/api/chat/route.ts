@@ -30,16 +30,44 @@ async function getLexicon(): Promise<Record<string, LexiconEntry>> {
   return _lexiconCache;
 }
 
-function buildSystemPrompt(lexicon: Record<string, LexiconEntry>): string {
+// ── Top-slang cache (10-minute TTL) ──────────────────────────────────────────
+let _topSlangCache = "";
+let _topSlangCacheAt = 0;
+
+async function getTopSlangLine(): Promise<string> {
+  if (Date.now() - _topSlangCacheAt < 10 * 60 * 1000 && _topSlangCache) {
+    return _topSlangCache;
+  }
+  try {
+    const res = await fetch(`${PY}/top-slang?n=10`, {
+      signal: AbortSignal.timeout(3000),
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const words: { word: string; count: number }[] = data.words ?? [];
+      _topSlangCache = words.map((w) => `${w.word}(${w.count})`).join(", ");
+      _topSlangCacheAt = Date.now();
+    }
+  } catch {
+    // backend offline — keep previous cache
+  }
+  return _topSlangCache;
+}
+
+function buildSystemPrompt(lexicon: Record<string, LexiconEntry>, topSlang: string): string {
   const wordNames = Object.keys(lexicon).join(", ");
   const count = Object.keys(lexicon).length;
+  const trendingLine = topSlang
+    ? `\n- Top trending words right now by corpus frequency: ${topSlang}`
+    : "";
   // Only word names here — full definitions are injected per-turn via lookupNote
   // to keep the prompt small and avoid token-rate-limit failures (~7k → ~200 tokens).
   return `You are Kuya Slang — a conversational Filipino slang tutor built into Pinoy Speak. Talk like a real person, not a script. You are powered by a live dictionary built from real Filipino social media posts — not hardcoded answers.
 
 About you:
 - Your name is Kuya Slang. When someone asks "sino ka", "who are you", "anong pangalan mo", or any identity question — just introduce yourself naturally: "Ako si Kuya Slang, your Filipino slang tutor!" Don't treat it as a slang word lookup.
-- The dictionary you draw from has ${count} Filipino slang words learned from real Reddit posts: ${wordNames}
+- The dictionary you draw from has ${count} Filipino slang words learned from real Reddit posts: ${wordNames}${trendingLine}
 - When asked about a word, you will get its definition injected below — use it naturally
 - You have broad general knowledge from training. ALWAYS answer factual questions directly — leaders, history, science, pop culture, geography, etc. NEVER say "I don't have live web access" or "I can't look that up" for things you already know. Just answer.
 - Only admit uncertainty for things that genuinely change by the day (today's weather, live scores, breaking news from the last few weeks). For stable facts like "who is the president of X" — you know this, just say it.
@@ -453,7 +481,7 @@ export async function POST(req: NextRequest) {
 
   if (last?.role === "user") logToCorpus(last.content);
 
-  const lexicon = await getLexicon();
+  const [lexicon, topSlang] = await Promise.all([getLexicon(), getTopSlangLine()]);
 
   // Pre-flight word lookup. Only run when we can clearly identify a
   // target word — we don't want to fire LLM calls on every chat turn.
@@ -501,7 +529,7 @@ export async function POST(req: NextRequest) {
     lookupNote = await getRelevantContext(last.content);
   }
 
-  const systemPrompt = buildSystemPrompt(lexicon) + lookupNote;
+  const systemPrompt = buildSystemPrompt(lexicon, topSlang) + lookupNote;
 
   let reply: string | null = null;
   let groqErr = "";

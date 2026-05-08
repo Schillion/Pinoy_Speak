@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import PinoyLogo from "./PinoyLogo";
 
 interface Props {
   onClose: () => void;
@@ -42,11 +43,10 @@ export default function AboutModal({ onClose }: Props) {
         </button>
 
         <div className="flex items-center gap-3 mb-5">
-          <div className="aurora-border w-12 h-12 rounded-2xl flex items-center justify-center
+          <div className="aurora-border w-12 h-12 rounded-2xl flex items-center justify-center p-2
                           bg-gradient-to-br from-blue-500 to-purple-600
-                          shadow-[0_0_28px_-4px_rgba(99,102,241,0.8)]
-                          text-white font-bold text-lg select-none">
-            P
+                          shadow-[0_0_28px_-4px_rgba(99,102,241,0.8)] select-none">
+            <PinoyLogo />
           </div>
           <div>
             <p className="text-[10px] text-white/40 uppercase tracking-widest">About the creator</p>

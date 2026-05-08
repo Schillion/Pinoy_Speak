@@ -5,28 +5,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import AboutModal from "./AboutModal";
+import PinoyLogo from "./PinoyLogo";
 import { useTheme } from "@/context/ThemeContext";
-
-function PinoyLogo({ className = "w-full h-full" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Speech bubble body with tail at bottom-left */}
-      <path
-        d="M4 2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9L4 21V17a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
-        fill="rgba(255,255,255,0.18)"
-        stroke="rgba(255,255,255,0.88)"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      {/* P — vertical bar */}
-      <path d="M8 6v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-      {/* P — bowl (half-circle bump) */}
-      <path d="M8 6h3a2.5 2.5 0 0 1 0 5H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Small sun accent dot — top-right of bubble */}
-      <circle cx="17.5" cy="5.5" r="1.3" fill="rgba(255,255,255,0.55)"/>
-    </svg>
-  );
-}
 
 const NAV: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "/",           label: "Home",       icon: <HomeIcon />     },
