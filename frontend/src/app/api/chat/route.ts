@@ -392,15 +392,18 @@ async function getRelevantContext(userMsg: string): Promise<string> {
 // these match, we extract the captured word as the lookup target.
 const ASK_PATTERNS: RegExp[] = [
   // English variants
-  /(?:what(?:'s|s|\s+is|\s+does|\s+da)?|whats?)\s+["“']?([a-z][a-z'-]{1,30})["”']?\s*(?:mean|stand for|\?)?/i,
-  /\b(?:meaning|definition|define|explain)\s+(?:of\s+)?["“']?([a-z][a-z'-]{1,30})["”']?/i,
-  /["“']?([a-z][a-z'-]{1,30})["”']?\s+(?:meaning|definition|mean|means|ano)/i,
+  /(?:what(?:'s|s|\s+is|\s+does|\s+da)?|whats?)\s+[“”']?([a-z][a-z'-]{1,30})[“”']?\s*(?:mean|stand for|\?)?/i,
+  /\b(?:meaning|definition|define|explain)\s+(?:of\s+)?[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
+  /[“”']?([a-z][a-z'-]{1,30})[“”']?\s+(?:meaning|definition|mean|means|ano)/i,
+  // “do you have X” / “is X in your database?” — user checking if a word is known
+  /\b(?:do\s+you\s+have|have\s+you(?:\s+got)?|is\s+there)\s+[“”']?([a-z][a-z'-]{2,30})[“”']?/i,
+  /\b([a-z][a-z'-]{2,30})\b[^?]{0,35}\b(?:in|nasa)\b[^?]{0,25}\b(?:database|dictionary|lexicon|dict)\b/i,
   // Tagalog variants
-  /(?:ibig\s+sabihin|kahulugan|paliwanagin|paki-explain)\s+(?:ng|nung?|nang)\s+["“']?([a-z][a-z'-]{1,30})["”']?/i,
-  /\bano\s+(?:yung?|ang|ba\s+yung?|po\s+yung?|daw\s+yung?)?\s*["“']?([a-z][a-z'-]{1,30})["”']?/i,
-  /\bsabi\s+ng\s+["“']?([a-z][a-z'-]{1,30})["”']?/i,
+  /(?:ibig\s+sabihin|kahulugan|paliwanagin|paki-explain)\s+(?:ng|nung?|nang)\s+[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
+  /\bano\s+(?:yung?|ang|ba\s+yung?|po\s+yung?|daw\s+yung?)?\s*[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
+  /\bsabi\s+ng\s+[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
   // Bare word(s) — the entire message is just the word, with optional ?
-  /^\s*["“']?([a-z][a-z'-]{2,30})["”']?\s*\??\s*$/i,
+  /^\s*[“”']?([a-z][a-z'-]{2,30})[“”']?\s*\??\s*$/i,
 ];
 
 // Stopwords that should NEVER be sent to verify-slang even if matched
@@ -442,13 +445,16 @@ function detectUnknownWord(
   const tokens = text.match(/[a-z][a-z'-]{2,30}/g) ?? [];
   if (tokens.length === 0 || tokens.length > 8) return null;
 
+  const isQuery = /\?|database|dictionary|lexicon|dict\b|nasa\b|have\b|mayroon/i.test(text);
   for (const t of tokens) {
     if (COMMON_WORDS.has(t)) continue;
-    if (lexicon[t]) return null;        // user is asking about known slang — LLM handles
-    // Skip clearly-English / clearly-Tagalog dictionary words. The LLM
-    // probably already knows the answer if it's a standard word.
-    // We do NOT skip here — we let verify-slang decide. False positives
-    // are cheap (LLM returns is_slang: false → we don't add anything).
+    if (lexicon[t]) {
+      // Known word: only inject its definition when the message is clearly
+      // asking about it (contains "?", "database", etc.). For casual slang
+      // use ("grabe talaga") the LLM handles it without an injected note.
+      if (isQuery) return t;
+      return null;
+    }
     return t;
   }
   return null;
