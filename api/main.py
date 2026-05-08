@@ -451,28 +451,34 @@ def language_mix():
 
 
 @app.get("/word-trends")
-def word_trends(words: str = "", days: int = 30):
+def word_trends(words: str = "", days: int = 30, n: int = 0):
     """
-    Returns per-day occurrence counts for the requested words across the
-    last N days. Powers the Word Popularity chart on the Overview page —
-    the time-series the corpus already has, not the client-side mock.
+    Returns per-day occurrence counts across the last N days.
 
-    Query: ?words=grabe,feels,extra&days=30
-    Shape: { days: ["2026-04-01", ...], series: { grabe: [...], feels: [...] } }
+    Two modes:
+      ?words=grabe,feels&days=30  — explicit word list (legacy)
+      ?n=5&days=30                — auto-pick top-N words within that window
+
+    Shape: { days: [...], series: { word: [...] }, words: [...], available: bool }
     """
     if not _detector or _detector.word_freq_map is None or _detector.word_freq_map.empty:
-        return {"days": [], "series": {}, "available": False}
-
-    requested = [w.strip().lower() for w in (words or "").split(",") if w.strip()]
-    if not requested:
-        return {"days": [], "series": {}, "available": True}
+        return {"days": [], "series": {}, "words": [], "available": False}
 
     days = max(1, min(days, 365))
 
     fm = _detector.word_freq_map
-    # Tail to the last N days. Index is dates (datetime.date objects).
     if len(fm) > days:
         fm = fm.tail(days)
+
+    if n > 0:
+        # Pick the top-N words by total occurrences within this time window
+        totals = fm.sum().sort_values(ascending=False)
+        requested = list(totals.head(n).index)
+    else:
+        requested = [w.strip().lower() for w in (words or "").split(",") if w.strip()]
+
+    if not requested:
+        return {"days": [], "series": {}, "words": [], "available": True}
 
     day_labels = [
         d.isoformat() if hasattr(d, "isoformat") else str(d)
@@ -484,11 +490,9 @@ def word_trends(words: str = "", days: int = 30):
         if word in fm.columns:
             series[word] = [int(v) for v in fm[word].tolist()]
         else:
-            # Word never appeared in the corpus — return zeros so the chart
-            # still draws a flat line instead of dropping the legend entry.
             series[word] = [0] * len(day_labels)
 
-    return {"days": day_labels, "series": series, "available": True}
+    return {"days": day_labels, "series": series, "words": requested, "available": True}
 
 
 @app.get("/top-slang")

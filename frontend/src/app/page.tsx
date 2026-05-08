@@ -120,7 +120,7 @@ export default function Home() {
       .catch(() => null);
   }, [topN]);
 
-  // Reset zoom + hidden-word filter when the underlying range or word count changes
+  // Reset zoom + hidden-word filter when range or word count changes
   useEffect(() => {
     setZoomDom(null);
     panRef.current = null;
@@ -128,22 +128,23 @@ export default function Home() {
     setHiddenWords(new Set());
   }, [range, topN]);
 
-  // Real per-day trends fetched from the backend's word_freq_map. Falls
-  // back to a flat-line shape only when the backend says no corpus is loaded.
+  // Real per-day trends — top-N words are chosen within the selected window,
+  // so the chart reflects what was actually popular during that period.
   type TrendRow = { day: string; [word: string]: string | number };
-  const [trendData, setTrendData] = useState<TrendRow[]>([]);
+  const [trendData, setTrendData]       = useState<TrendRow[]>([]);
+  const [chartWords, setChartWords]     = useState<string[]>([]);
   const [trendsAvailable, setTrendsAvailable] = useState(true);
   const trendsReqId = useRef(0);
 
   useEffect(() => {
-    if (topWords.length === 0) { setTrendData([]); return; }
     const id = ++trendsReqId.current;
-    const wordList = topWords.map((w) => w.word);
-    fetchWordTrends(wordList, range)
+    fetchWordTrends(topN, range)
       .then((res) => {
         if (id !== trendsReqId.current) return;
         setTrendsAvailable(res.available);
+        setChartWords(res.words ?? []);
         if (!res.days.length) { setTrendData([]); return; }
+        const wordList = res.words ?? [];
         const points: TrendRow[] = res.days.map((day, i) => {
           const row: TrendRow = { day };
           for (const w of wordList) {
@@ -158,7 +159,7 @@ export default function Home() {
         setTrendsAvailable(false);
         setTrendData([]);
       });
-  }, [topWords, range]);
+  }, [topN, range]);
 
   const COLORS = WORD_COLORS;
   const tickFormatter = (val: string) => range > 90 ? val.slice(0, 7) : val.slice(5);
@@ -368,15 +369,15 @@ export default function Home() {
             </div>
           </div>
           {/* Word legend — click to toggle a series on/off */}
-          {topWords.length > 0 && (
+          {chartWords.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 mb-3 overflow-x-auto">
-              {topWords.map((w, i) => {
-                const hidden = hiddenWords.has(w.word);
+              {chartWords.map((word, i) => {
+                const hidden = hiddenWords.has(word);
                 return (
                   <button
-                    key={w.word}
-                    onClick={() => toggleWord(w.word)}
-                    title={hidden ? `Show ${w.word}` : `Hide ${w.word}`}
+                    key={word}
+                    onClick={() => toggleWord(word)}
+                    title={hidden ? `Show ${word}` : `Hide ${word}`}
                     className={`flex items-center gap-1.5 transition-opacity hover:opacity-80
                                 ${hidden ? "opacity-30" : "opacity-100"}`}
                   >
@@ -385,7 +386,7 @@ export default function Home() {
                       style={{ background: COLORS[i % COLORS.length] }}
                     />
                     <span className="text-xs text-white/70 font-medium tracking-tight">
-                      {w.word}
+                      {word}
                     </span>
                   </button>
                 );
@@ -528,10 +529,10 @@ export default function Home() {
                   );
                 }}
               />
-              {topWords.map((w, i) => {
-                if (hiddenWords.has(w.word)) return null;
+              {chartWords.map((word, i) => {
+                if (hiddenWords.has(word)) return null;
                 return (
-                  <Area key={w.word} type="monotone" dataKey={w.word}
+                  <Area key={word} type="monotone" dataKey={word}
                         stroke={COLORS[i % COLORS.length]}
                         fill={`url(#grad-${i % COLORS.length})`}
                         strokeWidth={2.5}

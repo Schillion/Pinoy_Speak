@@ -31,6 +31,7 @@ export async function fetchTopSlang(n = 15): Promise<SlangWord[]> {
 export interface WordTrendsResult {
   days: string[];
   series: Record<string, number[]>;
+  words: string[];
   available: boolean;
 }
 
@@ -46,11 +47,10 @@ export async function fetchLanguageMix(): Promise<LanguageMixResult> {
   return res.json();
 }
 
-export async function fetchWordTrends(words: string[], days: number): Promise<WordTrendsResult> {
-  if (words.length === 0) return { days: [], series: {}, available: true };
-  const params = new URLSearchParams({ words: words.join(","), days: String(days) });
+export async function fetchWordTrends(n: number, days: number): Promise<WordTrendsResult> {
+  const params = new URLSearchParams({ n: String(n), days: String(days) });
   const res = await fetch(`${base}/api/word-trends?${params}`, { cache: "no-store" });
-  if (!res.ok) return { days: [], series: {}, available: false };
+  if (!res.ok) return { days: [], series: {}, words: [], available: false };
   return res.json();
 }
 
