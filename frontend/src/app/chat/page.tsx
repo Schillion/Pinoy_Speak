@@ -66,16 +66,15 @@ function makeInitialMessages(): Message[] {
 
 type Mode = "chat" | "flashcard" | "quiz" | "match";
 
-// Persist tutor session across navigations. The messages and active tab
-// would otherwise reset whenever the user clicks Home/Top Slang/etc and
-// comes back, since Next unmounts the page component on route change.
-//
-// Sessions auto-expire after IDLE_RESET_MS of inactivity — matches the
-// ChatGPT pattern where coming back after a long break gives you a fresh
-// chat instead of resuming a stale conversation.
-const STORAGE_KEY     = "pinoyspeak_tutor_session";
-const STORAGE_VERS    = 2;
-const IDLE_RESET_MS   = 60 * 60 * 1000;   // 1 hour
+// Persist tutor session across client-side navigations (user leaves and comes
+// back without refreshing). On an actual browser refresh the JS module is
+// re-evaluated, so _moduleAlive starts false and we wipe the session —
+// matching ChatGPT's "refresh = new chat" behaviour.
+const STORAGE_KEY   = "pinoyspeak_tutor_session";
+const STORAGE_VERS  = 2;
+const IDLE_RESET_MS = 60 * 60 * 1000; // 1 hour idle still resets
+
+let _moduleAlive = false; // false on first JS eval (page load/refresh); true after first mount
 
 const TABS: { id: Mode; label: string; icon: string }[] = [
   { id: "chat",      label: "Chat",       icon: "💬" },
@@ -94,9 +93,15 @@ export default function ChatPage() {
   const bottomRef   = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Restore tutor session from localStorage on mount, but reset to a fresh
-  // greeting if the saved session is older than IDLE_RESET_MS.
+  // On browser refresh _moduleAlive is false → wipe session and start fresh.
+  // On client-side nav back to this page _moduleAlive is already true → restore.
   useEffect(() => {
+    if (!_moduleAlive) {
+      _moduleAlive = true;
+      localStorage.removeItem(STORAGE_KEY);
+      setHydrated(true);
+      return;
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -111,8 +116,7 @@ export default function ChatPage() {
               parsed.mode === "quiz" || parsed.mode === "match") {
             setMode(parsed.mode);
           }
-        } else if (lastActive > 0) {
-          // Saved session is stale — drop it so we start clean
+        } else {
           localStorage.removeItem(STORAGE_KEY);
         }
       }
