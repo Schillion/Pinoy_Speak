@@ -97,8 +97,7 @@ def _fetch_arctic_sub(sub: str, since: date, pages: int = 3,
             "subreddit": sub,
             "after":     since_ts,
             "limit":     limit,
-            "sort":      "created_utc",
-            "order":     "desc",
+            "sort":      "desc",
         }
         if before_ts is not None:
             params["before"] = before_ts
