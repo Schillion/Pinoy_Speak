@@ -1,8 +1,6 @@
 import requests
 import time
 import os
-import tempfile
-import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, date
 from rich.console import Console
@@ -14,23 +12,13 @@ console = Console()
 # ---------------------------------------------------------------------------
 
 SCRAPE_SINCE      = date(2025, 8, 1)   # ignore posts older than this
-COMMENT_WORKERS   = 5                   # parallel threads for comment fetching per task
 COMMENT_MIN_SCORE = 3                   # only fetch comments for posts with score >= this
-REQUEST_TIMEOUT   = 10                  # seconds
+REQUEST_TIMEOUT   = 15                  # seconds
 
-# top/year and top/all skipped — those rarely gain new posts each round
-REDDIT_SORTS = [
-    ("new",    None),
-    ("rising", None),
-    ("hot",    None),
-    ("top",    "month"),
-]
-
-# top/year + top/all run once at startup to seed historical data, then skipped
-REDDIT_SORTS_SEED = [
-    ("top", "year"),
-    ("top", "all"),
-]
+# Arctic Shift — free Reddit archive API that works from cloud IPs.
+# Replaces the raw reddit.com/r/sub.json endpoint which is blocked on Fly.io.
+ARCTIC_BASE    = "https://arctic-shift.photon-reddit.com/api"
+ARCTIC_HEADERS = {"User-Agent": "PinoySpeak/1.0 language-research"}
 
 REDDIT_SUBREDDITS = [
     # General
@@ -82,179 +70,189 @@ def _parse_date(date_str: str) -> date:
         return date.today()
 
 
-# ---------------------------------------------------------------------------
-# Reddit — per-post comment fetch (runs inside a thread pool)
-# ---------------------------------------------------------------------------
-
-def _fetch_comments(task: tuple) -> list[dict]:
-    sub, post_id, session = task
-    results = []
-    try:
-        cr = session.get(
-            f"https://www.reddit.com/r/{sub}/comments/{post_id}.json?limit=5",
-            timeout=REQUEST_TIMEOUT,
-        )
-        parsed = cr.json() if cr.status_code == 200 else None
-        if parsed and len(parsed) > 1:
-            for c in parsed[1]['data']['children']:
-                body = c['data'].get('body', '').strip().replace('\n', ' ')
-                if body and body not in ('[deleted]', '[removed]'):
-                    results.append({
-                        'text':   body,
-                        'date':   _utc_to_date(c['data'].get('created_utc')),
-                        'user':   c['data'].get('author'),
-                        'likes':  c['data'].get('score', 0),
-                        'source': 'reddit',
-                    })
-    except Exception:
-        pass
-    return results
+def _to_ts(d: date) -> int:
+    return int(datetime(d.year, d.month, d.day, tzinfo=timezone.utc).timestamp())
 
 
 # ---------------------------------------------------------------------------
-# Reddit — one (subreddit, sort) task
+# Arctic Shift — fetch posts for one subreddit
 # ---------------------------------------------------------------------------
 
-def _fetch_one(sub: str, sort: str, time_filter: str | None,
-               limit: int, pages: int, headers: dict,
-               since: date | None = None, until: date | None = None) -> list[dict]:
-    effective_since = since or SCRAPE_SINCE
-    posts = []
+def _fetch_arctic_sub(sub: str, since: date, pages: int = 3,
+                      limit: int = 100) -> list[dict]:
+    """
+    Fetches posts from Arctic Shift for `sub` created on or after `since`.
+    Paginates newest-first using the oldest timestamp on each page as the
+    next `before` cursor, stopping when posts fall below `since`.
+    """
+    posts: list[dict] = []
+    since_ts  = _to_ts(since)
+    before_ts: int | None = None
+
     session = requests.Session()
-    session.headers.update(headers)
+    session.headers.update(ARCTIC_HEADERS)
 
-    after = None
-    base  = f"https://www.reddit.com/r/{sub}/{sort}.json?limit={limit}"
-    if time_filter:
-        base += f"&t={time_filter}"
+    for _ in range(pages):
+        params: dict = {
+            "subreddit": sub,
+            "after":     since_ts,
+            "limit":     limit,
+            "sort":      "created_utc",
+            "order":     "desc",
+        }
+        if before_ts is not None:
+            params["before"] = before_ts
 
-    # Single pool reused across all pages for this task
-    with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as comment_pool:
-        for _ in range(pages):
-            url = base + (f"&after={after}" if after else "")
-            try:
-                r = None
-                for attempt in range(3):
-                    try:
-                        r = session.get(url, timeout=REQUEST_TIMEOUT)
-                        break
-                    except requests.exceptions.Timeout:
-                        if attempt < 2:
-                            time.sleep(4 * (attempt + 1))
-                        else:
-                            raise
-                if r.status_code == 429:
-                    time.sleep(12)
-                    r = session.get(url, timeout=REQUEST_TIMEOUT)
-                if r.status_code != 200:
-                    break
-
-                data     = r.json().get('data', {})
-                children = data.get('children', [])
-                if not children:
-                    break
-
-                page_posts:    list[dict]  = []
-                comment_tasks: list[tuple] = []
-                page_all_old = True
-
-                for post in children:
-                    d             = post['data']
-                    post_date_str = _utc_to_date(d.get('created_utc'))
-                    post_date     = _parse_date(post_date_str)
-
-                    if post_date < effective_since:
-                        continue
-                    if until and post_date > until:
-                        continue
-                    page_all_old = False
-
-                    text = (d.get('title', '') + ' ' + d.get('selftext', '')).strip().replace('\n', ' ')
-                    if not text:
-                        continue
-
-                    page_posts.append({
-                        'text':   text,
-                        'date':   post_date_str,
-                        'user':   d.get('author'),
-                        'likes':  d.get('score', 0),
-                        'source': 'reddit',
-                    })
-
-                    if d.get('score', 0) >= COMMENT_MIN_SCORE:
-                        comment_tasks.append((sub, d['id'], session))
-
-                posts.extend(page_posts)
-
-                if comment_tasks:
-                    for comment_list in comment_pool.map(_fetch_comments, comment_tasks):
-                        posts.extend(comment_list)
-
-                # early exit for time-ordered sorts once all posts are too old
-                # "top" is score-ordered, not time-ordered — never early-exit on it
-                if page_all_old and sort in ("new", "rising"):
-                    break
-
-                after = data.get('after')
-                if not after:
-                    break
-
-                time.sleep(0.2)
-
-            except Exception as e:
-                console.print(f"[red]r/{sub} {sort}: {e}[/red]")
+        try:
+            r = session.get(f"{ARCTIC_BASE}/posts/search",
+                            params=params, timeout=REQUEST_TIMEOUT)
+            if r.status_code == 429:
+                time.sleep(12)
+                r = session.get(f"{ARCTIC_BASE}/posts/search",
+                                params=params, timeout=REQUEST_TIMEOUT)
+            if r.status_code != 200:
                 break
+
+            batch = r.json().get("data", [])
+            if not batch:
+                break
+
+            min_ts: int | None = None
+            for post in batch:
+                ts       = post.get("created_utc") or post.get("created", 0)
+                ts_int   = int(float(ts)) if ts else 0
+                post_date = _parse_date(_utc_to_date(ts_int))
+
+                if post_date < since:
+                    continue
+
+                title    = post.get("title", "")
+                selftext = post.get("selftext", "") or ""
+                text     = (title + " " + selftext).strip().replace("\n", " ")
+                if not text:
+                    continue
+
+                posts.append({
+                    "text":   text,
+                    "date":   _utc_to_date(ts_int),
+                    "user":   post.get("author"),
+                    "likes":  post.get("score", 0),
+                    "source": "reddit",
+                    "_id":    post.get("id", ""),
+                    "_sub":   sub,
+                })
+
+                if ts_int and (min_ts is None or ts_int < min_ts):
+                    min_ts = ts_int
+
+            if min_ts is None or min_ts <= since_ts:
+                break  # reached the cutoff — nothing older to fetch
+            before_ts = min_ts - 1
+            time.sleep(0.5)
+
+        except Exception as e:
+            console.print(f"[red]Arctic r/{sub}: {e}[/red]")
+            break
 
     return posts
 
 
 # ---------------------------------------------------------------------------
-# Reddit — parallel subreddit scraper
+# Arctic Shift — fetch comments for a batch of post IDs
+# ---------------------------------------------------------------------------
+
+def _fetch_arctic_comments(post_ids: list[str]) -> list[dict]:
+    """Fetch top comments for a list of post IDs via Arctic Shift."""
+    comments: list[dict] = []
+    if not post_ids:
+        return comments
+
+    session = requests.Session()
+    session.headers.update(ARCTIC_HEADERS)
+
+    # Arctic Shift accepts up to ~20 link IDs at a time
+    for i in range(0, len(post_ids), 20):
+        batch = post_ids[i : i + 20]
+        try:
+            r = session.get(
+                f"{ARCTIC_BASE}/comments/search",
+                params={"link_id": ",".join(f"t3_{pid}" for pid in batch), "limit": 100},
+                timeout=REQUEST_TIMEOUT,
+            )
+            if r.status_code != 200:
+                continue
+            for c in r.json().get("data", []):
+                body = (c.get("body") or "").strip().replace("\n", " ")
+                if not body or body in ("[deleted]", "[removed]"):
+                    continue
+                comments.append({
+                    "text":   body,
+                    "date":   _utc_to_date(c.get("created_utc") or c.get("created", 0)),
+                    "user":   c.get("author"),
+                    "likes":  c.get("score", 0),
+                    "source": "reddit",
+                })
+            time.sleep(0.4)
+        except Exception:
+            pass
+
+    return comments
+
+
+# ---------------------------------------------------------------------------
+# Arctic Shift — parallel subreddit scraper (drop-in for scrape_reddit)
 # ---------------------------------------------------------------------------
 
 def scrape_reddit(subreddits: list[str] = None, limit: int = 100,
-                  pages: int = 10, workers: int = 5,
+                  pages: int = 3, workers: int = 3,
                   seed: bool = False,
                   output_file: str = "data/raw_reddit.json") -> list[dict]:
     if subreddits is None:
         subreddits = REDDIT_SUBREDDITS
 
-    headers = {'User-Agent': 'Mozilla/5.0 PinoySpeakBot/1.0'}
-    sorts   = REDDIT_SORTS + (REDDIT_SORTS_SEED if seed else [])
+    fetch_pages = pages * 3 if seed else pages  # seed gets more pages
 
-    tasks = [(sub, sort, tf) for sub in subreddits for sort, tf in sorts]
-    console.print(f"\n[bold cyan]Reddit — {len(tasks)} tasks, {workers} outer workers, "
-                  f"{COMMENT_WORKERS} comment workers each"
-                  f"{' [seed]' if seed else ''}[/bold cyan]")
+    console.print(
+        f"\n[bold cyan]Arctic Shift — {len(subreddits)} subreddits, "
+        f"{workers} workers, {fetch_pages} pages each"
+        f"{' [seed]' if seed else ''}[/bold cyan]"
+    )
 
-    all_posts = []
+    all_posts: list[dict] = []
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = {
-            executor.submit(_fetch_one, sub, sort, tf, limit, pages, headers): (sub, sort)
-            for sub, sort, tf in tasks
+            executor.submit(_fetch_arctic_sub, sub, SCRAPE_SINCE, fetch_pages, limit): sub
+            for sub in subreddits
         }
         completed = 0
         for future in as_completed(futures):
             completed += 1
-            sub, sort = futures[future]
+            sub = futures[future]
             try:
                 result = future.result()
+                # Also fetch comments for posts with enough score
+                high_score_ids = [
+                    p["_id"] for p in result
+                    if p.get("likes", 0) >= COMMENT_MIN_SCORE and p.get("_id")
+                ]
+                if high_score_ids:
+                    result.extend(_fetch_arctic_comments(high_score_ids))
                 all_posts.extend(result)
                 console.print(
-                    f"[dim]  ({completed}/{len(tasks)}) r/{sub} {sort}: {len(result)} posts[/dim]"
+                    f"[dim]  ({completed}/{len(subreddits)}) r/{sub}: "
+                    f"{len(result)} posts[/dim]"
                 )
             except Exception as e:
-                console.print(f"[red]  r/{sub} {sort} failed: {e}[/red]")
+                console.print(f"[red]  r/{sub} failed: {e}[/red]")
 
-    return _save_and_return(all_posts, output_file, "Reddit")
+    return _save_and_return(all_posts, output_file, "Arctic Shift")
 
 
 # ---------------------------------------------------------------------------
-# Focused seed scrape — Aug 2025 → now, targeting ≥50 posts/day
+# Focused seed scrape — Aug 2025 → now
 # ---------------------------------------------------------------------------
 
-# 13 subreddits most likely to produce Filipino slang and code-switched text.
-# These are used for both the initial seed scrape and ongoing collection.
+# 15 subreddits most likely to produce Filipino slang and code-switched text.
 CORE_SUBREDDITS = [
     # University communities — primary slang producers
     "peyups", "ADMU", "dlsu", "Tomasino", "RateUPProfs",
@@ -268,58 +266,22 @@ CORE_SUBREDDITS = [
     "ChikaPH", "TiktokPH", "BPOinPH",
 ]
 
-# Per-sort page counts:
-#   new  × 8 pages = 800 posts/sub  — chronological coverage across days
-#   top/year × 4 pages = 400 posts/sub — most-shared posts from Aug 2025+
-# 13 subs × 1 200 posts = 15 600 potential → ~50+ posts/day after dedup & filter
-_SEED_TASKS: list[tuple[str, str | None, int]] = [
-    ("new",  None,   8),
-    ("top", "year",  4),
-]
-
 
 def scrape_seed_data(output_file: str = "data/raw_reddit.json",
                      workers: int = 5) -> list[dict]:
-    """
-    One-shot focused scrape to seed the Aug 2025+ dataset.
-    Run this once before starting the continuous loop.
-    """
-    headers = {'User-Agent': 'Mozilla/5.0 PinoySpeakBot/1.0'}
-    tasks = [
-        (sub, sort, tf, pages)
-        for sub in CORE_SUBREDDITS
-        for sort, tf, pages in _SEED_TASKS
-    ]
-
+    """One-shot historical scrape. Run this once to seed the Aug 2025+ dataset."""
     console.print(
-        f"\n[bold cyan]Seed Scrape — {len(CORE_SUBREDDITS)} subreddits, "
-        f"{len(tasks)} tasks (Aug 2025 → now)[/bold cyan]"
+        f"\n[bold cyan]Seed Scrape — {len(CORE_SUBREDDITS)} subreddits "
+        f"(Aug 2025 → now)[/bold cyan]"
     )
-    console.print("[dim]  new×8 pages + top/year×4 pages per subreddit[/dim]")
-
-    all_posts = []
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = {
-            executor.submit(
-                _fetch_one, sub, sort, tf, 100, pages, headers, SCRAPE_SINCE
-            ): (sub, sort)
-            for sub, sort, tf, pages in tasks
-        }
-        completed = 0
-        for future in as_completed(futures):
-            completed += 1
-            sub, sort = futures[future]
-            try:
-                result = future.result()
-                all_posts.extend(result)
-                console.print(
-                    f"[dim]  ({completed}/{len(tasks)}) r/{sub} {sort}: "
-                    f"{len(result)} posts[/dim]"
-                )
-            except Exception as e:
-                console.print(f"[red]  r/{sub} {sort} failed: {e}[/red]")
-
-    return _save_and_return(all_posts, output_file, "Seed")
+    return scrape_reddit(
+        subreddits=CORE_SUBREDDITS,
+        limit=100,
+        pages=10,   # 10 pages × 100 = up to 1,000 posts/sub
+        workers=workers,
+        seed=True,
+        output_file=output_file,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -357,21 +319,20 @@ def _save_and_return(records: list[dict], output_file: str, label: str) -> list[
     new_records = []
     for r in records:
         t = r.get('text')
-        if not t: continue
-        
+        if not t:
+            continue
         d = str(r.get('date'))[:10] if r.get('date') else str(date.today())
         u = r.get('user')
         l = r.get('likes', 0)
         s = r.get('source', 'reddit')
-        
         try:
-            cursor.execute("""
-            INSERT INTO posts (text, date, user, likes, source)
-            VALUES (?, ?, ?, ?, ?)
-            """, (t, d, u, l, s))
+            cursor.execute(
+                "INSERT INTO posts (text, date, user, likes, source) VALUES (?, ?, ?, ?, ?)",
+                (t, d, u, l, s),
+            )
             new_records.append(r)
         except sqlite3.IntegrityError:
-            pass # already exists
+            pass  # duplicate
 
     conn.commit()
     cursor.execute("SELECT COUNT(*) FROM posts")
