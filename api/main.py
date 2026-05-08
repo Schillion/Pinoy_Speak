@@ -131,8 +131,11 @@ def _continuous_learner() -> None:
 
             # ── 2b. Scrape YouTube comments every YOUTUBE_INTERVAL ──────────
             if now - last_yt_scrape_at >= YOUTUBE_INTERVAL:
-                scrape_youtube()
-                last_yt_scrape_at = now
+                last_yt_scrape_at = now  # update before attempt so a crash doesn't retry every cycle
+                try:
+                    scrape_youtube()
+                except Exception as yt_err:
+                    print(f"[learner] YouTube scrape skipped: {yt_err}")
 
             # ── 3. Retrain when corpus has grown enough ──────────────────────
             if os.path.exists(_DATA_PATH):
@@ -202,6 +205,14 @@ async def lifespan(app: FastAPI):
         print("[startup] RAG index built")
     except Exception as e:
         print(f"[startup] RAG index skipped: {e}")
+
+    # Pre-build the frequency map in background so /word-trends works on first request
+    if _detector:
+        async def _prebuild_freq_map():
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, lambda: _detector.word_freq_map)
+            print("[startup] Frequency map pre-built")
+        asyncio.create_task(_prebuild_freq_map())
 
     # Start the async learn worker
     asyncio.create_task(_learn_worker())

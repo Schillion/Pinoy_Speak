@@ -9,5 +9,6 @@ spacy
 calamancy
 rich
 # Optional: add GROQ_API_KEY to .env for Groq fallback (14 400 free req/day)
-orjson  
- 
+orjson
+yt-dlp>=2024.1.0
+rapidfuzz>=3.0
