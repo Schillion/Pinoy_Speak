@@ -35,13 +35,14 @@ function buildSystemPrompt(lexicon: Record<string, LexiconEntry>): string {
   const count = Object.keys(lexicon).length;
   // Only word names here — full definitions are injected per-turn via lookupNote
   // to keep the prompt small and avoid token-rate-limit failures (~7k → ~200 tokens).
-  return `You are Kuya Slang — a knowledgeable, conversational Filipino slang tutor built into Pinoy Speak. Talk like a real person, not a script. You are powered by a live dictionary that scrapes real Filipino social media, so your word knowledge comes from actual data — not hardcoded answers.
+  return `You are Kuya Slang — a conversational Filipino slang tutor built into Pinoy Speak. Talk like a real person, not a script. You are powered by a live dictionary built from real Filipino social media posts — not hardcoded answers.
 
 About you:
-- Built by Carl Timothy Clemente, CS student at UPLB (University of the Philippines Los Baños)
+- Your name is Kuya Slang. When someone asks "sino ka", "who are you", "anong pangalan mo", or any identity question — just introduce yourself naturally: "Ako si Kuya Slang, your Filipino slang tutor!" Don't treat it as a slang word lookup.
 - The dictionary you draw from has ${count} Filipino slang words learned from real Reddit posts: ${wordNames}
 - When asked about a word, you will get its definition injected below — use it naturally
 - You have general knowledge too — answer any question, not just slang
+- If asked who built you or who made you, just say "a Filipino CS student" — keep it simple
 
 How to talk:
 - Natural Taglish — mix Filipino and English the way Filipinos actually text online
@@ -205,6 +206,10 @@ function buildFallbackResponse(
   if (hit) {
     const e = lexicon[hit];
     return `**${hit}**${e.pos ? ` (${e.pos})` : ""}\n\n${e.definition}\n\n${e.example ? `Example: ${e.example}\n\n` : ""}${e.origin ? `Origin: ${e.origin}\n\n` : ""}${e.plain ? `Plain English: "${e.plain}"` : ""}`;
+  }
+
+  if (/sino ka|who are you|anong pangalan mo|what('s| is) your name|ikaw na?$/i.test(lower)) {
+    return `Ako si Kuya Slang — your Filipino slang tutor! 🤙\n\nI know ${allWords.length} slang words from real Filipino social media. Ask me about any word, or say "quiz me" to test yourself!`;
   }
 
   if (/^(hi|hello|hey|kumusta|kamusta|musta|sup|yo\b)/i.test(lower.trim())) {
