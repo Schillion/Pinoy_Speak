@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceArea,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { fetchTopSlang, fetchLexicon } from "@/lib/api";
 import type { LexiconEntry, SlangWord } from "@/types";
@@ -170,82 +170,7 @@ export default function TopSlang() {
     setSelected({ word, anchor });
   };
 
-  // Drag-to-zoom state for the bar chart (range of words)
-  const [dragStart, setDragStart] = useState<string | null>(null);
-  const [dragEnd,   setDragEnd]   = useState<string | null>(null);
-  const [zoomDom,   setZoomDom]   = useState<[string, string] | null>(null);
-  const [hoverWord, setHoverWord] = useState<string | null>(null);
   const draggedRef = useRef(false);
-  const chartWrapRef = useRef<HTMLDivElement>(null);
-
-  // Global mouseup — finalizes a drag even if released outside the chart
-  useEffect(() => {
-    if (!dragStart) return;
-    const onUp = () => {
-      if (dragStart && dragEnd && draggedRef.current) {
-        const startIdx = words.findIndex((w) => w.word === dragStart);
-        const endIdx   = words.findIndex((w) => w.word === dragEnd);
-        if (startIdx !== -1 && endIdx !== -1 && startIdx !== endIdx) {
-          const [a, b] = [startIdx, endIdx].sort((x, y) => x - y);
-          setZoomDom([words[a].word, words[b].word]);
-        }
-      }
-      setDragStart(null);
-      setDragEnd(null);
-    };
-    document.addEventListener("mouseup", onUp);
-    return () => document.removeEventListener("mouseup", onUp);
-  }, [dragStart, dragEnd, words]);
-
-  // Wheel zoom — scroll over the chart to zoom in/out around the cursor
-  // Snapshot latest data into refs — see the matching comment on the Overview
-  // chart. Without this, mouse moves re-bind the listener and drop wheel events.
-  const wordsRef     = useRef(words);
-  const zoomDomRef   = useRef(zoomDom);
-  const hoverWordRef = useRef(hoverWord);
-  useEffect(() => { wordsRef.current     = words;     }, [words]);
-  useEffect(() => { zoomDomRef.current   = zoomDom;   }, [zoomDom]);
-  useEffect(() => { hoverWordRef.current = hoverWord; }, [hoverWord]);
-
-  useEffect(() => {
-    const el = chartWrapRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      const data = wordsRef.current;
-      if (data.length === 0) return;
-      e.preventDefault();
-      const fullEnd = data.length - 1;
-      const dom = zoomDomRef.current;
-      let [sIdx, eIdx] = dom
-        ? [data.findIndex((w) => w.word === dom[0]),
-           data.findIndex((w) => w.word === dom[1])]
-        : [0, fullEnd];
-      if (sIdx < 0 || eIdx < 0) return;
-      if (sIdx > eIdx) [sIdx, eIdx] = [eIdx, sIdx];
-
-      const range = eIdx - sIdx + 1;
-      const factor = e.deltaY > 0 ? 1.25 : 0.8;
-      const newRange = Math.max(2, Math.min(data.length, Math.round(range * factor)));
-      if (newRange >= data.length) { setZoomDom(null); return; }
-      if (newRange === range) return;
-
-      const hover = hoverWordRef.current;
-      const centerIdx = hover ? data.findIndex((w) => w.word === hover) : Math.round((sIdx + eIdx) / 2);
-      const anchor = centerIdx >= 0 ? centerIdx : Math.round((sIdx + eIdx) / 2);
-
-      const frac = range > 1 ? (anchor - sIdx) / (range - 1) : 0.5;
-      let newStart = Math.round(anchor - frac * (newRange - 1));
-      let newEnd   = newStart + newRange - 1;
-      if (newStart < 0) { newEnd -= newStart; newStart = 0; }
-      if (newEnd > fullEnd) { newStart -= (newEnd - fullEnd); newEnd = fullEnd; }
-      newStart = Math.max(0, newStart);
-      newEnd   = Math.min(fullEnd, newEnd);
-
-      setZoomDom([data[newStart].word, data[newEnd].word]);
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
 
   const load = useCallback(async (count: TopN, p: "today" | "overall") => {
     const id = ++reqId.current;
@@ -271,11 +196,6 @@ export default function TopSlang() {
 
 
 
-  useEffect(() => {
-    setZoomDom(null);
-    setDragStart(null);
-    setDragEnd(null);
-  }, [n]);
 
   return (
     <div>
@@ -358,48 +278,15 @@ export default function TopSlang() {
             <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-white/25 hidden sm:inline">
-                    Scroll to zoom · drag to select range · click for details
-                  </span>
-                  {zoomDom && (
-                    <motion.button
-                      initial={{ opacity: 0, x: 4 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      onClick={() => setZoomDom(null)}
-                      className="text-[11px] text-blue-300 hover:text-blue-200 transition-colors
-                                 border border-blue-400/30 rounded-md px-2 py-0.5
-                                 bg-blue-500/[.08] hover:bg-blue-500/[.15]"
-                    >
-                      Reset zoom
-                    </motion.button>
-                  )}
-                </div>
+                <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
               </div>
-              <div ref={chartWrapRef} style={{ overscrollBehavior: "contain", flex: 1, minHeight: 0 }}>
+              <div style={{ flex: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                 <BarChart
                   data={words}
                   barCategoryGap="22%"
                   barGap={0}
                   margin={{ top: 4, right: 4, bottom: 28, left: 0 }}
-                  onMouseDown={(e) => {
-                    if (e && e.activeLabel) {
-                      draggedRef.current = false;
-                      setDragStart(String(e.activeLabel));
-                    }
-                  }}
-                  onMouseMove={(e) => {
-                    if (e && e.activeLabel) {
-                      setHoverWord(String(e.activeLabel));
-                      if (dragStart) {
-                        if (String(e.activeLabel) !== dragStart) draggedRef.current = true;
-                        setDragEnd(String(e.activeLabel));
-                      }
-                    }
-                  }}
-                  onMouseLeave={() => { setHoverWord(null); }}
-                  style={{ cursor: dragStart ? "ew-resize" : "crosshair", userSelect: "none" }}
                 >
                   <defs>
                     {BAR_COLORS.map((c, i) => (
@@ -411,8 +298,6 @@ export default function TopSlang() {
                   </defs>
                   <XAxis dataKey="word" tick={{ fontSize: 10 }}
                          angle={-40} textAnchor="end" interval="preserveStartEnd"
-                         domain={zoomDom ?? undefined}
-                         allowDataOverflow
                          minTickGap={8}
                          type="category" />
                   <YAxis tick={{ fontSize: 10 }} width={28} />
@@ -433,8 +318,6 @@ export default function TopSlang() {
                        style={{ cursor: "pointer" }}
                        animationDuration={900}
                        onClick={(data) => {
-                         // Suppress modal open if this click was the end of a drag
-                         if (draggedRef.current) { draggedRef.current = false; return; }
                          const w = words.find((x) => x.word === data.word);
                          if (w) setSelected({ word: w, anchor: null });
                        }}>
@@ -442,16 +325,6 @@ export default function TopSlang() {
                       <Cell key={i} fill={`url(#bar-grad-${i % BAR_COLORS.length})`} />
                     ))}
                   </Bar>
-                  {dragStart && dragEnd && (
-                    <ReferenceArea
-                      x1={dragStart}
-                      x2={dragEnd}
-                      strokeOpacity={0.4}
-                      stroke="#60a5fa"
-                      fill="#60a5fa"
-                      fillOpacity={0.12}
-                    />
-                  )}
                 </BarChart>
               </ResponsiveContainer>
               </div>

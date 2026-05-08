@@ -519,7 +519,9 @@ def corpus_stats():
     from slang_enricher import load_discovered
     counts, total = scan_corpus()
     top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS and not is_standard_word(w)), "—")
-    lexicon_count = len(SEED_LEXICON) + sum(1 for w in load_discovered() if w not in SEED_LEXICON)
+    # Count only words that actually appear in the corpus — matches the /lexicon endpoint count
+    all_tracked = list(SEED_LEXICON.keys()) + [w for w in load_discovered() if w not in SEED_LEXICON]
+    lexicon_count = sum(1 for w in all_tracked if counts.get(w, 0) > 0)
     return {"total_posts": total, "top_slang": top, "slang_count": lexicon_count}
 
 

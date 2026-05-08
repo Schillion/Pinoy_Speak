@@ -61,8 +61,24 @@ const STEPS = [
   },
 ];
 
+const ALL_SUBREDDITS = [
+  "Philippines","CasualPH","truePhilippines","AskPH",
+  "studentsph","peyups","Tomasino","ADMU","dlsu","RateUPProfs",
+  "phinvest","phcareers","buhaydigital","phmoneysaving",
+  "filipinofood","PHitness","beautytalkph",
+  "phgaming","PHGamers","mobilelegendsPINAS","PinoyAnime",
+  "OPM","indiemusicph",
+  "PHmemes","pinoymemes","pinoypasttensed",
+  "ChikaPH","TiktokPH",
+  "adultingph","PanganaySupportGroup","BPOinPH",
+  "phclassifieds","Cebu","Manila",
+  "PinoyProgrammer","InternetPH",
+  "OffMyChestPH","MentalHealthPH","PHsports",
+];
+
 export default function Home() {
   const [stats, setStats]         = useState<CorpusStats | null>(null);
+  const [showSubInfo, setShowSubInfo] = useState(false);
   const [topWords, setTopWords]   = useState<SlangWord[]>([]);
   const [range, setRange]         = useState(30);
   const [topN, setTopN]           = useState(5);
@@ -297,13 +313,36 @@ export default function Home() {
                 accent="blue"
               />
             </motion.div>
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="relative">
               <MetricCard
                 label="Posts collected"
                 value={stats?.total_posts ?? 0}
-                sub="r/Tagalog · r/Philippines · r/AskPilipinas"
+                sub={`${ALL_SUBREDDITS.length} subreddits`}
                 accent="cyan"
               />
+              <button
+                onClick={() => setShowSubInfo((v) => !v)}
+                className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center
+                           text-[10px] font-bold text-white/40 hover:text-white/80 border border-white/20
+                           hover:border-white/50 transition-colors"
+                aria-label="Show all subreddits"
+              >
+                i
+              </button>
+              {showSubInfo && (
+                <div className="absolute top-10 right-0 z-50 w-72 rounded-xl p-3
+                                bg-[#0a1224]/95 backdrop-blur-xl border border-white/[.08]
+                                shadow-[0_12px_32px_-12px_rgba(0,0,0,0.6)]">
+                  <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">All scraped subreddits</p>
+                  <div className="flex flex-wrap gap-1">
+                    {ALL_SUBREDDITS.map((s) => (
+                      <span key={s} className="text-[10px] bg-white/[.06] rounded px-1.5 py-0.5 text-white/60">
+                        r/{s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           </>
         )}
@@ -604,7 +643,7 @@ export default function Home() {
           </p>
           <p className="text-xs text-white/35 mt-2">
             <span className="font-medium text-white/55">Data sources:</span>{" "}
-            Posts are scraped from Filipino communities on Reddit (r/Tagalog, r/Philippines, r/AskPilipinas, r/Pilipinas).
+            Posts are scraped from {ALL_SUBREDDITS.length} Filipino communities on Reddit (r/Philippines, r/CasualPH, r/OPM, r/PHmemes and more).
             New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
           </p>
         </div>
