@@ -66,7 +66,7 @@ class SlangDetector:
 
     def _build_frequency_map(self, data_path: str) -> pd.DataFrame:
         """
-        Builds a date × slang-word frequency matrix for the last 365 days.
+        Builds a date × slang-word frequency matrix for the last 90 days.
         Only tracks words in the slang lexicon to keep memory bounded.
         """
         if not os.path.exists(data_path):
@@ -77,7 +77,7 @@ class SlangDetector:
             from dictionary_service import SEED_LEXICON
             from datetime import date, timedelta
 
-            cutoff = (date.today() - timedelta(days=365)).isoformat()
+            cutoff = (date.today() - timedelta(days=90)).isoformat()
             conn = sqlite3.connect(data_path)
             df = pd.read_sql(
                 "SELECT text, date FROM posts WHERE date >= ?",

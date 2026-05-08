@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(
       `${PY}/word-trends?words=${encodeURIComponent(words)}&days=${encodeURIComponent(days)}`,
-      { cache: "no-store", signal: AbortSignal.timeout(8000) },
+      { cache: "no-store", signal: AbortSignal.timeout(45000) },
     );
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
