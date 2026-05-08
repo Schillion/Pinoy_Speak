@@ -67,10 +67,14 @@ export default function WordModal({
 
   useEffect(() => {
     setLoadingEx(true);
+    const wordRe = new RegExp(
+      `\\b${word.word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "i",
+    );
     fetchPosts(1, 12, word.word)
       .then((data) => {
         const texts = data.posts
-          .filter((p) => p.text?.toLowerCase().includes(word.word.toLowerCase()))
+          .filter((p) => wordRe.test(p.text ?? ""))
           .slice(0, 4)
           .map((p) => p.text ?? "");
         setExamples(texts.filter(Boolean));

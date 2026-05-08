@@ -1022,7 +1022,23 @@ def lexicon():
                 "is_ambiguous":  meta.get("formation_type") == "semantic_shift",
             }
 
-    return {"entries": combined, "count": len(combined)}
+    # Only surface words that actually appear in the scraped corpus.
+    # scan_corpus() uses word-boundary regex, so single-word slang must appear
+    # as a standalone token. Multi-word phrases use a substring check against posts.
+    counts, _ = scan_corpus()
+    _posts_cache = None  # lazily loaded only for multi-word phrases
+
+    def _in_corpus(word: str) -> bool:
+        if " " in word:
+            nonlocal _posts_cache
+            if _posts_cache is None:
+                _posts_cache = load_posts()
+            kw = word.lower()
+            return any(kw in (p.get("text") or "").lower() for p in _posts_cache)
+        return counts.get(word, 0) > 0
+
+    filtered = {w: v for w, v in combined.items() if _in_corpus(w)}
+    return {"entries": filtered, "count": len(filtered)}
 
 
 class RelevantContextRequest(BaseModel):
@@ -1049,8 +1065,10 @@ def posts(page: int = 1, limit: int = 50, search: str = ""):
     try:
         all_posts = load_posts()
         if search.strip():
-            kw = search.strip().lower()
-            all_posts = [p for p in all_posts if kw in (p.get("text") or "").lower()]
+            import re as _re
+            kw = _re.escape(search.strip().lower())
+            _pat = _re.compile(r'\b' + kw + r'\b')
+            all_posts = [p for p in all_posts if _pat.search((p.get("text") or "").lower())]
         total = len(all_posts)
         all_posts = sorted(all_posts, key=lambda p: p.get("date") or "", reverse=True)
         page_posts = all_posts[(page - 1) * limit : page * limit]
