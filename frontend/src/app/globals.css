@@ -212,10 +212,12 @@ html[data-theme="light"] .card {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-/* MetricCard dark mode — opaque dark surface prevents purple mesh bleeding through glass */
+/* MetricCard dark mode — fully opaque so the purple mesh body bg doesn't bleed through */
 .metric-card {
-  background: rgba(8, 14, 28, 0.94) !important;
+  background: #0a1020 !important;
   background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 /* MetricCard light mode: solid white, no backdrop blur */
 html[data-theme="light"] .metric-card {
