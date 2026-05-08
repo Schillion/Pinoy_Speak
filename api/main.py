@@ -68,17 +68,20 @@ def _continuous_learner() -> None:
     from scrape import merge_all_sources
     from slang_enricher import find_slang_candidates, enrich_candidates, audit_discovered
     from api.corpus_utils import scan_corpus
+    from youtube_scraper import scrape_youtube
 
     SIZE_DELTA      = 200_000   # ~300–500 new posts trigger retrain
     CHECK_INTERVAL  = 120       # seconds between model-watch ticks
     SCRAPE_INTERVAL = 600       # seconds between Reddit scrape rounds
+    YOUTUBE_INTERVAL = 3600     # seconds between YouTube scrape rounds (hourly)
     AUDIT_INTERVAL  = 3600      # re-audit discovered lexicon every hour
 
-    pipeline         = PinoySpeakPipeline()
-    last_model_mtime = 0.0
-    last_corpus_size = 0
-    last_scrape_at   = 0.0
-    last_audit_at    = 0.0
+    pipeline          = PinoySpeakPipeline()
+    last_model_mtime  = 0.0
+    last_corpus_size  = 0
+    last_scrape_at    = 0.0
+    last_yt_scrape_at = 0.0
+    last_audit_at     = 0.0
 
     while True:
         _time.sleep(CHECK_INTERVAL)
@@ -125,6 +128,11 @@ def _continuous_learner() -> None:
                 scrape_reddit(CORE_SUBREDDITS, limit=100, pages=3, workers=3)
                 merge_all_sources()
                 last_scrape_at = now
+
+            # ── 2b. Scrape YouTube comments every YOUTUBE_INTERVAL ──────────
+            if now - last_yt_scrape_at >= YOUTUBE_INTERVAL:
+                scrape_youtube()
+                last_yt_scrape_at = now
 
             # ── 3. Retrain when corpus has grown enough ──────────────────────
             if os.path.exists(_DATA_PATH):

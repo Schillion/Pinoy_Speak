@@ -15,3 +15,4 @@ transformers>=4.36     # roberta-tagalog tokenizer for Tagalog vocab signal
 torch>=2.0             # transformers backend (CPU-only is fine)
 sentence-transformers>=2.7  # RAG: semantic search over slang dictionary
 numpy>=1.24            # RAG: cosine similarity via dot-product
+yt-dlp>=2024.1.0       # YouTube comment scraping (no API key needed)

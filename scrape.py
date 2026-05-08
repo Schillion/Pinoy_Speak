@@ -11,6 +11,7 @@ import json
 from rich.console import Console
 
 from data_collection import scrape_reddit, REDDIT_SUBREDDITS
+from youtube_scraper import scrape_youtube
 
 console = Console()
 
@@ -61,6 +62,10 @@ if __name__ == "__main__":
 
         scrape_reddit(REDDIT_SUBREDDITS, limit=REDDIT_LIMIT,
                       pages=REDDIT_PAGES, workers=REDDIT_WORKERS)
+
+        # YouTube every 6 rounds (~3 min) to avoid hammering it
+        if round_num % 6 == 1:
+            scrape_youtube()
 
         path = merge_all_sources()
         if path:
