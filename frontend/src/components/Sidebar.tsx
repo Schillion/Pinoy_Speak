@@ -7,6 +7,27 @@ import { useState } from "react";
 import AboutModal from "./AboutModal";
 import { useTheme } from "@/context/ThemeContext";
 
+function PinoyLogo({ className = "w-full h-full" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Speech bubble body with tail at bottom-left */}
+      <path
+        d="M4 2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9L4 21V17a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+        fill="rgba(255,255,255,0.18)"
+        stroke="rgba(255,255,255,0.88)"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      {/* P — vertical bar */}
+      <path d="M8 6v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      {/* P — bowl (half-circle bump) */}
+      <path d="M8 6h3a2.5 2.5 0 0 1 0 5H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Small sun accent dot — top-right of bubble */}
+      <circle cx="17.5" cy="5.5" r="1.3" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  );
+}
+
 const NAV: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "/",           label: "Home",       icon: <HomeIcon />     },
   { href: "/top-slang",  label: "Top Slang",  icon: <StarIcon />     },
@@ -34,13 +55,13 @@ export default function Sidebar() {
       <Link
         href="/about"
         className="md:hidden fixed top-3 left-3 z-30
-                   w-10 h-10 rounded-xl flex items-center justify-center
+                   w-10 h-10 rounded-xl flex items-center justify-center p-1.5
                    bg-gradient-to-br from-blue-500 to-purple-600
                    shadow-[0_0_24px_-4px_rgba(99,102,241,0.75)]
-                   text-white font-bold text-base select-none aurora-border"
+                   select-none aurora-border"
         aria-label="About PinoySpeak"
       >
-        P
+        <PinoyLogo />
       </Link>
 
       <aside
@@ -78,12 +99,12 @@ export default function Sidebar() {
           <motion.div
             whileHover={{ rotate: [0, -8, 8, 0], scale: 1.10 }}
             transition={{ duration: 0.5 }}
-            className="aurora-border w-7 h-7 rounded-lg flex items-center justify-center
+            className="aurora-border w-9 h-9 rounded-xl flex items-center justify-center p-1.5
                        bg-gradient-to-br from-blue-500 to-purple-600
                        shadow-[0_0_18px_-4px_rgba(99,102,241,0.75)]
-                       text-white font-bold text-xs select-none"
+                       select-none"
           >
-            P
+            <PinoyLogo />
           </motion.div>
           <span className="text-[11px] font-semibold text-shimmer tracking-tight leading-tight">
             Pinoy Speak
