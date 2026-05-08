@@ -109,7 +109,6 @@ def scan_corpus() -> tuple[Counter, int]:
 
     try:
         import sqlite3
-        from datetime import date, timedelta
 
         conn = sqlite3.connect(_DATA_PATH)
         cursor = conn.cursor()
@@ -118,11 +117,10 @@ def scan_corpus() -> tuple[Counter, int]:
         cursor.execute("SELECT COUNT(*) FROM posts")
         total = cursor.fetchone()[0]
 
-        # Word frequency only needs recent 90 days for top-slang ranking
-        cutoff = (date.today() - timedelta(days=90)).isoformat()
+        # Word frequency — sample 10k recent rows (enough for top-slang ranking)
         all_words: list[str] = []
         for (text,) in cursor.execute(
-            "SELECT text FROM posts WHERE date >= ?", (cutoff,)
+            "SELECT text FROM posts ORDER BY rowid DESC LIMIT 10000"
         ):
             if text:
                 all_words.extend(_RE_WORD.findall(str(text).lower()))
