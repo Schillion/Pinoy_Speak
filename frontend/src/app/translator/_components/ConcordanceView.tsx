@@ -115,7 +115,7 @@ export default function ConcordanceView() {
       setPosts(postsData.posts ?? []);
       if (defineData) setWordInfo(defineData);
     } catch {
-      setError("Could not load corpus. Please try again later.");
+      setError("Could not load posts. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -223,7 +223,7 @@ export default function ConcordanceView() {
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <span className="relative">±{n}</span>
+                <span className="relative">{n}</span>
               </button>
             ))}
           </div>
@@ -236,7 +236,7 @@ export default function ConcordanceView() {
           <div className="flex gap-1 relative">
             {(
               [
-                ["none",   "Found order", "Original order in the corpus"],
+                ["none",   "Default",     "Show results in the order they were found"],
                 ["left1",  "Word before", "Group rows by the word that comes BEFORE the keyword"],
                 ["right1", "Word after",  "Group rows by the word that comes AFTER the keyword"],
                 ["date",   "Date",        "Oldest → newest"],
@@ -297,17 +297,17 @@ export default function ConcordanceView() {
             <div className="flex flex-wrap items-center gap-2 text-xs text-white/55">
               <span>
                 <span className="text-gradient-static font-bold text-sm">{kwicLines.length}</span>{" "}
-                occurrences
+                times found
               </span>
               <span className="text-white/15">·</span>
               <span>
                 <span className="text-white font-semibold">{uniquePosts}</span>{" "}
-                unique posts
+                posts
               </span>
               <span className="text-white/15">·</span>
               <span>
                 <span className="text-white font-semibold">{freqPer1k}</span>{" "}
-                per 1,000 words in corpus
+                per 1,000 words
               </span>
               {formationLabel && (
                 <span className="text-[11px] text-blue-200 bg-blue-500/[.12] border
@@ -323,7 +323,7 @@ export default function ConcordanceView() {
             </div>
           ) : (
             <p className="text-sm text-white/40">
-              No occurrences of &ldquo;{keyword}&rdquo; found in the corpus.
+              No results for &ldquo;{keyword}&rdquo; found in our posts.
               {wordInfo && (
                 <span className="ml-2 text-white/30 text-xs">
                   (word is in the dictionary

@@ -9,32 +9,32 @@ const FEATURES = [
   {
     icon: "🔍",
     title: "Slang Translator",
-    desc: "Paste any Filipino sentence and PinoySpeak highlights every slang word, shows its definition, origin, formation type, and real corpus examples. Non-slang words are labeled as regular so you can see exactly what's what.",
+    desc: "Paste any Filipino sentence and PinoySpeak highlights every slang word, shows its definition, origin, word type, and real examples from actual posts. Normal words are labeled so you can see exactly what's slang and what isn't.",
   },
   {
     icon: "🔥",
     title: "Trending Word Tracker",
-    desc: "The backend scrapes Filipino social media posts and measures each word's burstiness (Z-score) over time. Words that spike in usage are surfaced as trending — you're seeing real shift in real language, not a curated list.",
+    desc: "The app scrapes Filipino social media posts and tracks how quickly each word gains popularity over time. Words that suddenly spike in usage are surfaced as trending — real language change, not a hand-picked list.",
   },
   {
     icon: "📖",
     title: "Slang Dictionary",
-    desc: "Browse the full lexicon with definitions, plain-English glosses, part of speech, formation type (binaliktad, jejemon, borrowed, etc.), and usage examples pulled from actual posts.",
+    desc: "Browse the full word list with definitions, simple explanations, part of speech, word type (reversed spelling, jejemon, borrowed, etc.), and real usage examples pulled from actual posts.",
   },
   {
     icon: "🔬",
-    title: "Concordance",
-    desc: "See every word in context — search for any slang term and get a KWIC (keyword-in-context) view of how it's actually used across the corpus, with timestamps and source info.",
+    title: "Word in Context",
+    desc: "Search any slang word and see every post it appears in, lined up so the words before and after are easy to compare. Great for understanding how a word is actually used day-to-day.",
   },
   {
     icon: "🤖",
     title: "Kuya Slang AI Tutor",
-    desc: "A Taglish chatbot powered by Groq (Llama 3.3 70B) → Gemini 2.0 Flash → Ollama fallback chain. Ask it about any word, take a quiz, or just chat. It learns new slang from conversations automatically.",
+    desc: "A Taglish chatbot that knows Filipino slang. Ask it about any word, take a quiz, or just chat in Taglish. When it encounters a new word it hasn't seen before, it looks it up and adds it to the dictionary automatically.",
   },
   {
     icon: "🎯",
     title: "Flashcard Game",
-    desc: "Drill your slang vocabulary with a deck of flashcards. Flip to reveal the definition and example, mark cards as known or for review, and track your progress through the full lexicon.",
+    desc: "Practice your slang with a deck of flashcards. Flip to reveal the definition and example, mark cards as known or for review, and track your progress through all the words we track.",
   },
 ];
 
@@ -57,7 +57,7 @@ export default function AboutPage() {
         <div>
           <h1 className="text-2xl font-bold text-shimmer leading-tight">Pinoy Speak</h1>
           <p className="text-sm text-white/50 mt-0.5">
-            A Filipino slang intelligence platform built for curious minds
+            A Filipino slang tracker and learning tool
           </p>
         </div>
       </motion.div>
@@ -98,19 +98,19 @@ export default function AboutPage() {
         <p className="text-[11px] text-white/35 uppercase tracking-widest mb-3">Under the hood</p>
         <div className="space-y-2 text-sm text-white/65 leading-relaxed">
           <p>
-            <span className="text-white/85 font-medium">Slang detection</span> — Word2Vec embeddings
-            trained on the corpus measure semantic shift. A burstiness Z-score flags trending words.
-            calamaNLP + a Tagalog wordlist filter out standard Filipino before anything reaches the lexicon.
+            <span className="text-white/85 font-medium">Slang detection</span> — AI word models
+            learn how Filipino words are normally used together. Words that suddenly appear much more
+            often get flagged as trending. A Filipino word checker makes sure normal Tagalog words
+            don&apos;t get mistaken for slang.
           </p>
           <p>
-            <span className="text-white/85 font-medium">Auto-learning</span> — When you ask the chatbot
-            about an unknown word, it calls the backend which verifies via LLM and saves confirmed
-            entries to the live dictionary. The RAG vector store updates instantly.
+            <span className="text-white/85 font-medium">Auto-learning</span> — When you ask the
+            chatbot about a word it hasn&apos;t seen before, it checks if it&apos;s really slang and
+            adds it to the live dictionary automatically. The chatbot&apos;s knowledge updates right away.
           </p>
           <p>
-            <span className="text-white/85 font-medium">Stack</span> — Next.js 14 (Vercel) ·
-            FastAPI (Fly.io) · Word2Vec via Gensim · sentence-transformers RAG ·
-            calamaNLP · Groq / Gemini / Ollama LLM chain
+            <span className="text-white/85 font-medium">Tech stack</span> — Next.js 14 (Vercel) ·
+            FastAPI (Fly.io) · AI word models · Groq / Gemini / Ollama AI
           </p>
         </div>
       </motion.div>

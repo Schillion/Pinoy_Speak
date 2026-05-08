@@ -248,7 +248,7 @@ export default function Home() {
 
       {/* Stats */}
       <motion.p variants={fadeUp} className="text-xs text-white/35 uppercase tracking-wider mb-3">
-        Current pulse
+        Live stats
       </motion.p>
       <motion.div variants={staggerContainer(0.08)} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {stats === null ? (
@@ -287,7 +287,7 @@ export default function Home() {
               <MetricCard
                 label="Slang words tracked"
                 value={stats?.slang_count ?? 0}
-                sub="In our lexicon"
+                sub="In our dictionary"
                 accent="blue"
               />
             </motion.div>
@@ -399,7 +399,7 @@ export default function Home() {
             <div className="flex items-center gap-2 flex-wrap">
               {trendsAvailable ? (
                 <p className="hidden sm:block text-[11px] text-white/35">
-                  Per-day occurrences in the corpus · {zoomDom ? "drag to pan · " : ""}scroll to zoom
+                  Daily count · {zoomDom ? "drag to pan · " : ""}scroll to zoom in
                 </p>
               ) : (
                 <>
@@ -554,8 +554,8 @@ export default function Home() {
           <LanguageMix data={langMix} colors={PIE_COLORS} />
           <p className="text-[11px] text-white/30 text-center mt-2">
             {langMixAvailable
-              ? "Per-post classification from the live corpus"
-              : "Showing placeholder while the corpus is classified…"}
+              ? "Language breakdown of all collected posts"
+              : "Showing estimated data while posts are being analyzed…"}
           </p>
         </motion.div>
       </motion.div>
@@ -584,7 +584,7 @@ export default function Home() {
             </li>
             <li className="flex items-start gap-2.5">
               <span className="text-purple-300 mt-0.5 flex-shrink-0">②</span>
-              <span><span className="text-white font-medium">Which standard words are gaining new meanings?</span> — uses semantic embeddings to detect when an everyday word starts hanging out with unusual neighbors.</span>
+              <span><span className="text-white font-medium">Which standard words are gaining new meanings?</span> — uses AI to detect when an everyday word starts appearing alongside unusual neighbors.</span>
             </li>
             <li className="flex items-start gap-2.5">
               <span className="text-cyan-300 mt-0.5 flex-shrink-0">③</span>
@@ -593,7 +593,7 @@ export default function Home() {
           </ul>
           <p className="text-xs text-white/45 italic leading-relaxed border-t border-white/[.06] pt-3">
             Built as an undergraduate project at the University of the Philippines Los
-            Baños — combining FastText embeddings, calamanCy NLP, and free LLM APIs to
+            Baños — combining AI word models, a Filipino language checker, and free AI APIs to
             keep a living, self-updating dictionary of how Filipinos really speak online.
           </p>
           <p className="text-xs text-white/35 mt-2">
