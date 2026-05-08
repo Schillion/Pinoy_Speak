@@ -1093,3 +1093,57 @@ def posts(page: int = 1, limit: int = 50, search: str = ""):
         return {"posts": records, "total": total}
     except Exception as e:
         raise HTTPException(500, str(e))
+
+
+class IngestPost(BaseModel):
+    text:   str
+    date:   str | None = None
+    user:   str | None = None
+    likes:  int        = 0
+    source: str        = "local"
+
+
+@app.post("/ingest-posts")
+def ingest_posts(posts: list[IngestPost], request: Request):
+    """
+    Accepts a batch of posts from the local scraper and inserts them into
+    corpus.db. Protected by INGEST_KEY env var — pass it as X-Ingest-Key header.
+    """
+    expected_key = os.getenv("INGEST_KEY", "")
+    if expected_key:
+        provided = request.headers.get("x-ingest-key", "")
+        if provided != expected_key:
+            raise HTTPException(status_code=403, detail="Invalid ingest key")
+
+    import sqlite3
+    from datetime import date as _date
+    conn   = sqlite3.connect(_DATA_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT UNIQUE, date TEXT, user TEXT, likes INTEGER, source TEXT
+        )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_posts_date ON posts(date)")
+
+    new_count = 0
+    for p in posts:
+        text = (p.text or "").strip()
+        if not text:
+            continue
+        d = str(p.date)[:10] if p.date else str(_date.today())
+        try:
+            cursor.execute(
+                "INSERT INTO posts (text, date, user, likes, source) VALUES (?,?,?,?,?)",
+                (text, d, p.user, p.likes, p.source),
+            )
+            new_count += 1
+        except sqlite3.IntegrityError:
+            pass
+
+    conn.commit()
+    cursor.execute("SELECT COUNT(*) FROM posts")
+    total = cursor.fetchone()[0]
+    conn.close()
+    return {"new": new_count, "received": len(posts), "total_in_db": total}
