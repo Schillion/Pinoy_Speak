@@ -68,6 +68,8 @@ _corpus_cache: tuple[Counter, int] | None = None
 _corpus_cache_mtime: float = 0.0
 _posts_cache: list[dict] | None = None
 _posts_cache_mtime: float = 0.0
+_today_cache: tuple[Counter, int] | None = None
+_today_cache_date: str = ""
 
 
 def load_posts() -> list[dict]:
@@ -117,10 +119,10 @@ def scan_corpus() -> tuple[Counter, int]:
         cursor.execute("SELECT COUNT(*) FROM posts")
         total = cursor.fetchone()[0]
 
-        # Word frequency — sample 10k recent rows (enough for top-slang ranking)
+        # Word frequency — sample 50k recent rows for accurate overall ranking
         all_words: list[str] = []
         for (text,) in cursor.execute(
-            "SELECT text FROM posts ORDER BY rowid DESC LIMIT 10000"
+            "SELECT text FROM posts ORDER BY rowid DESC LIMIT 50000"
         ):
             if text:
                 all_words.extend(_RE_WORD.findall(str(text).lower()))
@@ -134,8 +136,34 @@ def scan_corpus() -> tuple[Counter, int]:
         return Counter(), 0
 
 
-def get_top_slang(model, n: int = 15) -> list[dict]:
-    counts, _ = scan_corpus()
+def scan_corpus_today() -> tuple[Counter, int]:
+    """Scans only today's posts, cached for the current calendar day."""
+    global _today_cache, _today_cache_date
+    from datetime import date as _date
+    today = _date.today().isoformat()
+    if _today_cache is not None and _today_cache_date == today:
+        return _today_cache
+    try:
+        import sqlite3
+        conn = sqlite3.connect(_DATA_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM posts WHERE date = ?", (today,))
+        total = cursor.fetchone()[0]
+        all_words: list[str] = []
+        for (text,) in cursor.execute("SELECT text FROM posts WHERE date = ?", (today,)):
+            if text:
+                all_words.extend(_RE_WORD.findall(str(text).lower()))
+        conn.close()
+        counts = Counter(w for w in all_words if w not in _STOP_WORDS)
+        _today_cache = (counts, total)
+        _today_cache_date = today
+        return _today_cache
+    except Exception:
+        return Counter(), 0
+
+
+def get_top_slang(model, n: int = 15, period: str = "overall") -> list[dict]:
+    counts, _ = scan_corpus_today() if period == "today" else scan_corpus()
     if not counts:
         return []
 

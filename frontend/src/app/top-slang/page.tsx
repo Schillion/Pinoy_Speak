@@ -159,6 +159,7 @@ export default function TopSlang() {
   const [words,    setWords]    = useState<SlangWord[]>([]);
   const [lexicon,  setLexicon]  = useState<Record<string, LexiconEntry>>({});
   const [n,        setN]        = useState<TopN>(15);
+  const [period,   setPeriod]   = useState<"today" | "overall">("overall");
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState("");
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
@@ -246,13 +247,13 @@ export default function TopSlang() {
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
-  const load = useCallback(async (count: TopN) => {
+  const load = useCallback(async (count: TopN, p: "today" | "overall") => {
     const id = ++reqId.current;
     setLoading(true);
     setError("");
     try {
       const [topWords, lex] = await Promise.all([
-        fetchTopSlang(count === "all" ? ALL_N_LIMIT : count),
+        fetchTopSlang(count === "all" ? ALL_N_LIMIT : count, p),
         fetchLexicon().catch(() => ({})),
       ]);
       if (id !== reqId.current) return;
@@ -266,7 +267,7 @@ export default function TopSlang() {
     }
   }, []);
 
-  useEffect(() => { load(n); }, [n, load]);
+  useEffect(() => { load(n, period); }, [n, period, load]);
 
 
 
@@ -309,13 +310,30 @@ export default function TopSlang() {
             transition={{ delay: 0.55, duration: 0.45 }}
             className="text-sm text-white/45 mt-0.5"
           >
-            Most-used Filipino slang from real online posts — click any word for details
+            {period === "today"
+              ? "Top Filipino slang from today's posts — click any word for details"
+              : "Most-used Filipino slang from real online posts — click any word for details"}
           </motion.p>
         </div>
         <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+          {/* Today / Overall period toggle */}
+          <div className="flex rounded-lg overflow-hidden border border-white/[.08] bg-white/[.04]">
+            {(["today", "overall"] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1.5 text-sm capitalize transition-colors
+                  ${period === p
+                    ? "bg-white/[.12] text-white font-medium"
+                    : "text-white/45 hover:text-white/70"}`}
+              >
+                {p === "today" ? "Today" : "Overall"}
+              </button>
+            ))}
+          </div>
           <TopNSelect value={n} onChange={setN} options={[10, 15, 20, 30, "all"]} />
           <MagneticButton
-            onClick={() => load(n)}
+            onClick={() => load(n, period)}
             disabled={loading}
             className="btn-primary w-auto px-4 py-2 text-sm"
           >

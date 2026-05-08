@@ -507,10 +507,10 @@ def word_trends(words: str = "", days: int = 30, n: int = 0):
 
 
 @app.get("/top-slang")
-def top_slang(n: int = 15):
+def top_slang(n: int = 15, period: str = "overall"):
     if not _detector or not _detector.model:
         raise HTTPException(503, "Model not loaded")
-    words = get_top_slang(_detector.model, n)
+    words = get_top_slang(_detector.model, n, period=period)
     return {"words": words}
 
 

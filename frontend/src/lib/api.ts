@@ -21,8 +21,8 @@ export async function fetchCorpusStats(): Promise<CorpusStats> {
   return res.json();
 }
 
-export async function fetchTopSlang(n = 15): Promise<SlangWord[]> {
-  const res = await fetch(`${base}/api/top-slang?n=${n}`, { cache: "no-store" });
+export async function fetchTopSlang(n = 15, period: "today" | "overall" = "overall"): Promise<SlangWord[]> {
+  const res = await fetch(`${base}/api/top-slang?n=${n}&period=${period}`, { cache: "no-store" });
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
   return data.words ?? [];
