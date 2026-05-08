@@ -19,7 +19,7 @@ const ThemeContext = createContext<ThemeContextType>({
   theme: "dark",
   setTheme: () => {},
   toggleTheme: () => {},
-  fontSize: "medium",
+  fontSize: "large",
   setFontSize: () => {},
 });
 
@@ -37,7 +37,7 @@ const FONT_PX: Record<FontSize, number> = {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState]       = useState<Theme>("dark");
-  const [fontSize, setFontSizeState] = useState<FontSize>("medium");
+  const [fontSize, setFontSizeState] = useState<FontSize>("large");
 
   useEffect(() => {
     const storedTheme = localStorage.getItem(THEME_KEY);
@@ -46,7 +46,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute("data-theme", initialTheme);
 
     const storedFont = localStorage.getItem(FONT_KEY) as FontSize | null;
-    const initialFont: FontSize = storedFont && FONT_PX[storedFont] ? storedFont : "medium";
+    const initialFont: FontSize = storedFont && FONT_PX[storedFont] ? storedFont : "large";
     setFontSizeState(initialFont);
     document.documentElement.style.fontSize = `${FONT_PX[initialFont]}px`;
   }, []);
