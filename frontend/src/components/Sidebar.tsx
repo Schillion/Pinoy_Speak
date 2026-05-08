@@ -254,30 +254,49 @@ function SettingsPopover({
 
           {/* Font size */}
           <div className="pt-3 mt-2 border-t border-white/[.06]">
-            <p className="text-[11px] text-white/55 mb-2">Font size</p>
-            <div className="grid grid-cols-3 gap-1">
-              {([
-                ["small",    "S",   "text-[11px]"],
-                ["medium",   "M",   "text-[13px]"],
-                ["large",    "L",   "text-[15px]"],
-                ["xlarge",   "XL",  "text-[15px]"],
-                ["xxlarge",  "2XL", "text-[15px]"],
-                ["xxxlarge", "3XL", "text-[15px]"],
-              ] as const).map(([size, label, sizeCls]) => (
-                <button
-                  key={size}
-                  onClick={() => setFontSize(size)}
-                  className={`relative rounded-lg py-1.5 transition-colors ${sizeCls} font-semibold
-                              border
-                    ${fontSize === size
-                      ? "text-blue-200 border-blue-400/40 bg-gradient-to-r from-blue-500/30 to-indigo-500/25"
-                      : "text-white/55 hover:text-white/85 border-white/[.06] hover:border-white/[.15]"}`}
-                  aria-pressed={fontSize === size}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            {(() => {
+              const SIZES = ["small","medium","large","xlarge","xxlarge","xxxlarge"] as const;
+              const LABELS = ["S","M","L","XL","2XL","3XL"];
+              const idx = SIZES.indexOf(fontSize as typeof SIZES[number]);
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] text-white/55">Font size</p>
+                    <span className="text-[11px] font-semibold text-blue-300">{LABELS[idx]}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={5}
+                    step={1}
+                    value={idx}
+                    onChange={e => setFontSize(SIZES[Number(e.target.value)])}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer
+                               bg-white/[.10]
+                               [&::-webkit-slider-thumb]:appearance-none
+                               [&::-webkit-slider-thumb]:w-4
+                               [&::-webkit-slider-thumb]:h-4
+                               [&::-webkit-slider-thumb]:rounded-full
+                               [&::-webkit-slider-thumb]:bg-gradient-to-br
+                               [&::-webkit-slider-thumb]:from-blue-400
+                               [&::-webkit-slider-thumb]:to-indigo-500
+                               [&::-webkit-slider-thumb]:shadow-[0_0_6px_rgba(96,165,250,0.6)]
+                               [&::-webkit-slider-thumb]:border-2
+                               [&::-webkit-slider-thumb]:border-white/30
+                               [&::-moz-range-thumb]:w-4
+                               [&::-moz-range-thumb]:h-4
+                               [&::-moz-range-thumb]:rounded-full
+                               [&::-moz-range-thumb]:bg-gradient-to-br
+                               [&::-moz-range-thumb]:from-blue-400
+                               [&::-moz-range-thumb]:to-indigo-500
+                               [&::-moz-range-thumb]:border-none"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 ${idx * 20}%, rgba(255,255,255,0.10) ${idx * 20}%)`
+                    }}
+                  />
+                </>
+              );
+            })()}
           </div>
 
           {/* About creator — link */}
