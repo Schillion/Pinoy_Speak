@@ -91,6 +91,11 @@ export default function Home() {
 
   useEffect(() => {
     fetchCorpusStats().then(setStats).catch(() => null);
+    const interval = setInterval(
+      () => fetchCorpusStats().then(setStats).catch(() => null),
+      120_000,
+    );
+    return () => clearInterval(interval);
   }, []);
 
   // Real per-corpus language mix — replaces the hardcoded MOCK_LANG.
