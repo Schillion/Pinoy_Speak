@@ -11,22 +11,23 @@ console = Console()
 
 # Filipino channels with high slang density in comments
 YOUTUBE_CHANNELS = [
-    # Entertainment & variety
-    "https://www.youtube.com/@ABSCBNEntertainment",
-    "https://www.youtube.com/@ShowtimeABSCBN",
-    "https://www.youtube.com/@GMANetwork",
-    "https://www.youtube.com/@GMAPublicAffairs",
-    # Popular vloggers / creators
-    "https://www.youtube.com/@AlexGonzagaOfficialPage",
+    # Vloggers / creators (confirmed working)
     "https://www.youtube.com/@NianaGuerrero",
     "https://www.youtube.com/@RanzKyle",
     "https://www.youtube.com/@donnalyn",
-    # Comedy / memes
-    "https://www.youtube.com/@BubbleGangGMA",
-    "https://www.youtube.com/@BoomerTV",
-    # News — comment sections full of Filipino reactions
-    "https://www.youtube.com/@TVPatrolOfficial",
+    # News & reactions
     "https://www.youtube.com/@News5Everywhere",
+    "https://www.youtube.com/@ABSCBNNews",
+    "https://www.youtube.com/@GMAIntegratedNews",
+    # Entertainment
+    "https://www.youtube.com/@ASAPOFFICIAL",
+    "https://www.youtube.com/@iWantTFCOfficial",
+    # Gaming / commentary
+    "https://www.youtube.com/@MarkusPH",
+    "https://www.youtube.com/@KuyaFerdzOfficial",
+    # Lifestyle / comedy
+    "https://www.youtube.com/@llonamasinas",
+    "https://www.youtube.com/@ivanaAlawi",
 ]
 
 VIDEOS_PER_CHANNEL  = 5    # recent videos to check per channel

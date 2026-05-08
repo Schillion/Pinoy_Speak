@@ -71,7 +71,7 @@ _posts_cache_mtime: float = 0.0
 
 
 def load_posts() -> list[dict]:
-    """Returns the raw posts list, cached by file mtime."""
+    """Returns recent posts (last 50k rows), cached by file mtime."""
     global _posts_cache, _posts_cache_mtime
     try:
         mtime = os.path.getmtime(_DATA_PATH)
@@ -84,7 +84,10 @@ def load_posts() -> list[dict]:
         conn = sqlite3.connect(_DATA_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT text, date, user, likes, source FROM posts")
+        cursor.execute(
+            "SELECT text, date, user, likes, source FROM posts "
+            "ORDER BY rowid DESC LIMIT 50000"
+        )
         rows = cursor.fetchall()
         _posts_cache = [dict(r) for r in rows]
         conn.close()
@@ -105,12 +108,26 @@ def scan_corpus() -> tuple[Counter, int]:
         return _corpus_cache
 
     try:
-        posts = load_posts()
-        total = len(posts)
+        import sqlite3
+        from datetime import date, timedelta
+
+        conn = sqlite3.connect(_DATA_PATH)
+        cursor = conn.cursor()
+
+        # Efficient total — no need to load all rows
+        cursor.execute("SELECT COUNT(*) FROM posts")
+        total = cursor.fetchone()[0]
+
+        # Word frequency only needs recent 90 days for top-slang ranking
+        cutoff = (date.today() - timedelta(days=90)).isoformat()
         all_words: list[str] = []
-        for post in posts:
-            if "text" in post and post["text"]:
-                all_words.extend(_RE_WORD.findall(str(post["text"]).lower()))
+        for (text,) in cursor.execute(
+            "SELECT text FROM posts WHERE date >= ?", (cutoff,)
+        ):
+            if text:
+                all_words.extend(_RE_WORD.findall(str(text).lower()))
+        conn.close()
+
         counts = Counter(w for w in all_words if w not in _STOP_WORDS)
         _corpus_cache = (counts, total)
         _corpus_cache_mtime = mtime

@@ -66,24 +66,40 @@ class SlangDetector:
 
     def _build_frequency_map(self, data_path: str) -> pd.DataFrame:
         """
-        Builds a date × word frequency matrix from raw data to enable
-        burstiness (Z-score trend) analysis.
+        Builds a date × slang-word frequency matrix for the last 365 days.
+        Only tracks words in the slang lexicon to keep memory bounded.
         """
-        console.print(f"Building word frequency map from [cyan]{data_path}[/cyan]...")
         if not os.path.exists(data_path):
-            console.print("[red]Data file not found. Cannot build frequency map.[/red]")
             return pd.DataFrame()
 
         try:
             import sqlite3
+            from dictionary_service import SEED_LEXICON
+            from datetime import date, timedelta
+
+            cutoff = (date.today() - timedelta(days=365)).isoformat()
             conn = sqlite3.connect(data_path)
-            df = pd.read_sql("SELECT text, date FROM posts", conn)
+            df = pd.read_sql(
+                "SELECT text, date FROM posts WHERE date >= ?",
+                conn, params=(cutoff,)
+            )
             conn.close()
-            
+
+            if df.empty:
+                return pd.DataFrame()
+
+            # Only pivot slang words (~200-300 cols) — not entire 50k+ vocab
+            slang_words = frozenset(w.lower() for w in SEED_LEXICON)
             df['date']  = pd.to_datetime(df['date']).dt.date
             df['words'] = df['text'].str.lower().str.findall(_WORD_RE)
+
+            exploded = df.explode('words')
+            exploded = exploded[exploded['words'].isin(slang_words)]
+            if exploded.empty:
+                return pd.DataFrame()
+
             word_counts = (
-                df.explode('words')
+                exploded
                   .groupby(['date', 'words'])
                   .size()
                   .reset_index(name='counts')
@@ -91,7 +107,10 @@ class SlangDetector:
             freq_map = word_counts.pivot_table(
                 index='date', columns='words', values='counts', fill_value=0
             )
-            console.print(f"[green]Frequency map built: {len(freq_map)} days of data.[/green]")
+            console.print(
+                f"[green]Frequency map: {len(freq_map)} days × "
+                f"{len(freq_map.columns)} slang words.[/green]"
+            )
             return freq_map
         except Exception as e:
             console.print(f"[red]Error building frequency map: {e}[/red]")

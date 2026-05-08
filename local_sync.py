@@ -119,7 +119,7 @@ def upload_posts(posts: list[dict], key: str) -> int:
                 f"{SERVER_URL}/ingest-posts",
                 json=payload,
                 headers=headers,
-                timeout=60,
+                timeout=120,
             )
             if r.status_code == 200:
                 data = r.json()
