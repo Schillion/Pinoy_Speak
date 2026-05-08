@@ -57,45 +57,140 @@ _STANDARD_FIL_PREFIX_RE = re.compile(
 # Hard blocklist — words the ML model repeatedly misclassifies as slang despite
 # being standard Filipino. Extend as new false positives are discovered.
 _STANDARD_FIL_BLOCKLIST: frozenset[str] = frozenset({
-    # Common Filipino words that look "novel" to English-only NLP
+    # ── Particles, conjunctions, discourse markers ───────────────────────────
+    "sobrang", "talaga", "talagang", "naman", "pala", "kasi", "lang",
+    "din", "rin", "daw", "raw", "nga", "po", "ho", "ba", "na", "pa",
+    "muna", "sana", "para", "kung", "pag", "kapag", "dahil", "kahit",
+    "hanggang", "habang", "parang", "siguro", "mismo", "lahat",
+    "tapos", "bagay", "saka", "agad", "tuloy", "kaya", "pero",
+    "nang", "noon", "iyon", "ito", "iyan", "doon", "dito", "diyan",
+    "ganoon", "ganito", "ganyan", "basta", "pwede", "hindi", "oo",
+    "talaga", "lagi", "palagi", "minsan", "madalas", "bihira",
+    "mismo", "halos", "puro", "lahat", "wala", "may", "mayroon",
+
+    # ── Pronouns & pronoun contractions ─────────────────────────────────────
+    "sayo", "natin", "namin", "niyo", "niya", "nila", "kami", "tayo",
+    "kayo", "sila", "kanila", "kanino", "sino", "akin", "atin",
+
+    # ── Time words ───────────────────────────────────────────────────────────
+    "kagabi",    # last night — fundamental time word, NOT slang
+    "kanina",    # earlier / a while ago
+    "mamaya",    # later
+    "maaga",     # early
+    "kahapon",   # yesterday
+    "bukas",     # tomorrow
+    "ngayon",    # now / today
+    "kaninang",  # (earlier) inflected
+    "hapon",     # afternoon (also: Philippines)
+    "umaga",     # morning
+    "tanghali",  # noon
+    "gabi",      # night
+    "hatinggabi", # midnight
+    "dati",      # before / previously
+    "dating",    # former / previous
+
+    # ── Common adjectives / states (standard, not slang) ────────────────────
+    "masaya",    # happy
+    "malungkot", # sad
+    "galit",     # angry
+    "takot",     # afraid / scared
+    "pagod",     # tired
+    "gutom",     # hungry
+    "antok",     # sleepy
+    "mahal",     # love / expensive
+    "hirap",     # difficulty / struggle
+    "mahirap",   # poor / difficult
+    "bago",      # new
+    "luma",      # old
+    "bata",      # young / child
+    "matanda",   # old / elder
+    "malaki",    # big
+    "maliit",    # small
+    "matagal",   # long time
+    "mabilis",   # fast
+    "mabagal",   # slow
+    "maganda",   # beautiful
+    "pangit",    # ugly
+    "mabuti",    # good / fine
+    "masama",    # bad / evil
+    "magaling",  # skilled / excellent
+    "matalino",  # intelligent
+    "mabait",    # kind
+    "masipag",   # hardworking
+    "tamad",     # lazy
+    "matapang",  # brave
+    "mahiyain",  # shy
+    "mataba",    # fat
+    "payat",     # thin / skinny
+    "matangkad", # tall
+    "pandak",    # short (height)
+    "mainit",    # hot
+    "malamig",   # cold
+    "maingay",   # noisy
+    "tahimik",   # quiet / calm
+    "maliwanag",  # bright / clear
+    "madilim",   # dark
+    "malinis",   # clean
+    "marumi",    # dirty
+    "masarap",   # delicious
+    "maasim",    # sour
+    "mapait",    # bitter
+    "matamis",   # sweet
+    "maalat",    # salty
+    "mabango",   # fragrant
+    "mabaho",    # smelly
+
+    # ── Common nouns ─────────────────────────────────────────────────────────
+    "kaibigan",  # friend
+    "kasama",    # companion / together
+    "kapwa",     # fellow person
+    "barkada",   # friend group (informal but standard Filipino)
+    "kalaban",   # opponent / enemy
+    "pera",      # money
+    "trabaho",   # work / job
+    "oras",      # time / hour
+    "linggo",    # week / Sunday
+    "buwan",     # month / moon
+    "taon",      # year
+    "sulat",     # letter / write
+    "kwento",    # story
+    "problema",  # problem (from Spanish)
+    "sagot",     # answer
+    "tanong",    # question
+    "laro",      # game / play
+    "liham",     # letter (formal)
+    "pagkain",   # food
+    "damit",     # clothes
+    "sapatos",   # shoes
+    "kotse",     # car
+    "jeep",      # jeepney
+    "sasakyan",  # vehicle
+
+    # ── Verb roots / infinitives (standard action words) ─────────────────────
+    "kain",      # eat
+    "inom",      # drink
+    "tulog",     # sleep
+    "gising",    # wake up / awake
+    "lakad",     # walk
+    "takbo",     # run
+    "luha",      # tears
+    "iyak",      # cry
+    "tawa",      # laugh
+    "kanta",     # sing
+    "sayaw",     # dance
+    "pag-aaral", # studying
+    "trabaho",   # work
+    "luto",      # cook
+    "laba",      # laundry
+    "linis",     # clean
+    "bili",      # buy
+    "ibig",      # want / love
+    "gusto",     # want / like
+
+    # ── Common naka- inflections (handled by prefix regex, but add key ones) ─
     "nakapunta", "nakaalis", "nakakain", "nakatulog", "nakakita",
     "nakabalik", "nakapasok", "nakaupo", "nakatayo", "nakalakad",
     "nakasulat", "nakainom", "nakabasa",
-    "sobrang",   # standard intensifier (from Spanish "sobra"), not slang
-    "talaga",    # "really/truly" — fundamental Filipino adverb
-    "naman",     # discourse particle — not slang
-    "pala",      # discovery particle — not slang
-    "kasi",      # "because" — not slang
-    "lang",      # "just/only" — not slang
-    "din", "rin", # "also/too" — not slang
-    "daw", "raw", # reported speech particle — not slang
-    "nga",       # emphatic particle — not slang
-    "po", "ho",  # honorific particles — not slang
-    "ba",        # question particle — not slang
-    "na",        # already / now particle — not slang
-    "pa",        # still/yet particle — not slang
-    "muna",      # "first/for now" — fundamental Filipino adverb/particle
-    "sayo",      # "to you/yours" — standard Tagalog pronoun contraction (sa + iyo)
-    "natin",     # "ours (inclusive)" — standard pronoun
-    "namin",     # "ours (exclusive)" — standard pronoun
-    "niyo",      # "your (plural)" — standard pronoun
-    "niya",      # "his/her/its" — standard pronoun
-    "sana",      # "hopefully/I wish" — standard Filipino expression
-    "para",      # "for/in order to" — standard preposition
-    "kung",      # "if/when" — standard conjunction
-    "pag",       # "when/if" — standard conjunction
-    "kapag",     # "when/if" — standard conjunction
-    "dahil",     # "because" — standard conjunction
-    "kahit",     # "even if/though" — standard conjunction
-    "hanggang",  # "until/up to" — standard preposition
-    "habang",    # "while" — standard conjunction
-    "bagay",     # "suitable/fitting" — standard adjective/verb
-    "tapos",     # "then/after/done" — standard conjunction/adjective
-    "parang",    # "like/seems" — standard comparative particle
-    "siguro",    # "maybe/probably" — standard adverb
-    "mismo",     # "exactly/itself" — standard adverb
-    "lahat",     # "everyone/everything/all" — standard pronoun
-    "talagang",  # inflected form of talaga — still standard
 })
 
 import spacy
@@ -235,6 +330,29 @@ def _load_discovered_slang() -> None:
 
 _load_seed_lexicon()
 _load_discovered_slang()
+
+# Hard definition overrides — applied AFTER both JSON files so they always win.
+# Use only when a word was auto-learned with a wrong definition and the fix
+# can't be pushed via slang_seeds.json (which is gitignored as a runtime file).
+_DEFINITION_OVERRIDES: dict[str, dict] = {
+    "jebs": {
+        "definition": "poop or feces; also used as a surprised/disgusted exclamation meaning 'oh crap!'",
+        "formation_type": "jejemon",
+        "plain": "poop",
+        "pos": "noun",
+        "is_ambiguous": False,
+    },
+    "najebs": {
+        "definition": "natatae; to poop or have a poop accident; used for extreme fright or embarrassment",
+        "formation_type": "affixation",
+        "plain": "pooped / natatae",
+        "pos": "verb",
+        "is_ambiguous": False,
+    },
+}
+
+for _w, _m in _DEFINITION_OVERRIDES.items():
+    _merge_entry(_w, _m, overwrite=True)
 
 
 # ---------------------------------------------------------------------------

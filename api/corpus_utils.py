@@ -26,6 +26,19 @@ _STOP_WORDS = {
     'muna','sayo','natin','namin','niyo','niya','sana','para','kung',
     'pag','kapag','tapos','parang','siguro','mismo','lahat','talagang',
     'bagay','mismo','talaga','ngayon','yun','iyon','ito','yan','doon',
+    # Time words
+    'kagabi','kanina','mamaya','maaga','hatinggabi','dati','dating',
+    # Common adjectives / states
+    'masaya','malungkot','galit','takot','pagod','gutom','antok','mahal',
+    'hirap','mahirap','bago','luma','malaki','maliit','mabilis','mabagal',
+    'maganda','pangit','mabuti','masama','magaling','matalino','mabait',
+    'masipag','tamad','matapang','mainit','malamig','tahimik','masarap',
+    # Common nouns
+    'kaibigan','kasama','kapwa','barkada','kalaban','pera','trabaho','oras',
+    'linggo','buwan','kwento','problema','sagot','tanong','laro','pagkain',
+    # Common verbs / actions
+    'kain','inom','tulog','gising','lakad','takbo','iyak','tawa','kanta',
+    'sayaw','luto','laba','linis','gusto',
 }
 
 _RE_WORD = re.compile(r"\b[a-z]{3,}\b")
