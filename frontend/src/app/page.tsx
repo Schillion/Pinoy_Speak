@@ -246,77 +246,6 @@ export default function Home() {
         </motion.p>
       </motion.div>
 
-      {/* What this project is for */}
-      <motion.div variants={fadeUp} className="mb-12">
-        <p className="text-xs text-blue-300/80 uppercase tracking-wider mb-3 font-semibold">
-          Why this exists
-        </p>
-        <div className="card p-6 max-w-4xl">
-          <p className="text-[15px] text-white/75 leading-relaxed mb-3">
-            Filipino slang evolves <span className="text-gradient-static font-semibold">faster than any dictionary
-            can keep up with.</span> Words like <span className="text-blue-200">petmalu</span>,
-            {" "}<span className="text-blue-200">lodi</span>, <span className="text-blue-200">charot</span>,
-            and <span className="text-blue-200">sana all</span> appear, mutate, and shift meaning
-            in months — not decades.
-          </p>
-          <p className="text-[15px] text-white/65 leading-relaxed mb-4">
-            Pinoy Speak is a research tool that watches real Filipino social
-            media in real time and answers three questions:
-          </p>
-          <ul className="space-y-2 text-sm text-white/70 mb-3">
-            <li className="flex items-start gap-2.5">
-              <span className="text-blue-300 mt-0.5 flex-shrink-0">①</span>
-              <span><span className="text-white font-medium">What new slang is trending?</span> — tracks word frequency over time and flags sudden spikes.</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="text-purple-300 mt-0.5 flex-shrink-0">②</span>
-              <span><span className="text-white font-medium">Which standard words are gaining new meanings?</span> — uses semantic embeddings to detect when an everyday word starts hanging out with unusual neighbors.</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="text-cyan-300 mt-0.5 flex-shrink-0">③</span>
-              <span><span className="text-white font-medium">How is each slang word actually used?</span> — pulls real example sentences, grammatical patterns, and the words it commonly appears with.</span>
-            </li>
-          </ul>
-          <p className="text-xs text-white/45 italic leading-relaxed border-t border-white/[.06] pt-3">
-            Built as an undergraduate project at the University of the Philippines Los
-            Baños — combining FastText embeddings, calamanCy NLP, and free LLM APIs to
-            keep a living, self-updating dictionary of how Filipinos really speak online.
-          </p>
-          <p className="text-xs text-white/35 mt-2">
-            <span className="font-medium text-white/55">Data sources:</span>{" "}
-            Posts are scraped from Filipino communities on Reddit (r/Tagalog, r/Philippines, r/AskPilipinas, r/Pilipinas).
-            New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
-          </p>
-        </div>
-      </motion.div>
-
-      {/* How it works */}
-      <motion.p variants={fadeUp} className="text-xs text-white/35 uppercase tracking-wider mb-3">
-        How it works
-      </motion.p>
-      <motion.div
-        variants={staggerContainer(0.1)}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12"
-      >
-        {STEPS.map((c) => (
-          <motion.div key={c.step} variants={fadeUp}>
-            <TiltCard
-              intensity={5}
-              className="group card overflow-hidden h-full transition-colors duration-300
-                         hover:border-blue-400/30 hover:shadow-[0_0_40px_-10px_rgba(96,165,250,0.45)]"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${c.accent} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
-              <div className="relative p-5">
-                <p className="text-xs text-gradient-static font-mono mb-2">{c.step}</p>
-                <p className="font-semibold text-white text-base mb-2">{c.title}</p>
-                <p className="text-sm text-white/60 leading-relaxed mb-3">{c.body}</p>
-                <p className="text-sm text-white/35 italic leading-relaxed">{c.note}</p>
-              </div>
-            </TiltCard>
-          </motion.div>
-        ))}
-      </motion.div>
-
       {/* Stats */}
       <motion.p variants={fadeUp} className="text-xs text-white/35 uppercase tracking-wider mb-3">
         Current pulse
@@ -629,6 +558,77 @@ export default function Home() {
               : "Showing placeholder while the corpus is classified…"}
           </p>
         </motion.div>
+      </motion.div>
+
+      {/* What this project is for */}
+      <motion.div variants={fadeUp} className="mt-12 mb-12">
+        <p className="text-xs text-blue-300/80 uppercase tracking-wider mb-3 font-semibold">
+          Why this exists
+        </p>
+        <div className="card p-6 max-w-4xl">
+          <p className="text-[15px] text-white/75 leading-relaxed mb-3">
+            Filipino slang evolves <span className="text-gradient-static font-semibold">faster than any dictionary
+            can keep up with.</span> Words like <span className="text-blue-200">petmalu</span>,
+            {" "}<span className="text-blue-200">lodi</span>, <span className="text-blue-200">charot</span>,
+            and <span className="text-blue-200">sana all</span> appear, mutate, and shift meaning
+            in months — not decades.
+          </p>
+          <p className="text-[15px] text-white/65 leading-relaxed mb-4">
+            Pinoy Speak is a research tool that watches real Filipino social
+            media in real time and answers three questions:
+          </p>
+          <ul className="space-y-2 text-sm text-white/70 mb-3">
+            <li className="flex items-start gap-2.5">
+              <span className="text-blue-300 mt-0.5 flex-shrink-0">①</span>
+              <span><span className="text-white font-medium">What new slang is trending?</span> — tracks word frequency over time and flags sudden spikes.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="text-purple-300 mt-0.5 flex-shrink-0">②</span>
+              <span><span className="text-white font-medium">Which standard words are gaining new meanings?</span> — uses semantic embeddings to detect when an everyday word starts hanging out with unusual neighbors.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="text-cyan-300 mt-0.5 flex-shrink-0">③</span>
+              <span><span className="text-white font-medium">How is each slang word actually used?</span> — pulls real example sentences, grammatical patterns, and the words it commonly appears with.</span>
+            </li>
+          </ul>
+          <p className="text-xs text-white/45 italic leading-relaxed border-t border-white/[.06] pt-3">
+            Built as an undergraduate project at the University of the Philippines Los
+            Baños — combining FastText embeddings, calamanCy NLP, and free LLM APIs to
+            keep a living, self-updating dictionary of how Filipinos really speak online.
+          </p>
+          <p className="text-xs text-white/35 mt-2">
+            <span className="font-medium text-white/55">Data sources:</span>{" "}
+            Posts are scraped from Filipino communities on Reddit (r/Tagalog, r/Philippines, r/AskPilipinas, r/Pilipinas).
+            New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* How it works */}
+      <motion.p variants={fadeUp} className="text-xs text-white/35 uppercase tracking-wider mb-3">
+        How it works
+      </motion.p>
+      <motion.div
+        variants={staggerContainer(0.1)}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+      >
+        {STEPS.map((c) => (
+          <motion.div key={c.step} variants={fadeUp}>
+            <TiltCard
+              intensity={5}
+              className="group card overflow-hidden h-full transition-colors duration-300
+                         hover:border-blue-400/30 hover:shadow-[0_0_40px_-10px_rgba(96,165,250,0.45)]"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${c.accent} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+              <div className="relative p-5">
+                <p className="text-xs text-gradient-static font-mono mb-2">{c.step}</p>
+                <p className="font-semibold text-white text-base mb-2">{c.title}</p>
+                <p className="text-sm text-white/60 leading-relaxed mb-3">{c.body}</p>
+                <p className="text-sm text-white/35 italic leading-relaxed">{c.note}</p>
+              </div>
+            </TiltCard>
+          </motion.div>
+        ))}
       </motion.div>
     </motion.div>
   );
