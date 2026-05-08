@@ -18,16 +18,15 @@ YOUTUBE_CHANNELS = [
     # News & reactions
     "https://www.youtube.com/@News5Everywhere",
     "https://www.youtube.com/@ABSCBNNews",
-    "https://www.youtube.com/@GMAIntegratedNews",
+    "https://www.youtube.com/@GMANews",
     # Entertainment
     "https://www.youtube.com/@ASAPOFFICIAL",
-    "https://www.youtube.com/@iWantTFCOfficial",
-    # Gaming / commentary
-    "https://www.youtube.com/@MarkusPH",
-    "https://www.youtube.com/@KuyaFerdzOfficial",
+    "https://www.youtube.com/@SB19Official",
+    "https://www.youtube.com/@BINIPhilippines",
     # Lifestyle / comedy
-    "https://www.youtube.com/@llonamasinas",
     "https://www.youtube.com/@ivanaAlawi",
+    "https://www.youtube.com/@rappler",
+    "https://www.youtube.com/@AldenRichards02",
 ]
 
 VIDEOS_PER_CHANNEL  = 5    # recent videos to check per channel

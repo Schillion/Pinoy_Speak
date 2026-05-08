@@ -6,8 +6,8 @@ export default function PinoyLogo({ className = "w-full h-full" }: { className?:
       {/* Tail — bottom left, kept inside the rounded-container safe zone */}
       <path d="M6 23 L5 29 L14 23 Z" fill="rgba(255,255,255,0.93)" />
       {/* P lettermark in dark indigo */}
-      <path d="M12.5 8 L12.5 19" stroke="#312e81" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M12.5 8 h3.5 a3.5 3.5 0 0 1 0 7 h-3.5"
+      <path d="M13 7 L13 18" stroke="#312e81" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M13 7 h3.5 a3.5 3.5 0 0 1 0 7 h-3.5"
         stroke="#312e81" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
