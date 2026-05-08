@@ -35,7 +35,7 @@ export default function Sidebar() {
       <Link
         href="/about"
         className="md:hidden fixed top-3 left-3 z-30
-                   w-10 h-10 rounded-xl flex items-center justify-center p-1.5
+                   w-10 h-10 rounded-xl overflow-hidden
                    bg-gradient-to-br from-blue-500 to-purple-600
                    shadow-[0_0_24px_-4px_rgba(99,102,241,0.75)]
                    select-none aurora-border"
@@ -79,7 +79,7 @@ export default function Sidebar() {
           <motion.div
             whileHover={{ rotate: [0, -8, 8, 0], scale: 1.10 }}
             transition={{ duration: 0.5 }}
-            className="aurora-border w-9 h-9 rounded-xl flex items-center justify-center p-1.5
+            className="aurora-border w-9 h-9 rounded-xl overflow-hidden
                        bg-gradient-to-br from-blue-500 to-purple-600
                        shadow-[0_0_18px_-4px_rgba(99,102,241,0.75)]
                        select-none"
@@ -286,9 +286,9 @@ function SettingsPopover({
             className="mt-3 pt-3 border-t border-white/[.06] w-full text-left text-[12px]
                        text-white/65 hover:text-white transition-colors flex items-center gap-2"
           >
-            <span className="w-4 h-4 rounded-md flex items-center justify-center
-                             bg-gradient-to-br from-blue-500 to-purple-600 text-white
-                             text-[9px] font-bold">P</span>
+            <span className="w-4 h-4 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
+              <PinoyLogo className="w-full h-full" />
+            </span>
             About the creator
           </button>
         </motion.div>

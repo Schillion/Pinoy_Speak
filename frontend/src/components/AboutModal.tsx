@@ -43,7 +43,7 @@ export default function AboutModal({ onClose }: Props) {
         </button>
 
         <div className="flex items-center gap-3 mb-5">
-          <div className="aurora-border w-12 h-12 rounded-2xl flex items-center justify-center p-2
+          <div className="aurora-border w-12 h-12 rounded-2xl overflow-hidden
                           bg-gradient-to-br from-blue-500 to-purple-600
                           shadow-[0_0_28px_-4px_rgba(99,102,241,0.8)] select-none">
             <PinoyLogo />

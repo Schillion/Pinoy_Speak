@@ -39,6 +39,26 @@ _STOP_WORDS = {
     # Common verbs / actions
     'kain','inom','tulog','gising','lakad','takbo','iyak','tawa','kanta',
     'sayaw','luto','laba','linis','gusto',
+    # Filipino interjections / exclamations (never slang)
+    'aray','aba','abah','hoy','nako','naku','sus','hay','hays','hala','halah',
+    # Location / question contractions
+    'asan','nasa','saan','kailan','bakit','paano','gaano',
+    # Commonly misclassified adjectives / states
+    'atat','bored','busy','cute','sweet','chill','sure',
+    'medyo','masyado','sapat','lalo','lubos','tunay',
+    # Filipino nouns (household / nature / places)
+    'bahay','kusina','sala','kwarto','banyo','pinto','bintana',
+    'mesa','silya','higaan','unan','kumot',
+    'tubig','gatas','kanin','ulam','tinapay','isda','karne','gulay',
+    'prutas','asin','asukal','ilaw','ulan','hangin','araw','bituin',
+    'langit','lupa','dagat','ilog','bundok','bukid','kalye',
+    # Common Filipino verbs
+    'punta','uwi','balik','akyat','baba','talon','ligo','suot','kuha',
+    'bigay','tanggap','ayos','basa','sulat','usap','tingin','tawag',
+    'hanap','hintay','alam','kilala','intindi','alala','sama',
+    # Relationship / social words
+    'ate','kuya','lola','lolo','tita','tito','pinsan','kapatid',
+    'asawa','anak','magulang','nanay','tatay','mama','papa',
 }
 
 _RE_WORD = re.compile(r"\b[a-z]{3,}\b")

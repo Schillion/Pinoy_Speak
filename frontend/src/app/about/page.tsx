@@ -12,7 +12,7 @@ const FEATURES = [
     desc: "Paste any Filipino sentence and PinoySpeak highlights every slang word, shows its definition, origin, formation type, and real corpus examples. Non-slang words are labeled as regular so you can see exactly what's what.",
   },
   {
-    icon: "📊",
+    icon: "🔥",
     title: "Trending Word Tracker",
     desc: "The backend scrapes Filipino social media posts and measures each word's burstiness (Z-score) over time. Words that spike in usage are surfaced as trending — you're seeing real shift in real language, not a curated list.",
   },
@@ -22,7 +22,7 @@ const FEATURES = [
     desc: "Browse the full lexicon with definitions, plain-English glosses, part of speech, formation type (binaliktad, jejemon, borrowed, etc.), and usage examples pulled from actual posts.",
   },
   {
-    icon: "🗂️",
+    icon: "🔬",
     title: "Concordance",
     desc: "See every word in context — search for any slang term and get a KWIC (keyword-in-context) view of how it's actually used across the corpus, with timestamps and source info.",
   },
@@ -32,7 +32,7 @@ const FEATURES = [
     desc: "A Taglish chatbot powered by Groq (Llama 3.3 70B) → Gemini 2.0 Flash → Ollama fallback chain. Ask it about any word, take a quiz, or just chat. It learns new slang from conversations automatically.",
   },
   {
-    icon: "🃏",
+    icon: "🎯",
     title: "Flashcard Game",
     desc: "Drill your slang vocabulary with a deck of flashcards. Flip to reveal the definition and example, mark cards as known or for review, and track your progress through the full lexicon.",
   },
@@ -48,7 +48,7 @@ export default function AboutPage() {
     >
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center gap-4 mb-10">
-        <div className="aurora-border w-14 h-14 rounded-2xl flex items-center justify-center p-2.5
+        <div className="aurora-border w-14 h-14 rounded-2xl overflow-hidden
                         bg-gradient-to-br from-blue-500 to-purple-600
                         shadow-[0_0_32px_-6px_rgba(99,102,241,0.7)]
                         select-none flex-shrink-0">
@@ -81,8 +81,11 @@ export default function AboutPage() {
       <motion.div variants={staggerContainer(0.05)} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {FEATURES.map((f) => (
           <motion.div key={f.title} variants={fadeUp} className="card p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">{f.icon}</span>
+            <div className="flex items-center gap-2.5 mb-2">
+              <span className="text-lg w-8 h-8 flex items-center justify-center rounded-lg
+                               bg-white/[0.06] flex-shrink-0 leading-none">
+                {f.icon}
+              </span>
               <p className="font-semibold text-white/90 text-sm">{f.title}</p>
             </div>
             <p className="text-xs text-white/55 leading-relaxed">{f.desc}</p>

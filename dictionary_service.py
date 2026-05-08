@@ -191,6 +191,147 @@ _STANDARD_FIL_BLOCKLIST: frozenset[str] = frozenset({
     "nakapunta", "nakaalis", "nakakain", "nakatulog", "nakakita",
     "nakabalik", "nakapasok", "nakaupo", "nakatayo", "nakalakad",
     "nakasulat", "nakainom", "nakabasa",
+
+    # ── Filipino interjections / exclamations ────────────────────────────────
+    "aray",     # ouch — basic pain/surprise interjection
+    "aba",      # oh/well — expression of surprise or contradiction
+    "abah",     # variant of aba
+    "hoy",      # hey — calling someone's attention
+    "nako",     # oh my — expression of surprise/dismay
+    "naku",     # variant of nako
+    "sus",      # expression of frustration (Susmaryosep contraction)
+    "hay",      # sigh — expression of resignation
+    "hays",     # variant of hay
+    "duh",      # English exclamation used in Filipino text
+    "ugh",      # English exclamation used in Filipino text
+    "hala",     # watch out / oh no
+    "halah",    # variant of hala
+    "ambot",    # I don't know (Visayan, used in mixed Filipino text)
+
+    # ── Common location / question contractions ──────────────────────────────
+    "asan",     # contraction of nasaan = where is (standard)
+    "nasa",     # locative particle = at/in/on (standard)
+    "saan",     # where (standard interrogative)
+    "kailan",   # when (standard interrogative)
+    "bakit",    # why (standard interrogative)
+    "paano",    # how (standard interrogative)
+    "gaano",    # how much/many (standard)
+
+    # ── Adjectives / states commonly mistaken for slang ─────────────────────
+    "atat",     # eager/impatient — standard informal Filipino, NOT slang
+    "bored",    # used in Filipino text; English word, not Filipino slang
+    "busy",     # same as above
+    "cute",     # same
+    "sweet",    # same
+    "chill",    # same
+    "sure",     # same
+
+    # ── Common Filipino nouns (household / nature / places) ─────────────────
+    "bahay",    # house
+    "kusina",   # kitchen
+    "sala",     # living room
+    "kwarto",   # room
+    "banyo",    # bathroom
+    "pinto",    # door
+    "bintana",  # window
+    "mesa",     # table
+    "silya",    # chair
+    "higaan",   # bed
+    "unan",     # pillow
+    "kumot",    # blanket
+    "tubig",    # water
+    "gatas",    # milk
+    "kanin",    # cooked rice
+    "ulam",     # viand/main dish
+    "tinapay",  # bread
+    "isda",     # fish
+    "karne",    # meat
+    "gulay",    # vegetables
+    "prutas",   # fruits
+    "asin",     # salt
+    "asukal",   # sugar
+    "mantika",  # cooking oil
+    "ilaw",     # light/lamp
+    "kuryente", # electricity
+    "tubero",   # plumber (not slang)
+    "ulan",     # rain
+    "hangin",   # wind
+    "araw",     # day/sun
+    "bituin",   # star
+    "buwan",    # moon (also: month — already in)
+    "langit",   # sky/heaven
+    "lupa",     # land/ground
+    "dagat",    # sea/ocean
+    "ilog",     # river
+    "bundok",   # mountain
+    "kagubatan", # forest
+    "bukid",    # farm/field
+    "kalye",    # street
+
+    # ── Common Filipino verbs ────────────────────────────────────────────────
+    "punta",    # go to (root of pumunta)
+    "uwi",      # go home
+    "balik",    # return
+    "akyat",    # climb
+    "baba",     # go down/descend (also: baby — standard noun too)
+    "talon",    # jump
+    "ligo",     # bathe
+    "suot",     # wear
+    "kuha",     # get/take
+    "bigay",    # give
+    "tanggap",  # accept/receive
+    "ayos",     # fix/arrange (also used as "okay/fine" — borderline, but standard)
+    "luto",     # cook (already in but confirm)
+    "basa",     # read/wet
+    "sulat",    # write
+    "usap",     # talk
+    "tingin",   # look
+    "mahal",    # love/expensive (already in, but confirm)
+    "tawag",    # call
+    "hanap",    # look for/search
+    "hintay",   # wait
+    "alam",     # know
+    "kilala",   # recognize/know (person)
+    "intindi",  # understand
+    "alala",    # remember/worry
+    "sama",     # join/come with (also: bad — standard adjective)
+
+    # ── Common Filipino adverbs / intensifiers ───────────────────────────────
+    "medyo",    # somewhat/a bit (standard Filipino)
+    "masyado",  # too much (standard)
+    "sapat",    # enough (standard)
+    "halos",    # almost (already in)
+    "lalo",     # more/especially
+    "lubos",    # fully/completely
+    "tunay",    # truly/really
+    "talagang", # really (already in)
+
+    # ── Filipino school / work vocabulary ────────────────────────────────────
+    "titser",   # teacher (Filipino pronunciation of English "teacher")
+    "gradweyt", # graduate (informal but standard Filipino, not slang)
+    "klase",    # class
+    "exam",     # examination (English word used in Filipino)
+    "report",   # English word used in Filipino
+    "project",  # English word used in Filipino
+    "pasok",    # go in / school day
+    "bakasyon", # vacation (from Spanish)
+
+    # ── Filipino relationship / social words ─────────────────────────────────
+    "ate",      # older sister / respectful term for older woman
+    "kuya",     # older brother / respectful term for older man
+    "lola",     # grandmother
+    "lolo",     # grandfather
+    "tita",     # aunt
+    "tito",     # uncle
+    "pinsan",   # cousin
+    "kapatid",  # sibling
+    "asawa",    # spouse
+    "anak",     # child (own child)
+    "magulang", # parent(s)
+    "nanay",    # mother (informal)
+    "tatay",    # father (informal)
+    "mama",     # mother
+    "papa",     # father
 })
 
 import spacy
@@ -353,6 +494,16 @@ _DEFINITION_OVERRIDES: dict[str, dict] = {
 
 for _w, _m in _DEFINITION_OVERRIDES.items():
     _merge_entry(_w, _m, overwrite=True)
+
+# Prune any standard Filipino words that slipped into the lexicon via
+# slang_seeds.json or discovered_slang.json. Runs once at startup.
+for _w in list(KNOWN_SLANG.keys()):
+    if _w in _STANDARD_FIL_BLOCKLIST or _STANDARD_FIL_PREFIX_RE.match(_w):
+        KNOWN_SLANG.pop(_w, None)
+        FORMATION_TYPE.pop(_w, None)
+        PLAIN_WORD.pop(_w, None)
+        SEED_LEXICON.pop(_w, None)
+        AMBIGUOUS_SLANG_SEEDS.discard(_w)
 
 
 # ---------------------------------------------------------------------------
