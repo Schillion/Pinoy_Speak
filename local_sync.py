@@ -5,9 +5,10 @@ and push the new posts to the live Fly.io server.
 Your home/office IP is not blocked by Reddit. The server's IP is.
 
 Usage:
-    python local_sync.py            # scrape + upload
-    python local_sync.py --upload-only   # skip scraping, just upload local DB
-    python local_sync.py --scrape-only   # scrape but don't upload
+    python local_sync.py               # scrape + upload once
+    python local_sync.py --loop        # scrape + upload every 2 hours forever
+    python local_sync.py --upload-only # skip scraping, just upload local DB
+    python local_sync.py --scrape-only # scrape but don't upload
 
 Setup (one-time):
     set INGEST_KEY=<the key you set on Fly> in your environment,
@@ -26,10 +27,11 @@ from rich.console import Console
 console = Console()
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SERVER_URL   = "https://pinoyspeak-project.fly.dev"
-DB_PATH      = "data/corpus.db"
-SYNC_STAMP   = "data/.last_sync_ts"   # stores Unix timestamp of last upload
-BATCH_SIZE   = 500                     # posts per HTTP request
+SERVER_URL    = "https://pinoyspeak-project.fly.dev"
+DB_PATH       = "data/corpus.db"
+SYNC_STAMP    = "data/.last_sync_ts"   # stores last uploaded rowid
+BATCH_SIZE    = 500                    # posts per HTTP request
+LOOP_INTERVAL = 2 * 60 * 60           # seconds between loop iterations (2 hrs)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -148,40 +150,76 @@ def run_scrapers():
     scrape_youtube()
 
 
-def main():
-    _load_env()
-    parser = argparse.ArgumentParser(description="Local scrape + sync to Fly.io server")
-    parser.add_argument("--upload-only", action="store_true", help="Skip scraping, just upload")
-    parser.add_argument("--scrape-only", action="store_true", help="Scrape but don't upload")
-    args = parser.parse_args()
+def run_once(key: str, upload_only: bool = False, scrape_only: bool = False):
+    """Run one scrape+upload cycle. Returns number of new posts added to server."""
+    last_id = int(_last_sync_ts())
 
-    key       = _ingest_key()
-    last_id   = int(_last_sync_ts())
-
-    if not args.upload_only:
+    if not upload_only:
         run_scrapers()
 
-    if args.scrape_only:
+    if scrape_only:
         console.print("[yellow]--scrape-only set, skipping upload.[/yellow]")
-        return
+        return 0
 
     new_posts = get_new_local_posts(last_id)
     if not new_posts:
         console.print("[green]✓ Nothing new to upload.[/green]")
-        return
+        return 0
 
     console.print(
         f"\n[bold cyan]─── Uploading {len(new_posts):,} posts → {SERVER_URL} ───[/bold cyan]"
     )
     total_new = upload_posts(new_posts, key)
 
-    # Save the highest rowid we've uploaded
     if new_posts:
         _save_sync_ts(new_posts[-1]["_rowid"])
 
     console.print(
         f"\n[bold green]✓ Done — {total_new:,} new posts added to server.[/bold green]"
     )
+    return total_new
+
+
+def main():
+    _load_env()
+    parser = argparse.ArgumentParser(description="Local scrape + sync to Fly.io server")
+    parser.add_argument("--upload-only", action="store_true", help="Skip scraping, just upload")
+    parser.add_argument("--scrape-only", action="store_true", help="Scrape but don't upload")
+    parser.add_argument("--loop", action="store_true",
+                        help=f"Run every {LOOP_INTERVAL // 3600}h forever (Ctrl+C to stop)")
+    args = parser.parse_args()
+
+    key = _ingest_key()
+
+    if not args.loop:
+        run_once(key, upload_only=args.upload_only, scrape_only=args.scrape_only)
+        return
+
+    # ── Loop mode ──────────────────────────────────────────────────────────────
+    console.print(
+        f"[bold magenta]===== AUTO-SYNC LOOP — every {LOOP_INTERVAL // 3600}h "
+        f"— Ctrl+C to stop =====[/bold magenta]"
+    )
+    round_num = 0
+    while True:
+        round_num += 1
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        console.print(f"\n[bold cyan]─── Round {round_num}  ({now_str}) ───[/bold cyan]")
+        try:
+            run_once(key, upload_only=args.upload_only, scrape_only=args.scrape_only)
+        except KeyboardInterrupt:
+            console.print("\n[bold yellow]Stopped.[/bold yellow]")
+            break
+        except Exception as e:
+            console.print(f"[red]Round {round_num} error: {e}[/red]")
+
+        next_run = datetime.fromtimestamp(time.time() + LOOP_INTERVAL).strftime("%H:%M:%S")
+        console.print(f"[dim]Next run at {next_run} — sleeping {LOOP_INTERVAL // 3600}h...[/dim]")
+        try:
+            time.sleep(LOOP_INTERVAL)
+        except KeyboardInterrupt:
+            console.print("\n[bold yellow]Stopped.[/bold yellow]")
+            break
 
 
 if __name__ == "__main__":
