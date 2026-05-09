@@ -466,6 +466,7 @@ function detectUnknownWord(
 interface VerifyResult {
   is_slang: boolean;
   from_cache?: boolean;
+  from_web?: boolean;
   definition?: string;
   plain?: string | null;
   formation_type?: string | null;
@@ -517,13 +518,18 @@ export async function POST(req: NextRequest) {
         const verified = await lookupUnknown(targetWord);
         if (verified?.is_slang && verified.definition) {
           _lexiconCacheAt = 0;
+          const source = verified.from_web
+            ? "Found via web search and saved to the dictionary"
+            : "Confirmed from our post corpus";
           lookupNote =
             `\n\n[SYSTEM NOTE — word definition for this turn]\n` +
-            `The user is asking about "${targetWord}". Just confirmed from corpus + web:\n` +
+            `The user is asking about "${targetWord}". ${source}:\n` +
             `  • Definition: ${verified.definition}\n` +
             (verified.plain ? `  • Plain English: ${verified.plain}\n` : "") +
             (verified.formation_type ? `  • Formation: ${verified.formation_type}\n` : "") +
-            `Use this naturally — mention casually you just learned it.`;
+            (verified.from_web
+              ? `Mention casually that you looked it up online and added it to the dictionary.`
+              : `Use this naturally — mention casually you just learned it.`);
         } else {
           lookupNote =
             `\n\n[SYSTEM NOTE]\n` +

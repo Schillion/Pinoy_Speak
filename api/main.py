@@ -666,6 +666,62 @@ def sweep_corpus(max_new: int = 15):
     }
 
 
+def _web_search_slang(word: str) -> list[str]:
+    """
+    Search DuckDuckGo for Filipino slang definitions of `word`.
+    Returns up to 3 text snippets (no API key needed).
+    Fails silently — callers should treat an empty list as "no results".
+    """
+    import requests as _req
+    import re as _re
+    query = f"{word} Filipino slang meaning"
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; PinoySpeak/1.0 slang-research)"}
+    snippets: list[str] = []
+
+    # Pass 1 — DuckDuckGo Instant Answers (structured JSON, fast)
+    try:
+        r = _req.get(
+            "https://api.duckduckgo.com/",
+            params={"q": query, "format": "json", "no_redirect": "1", "no_html": "1", "skip_disambig": "1"},
+            headers=headers, timeout=5,
+        )
+        data = r.json()
+        for key in ("AbstractText", "Answer"):
+            val = (data.get(key) or "").strip()
+            if val:
+                snippets.append(val[:400])
+        for topic in (data.get("RelatedTopics") or [])[:3]:
+            if isinstance(topic, dict) and topic.get("Text"):
+                snippets.append(topic["Text"][:250])
+    except Exception:
+        pass
+
+    if snippets:
+        return snippets[:3]
+
+    # Pass 2 — DuckDuckGo HTML search (broader coverage, scrape snippets)
+    try:
+        r2 = _req.post(
+            "https://html.duckduckgo.com/html/",
+            data={"q": query},
+            headers=headers, timeout=6,
+        )
+        raw_snippets = _re.findall(
+            r'class="result__snippet"[^>]*>(.*?)</(?:a|span)>',
+            r2.text, _re.DOTALL,
+        )
+        for s in raw_snippets[:5]:
+            clean = _re.sub(r"<[^>]+>", "", s).strip()
+            if len(clean) > 20:
+                snippets.append(clean[:300])
+            if len(snippets) >= 3:
+                break
+    except Exception:
+        pass
+
+    return snippets[:3]
+
+
 @app.post("/verify-slang")
 def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
     """
@@ -674,9 +730,7 @@ def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
     Filipino slang and, if so, returns a definition + saves it to the
     discovered lexicon (with corpus enrichment).
 
-    Designed to be called from the translator for any token classified
-    as 'unknown' so real slang isn't missed just because it isn't
-    trending in our local corpus yet.
+    Flow: cache check → corpus samples + LLM → web search fallback → save.
     """
     from slang_enricher import (
         load_discovered, _build_prompt, _call_llm, _parse_response,
@@ -734,6 +788,28 @@ def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
     except Exception as e:
         return {"is_slang": False, "reason": f"llm_unavailable: {e}"}
 
+    # LLM pass 1 failed — try web search and feed results back to LLM
+    if not parsed:
+        web_snippets = _web_search_slang(word)
+        if web_snippets:
+            web_context = "\n".join(f"  • {s}" for s in web_snippets)
+            web_prompt = (
+                f'Is "{word}" Filipino internet slang? Here are web search results:\n\n'
+                f'{web_context}\n\n'
+                f'Return ONLY JSON:\n'
+                f'{{"is_slang": bool, "definition": "≤25 words", '
+                f'"plain": "English equivalent", "origin": "1-sentence etymology or null", '
+                f'"formation_type": "acronym|contraction|loanword|syllable_reversal|semantic_shift|coinage|jejemon|unknown"}}\n'
+                f'Set is_slang=false if the results do not confirm Filipino slang usage.'
+            )
+            try:
+                raw2   = _call_llm(web_prompt)
+                parsed = _parse_response(raw2)
+                if parsed:
+                    parsed["from_web"] = True
+            except Exception:
+                pass
+
     if not parsed:
         return {"is_slang": False, "reason": "llm rejected"}
 
@@ -748,10 +824,11 @@ def verify_slang(req: VerifySlangRequest, _ = Depends(rate_limit)):
     learn_slang(learn_req)
 
     return {
-        "is_slang":   True,
-        "from_cache": False,
-        "definition": parsed.get("definition", ""),
-        "plain":      parsed.get("plain"),
+        "is_slang":     True,
+        "from_cache":   False,
+        "from_web":     parsed.get("from_web", False),
+        "definition":   parsed.get("definition", ""),
+        "plain":        parsed.get("plain"),
         "formation_type": parsed.get("formation_type") or get_formation_type(word),
     }
 
