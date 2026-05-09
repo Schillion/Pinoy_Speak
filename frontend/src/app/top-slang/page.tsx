@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useLayoutEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -168,14 +168,14 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
-  // Measure chart container width so BarChart fills it exactly (height is fixed)
+  // Measure chart container width so BarChart fills the full card (height is fixed)
   const CHART_H = 280;
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartW, setChartW] = useState(520);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
-    const update = () => { if (el.clientWidth > 0) setChartW(el.clientWidth); };
+    const update = () => setChartW(el.offsetWidth || 520);
     const ro = new ResizeObserver(update);
     ro.observe(el);
     update();
