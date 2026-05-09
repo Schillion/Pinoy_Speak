@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { fetchTopSlang, fetchLexicon } from "@/lib/api";
 import type { LexiconEntry, SlangWord } from "@/types";
@@ -168,16 +168,9 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
-  // Measure actual card width so chart fills it (ResizeObserver)
-  const chartCardRef   = useRef<HTMLDivElement>(null);
-  const [cardWidth, setCardWidth] = useState(520);
-  useEffect(() => {
-    const el = chartCardRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([e]) => setCardWidth(e.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  // No explicit width measurement needed — CSS min-width:"100%" fills the
+  // scroll viewport, and words.length * BAR_SLOT expands it when there are
+  // more bars than fit. See the chart section below.
 
   // Horizontal scroll state for the bar chart
   const chartScrollRef = useRef<HTMLDivElement>(null);
@@ -329,7 +322,7 @@ export default function TopSlang() {
             variants={staggerContainer(0.1)} initial="hidden" animate="show"
             className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-stretch"
           >
-            <motion.div ref={chartCardRef} variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
+            <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
                 <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
@@ -369,17 +362,13 @@ export default function TopSlang() {
                 {/* Scrollable chart viewport */}
                 <div
                   ref={chartScrollRef}
-                  style={{ overflowX: "auto", overflowY: "hidden", height: "100%", scrollbarWidth: "none" }}
+                  style={{ overflowX: "auto", overflowY: "hidden", height: 280, scrollbarWidth: "none" }}
                   className="[&::-webkit-scrollbar]:hidden"
                 >
-                  {(() => {
-                    const BAR_SLOT = 52;
-                    // Fill the card at minimum; expand rightward when there are more bars
-                    const chartW = Math.max(cardWidth - 8, words.length * BAR_SLOT);
-                    return (
+                  {/* min-width:100% fills the viewport; explicit width expands for many bars */}
+                  <div style={{ minWidth: "100%", width: words.length * 52, height: 280 }}>
+                    <ResponsiveContainer width="100%" height={280}>
                       <BarChart
-                        width={chartW}
-                        height={280}
                         data={words}
                         barCategoryGap="22%"
                         barGap={0}
@@ -422,8 +411,8 @@ export default function TopSlang() {
                           ))}
                         </Bar>
                       </BarChart>
-                    );
-                  })()}
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </motion.div>
