@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Sector, CartesianGrid,
@@ -686,10 +686,10 @@ function LanguageMix({
   colors: string[];
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const total  = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
-  const active = activeIndex != null ? data[activeIndex] : null;
+  const total      = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
+  const active     = activeIndex != null ? data[activeIndex] : null;
   const activeColor = activeIndex != null ? colors[activeIndex % colors.length] : "#ffffff";
-  const activePct = active ? (active.value / total) * 100 : 100;
+  const activePct  = active ? (active.value / total) * 100 : 100;
 
   const renderActiveShape = (props: {
     cx?: number; cy?: number;
@@ -700,132 +700,127 @@ function LanguageMix({
     const { cx, cy, innerRadius, outerRadius = 0, startAngle, endAngle, fill } = props;
     return (
       <g>
-        <Sector
-          cx={cx}
-          cy={cy}
-          innerRadius={innerRadius}
-          outerRadius={outerRadius + 6}
-          startAngle={startAngle}
-          endAngle={endAngle}
-          fill={fill}
-        />
-        <Sector
-          cx={cx}
-          cy={cy}
-          innerRadius={outerRadius + 8}
-          outerRadius={outerRadius + 10}
-          startAngle={startAngle}
-          endAngle={endAngle}
-          fill={fill}
-          opacity={0.35}
-        />
+        <Sector cx={cx} cy={cy} innerRadius={innerRadius}
+          outerRadius={outerRadius + 7} startAngle={startAngle} endAngle={endAngle} fill={fill} />
+        <Sector cx={cx} cy={cy} innerRadius={outerRadius + 10} outerRadius={outerRadius + 13}
+          startAngle={startAngle} endAngle={endAngle} fill={fill} opacity={0.3} />
       </g>
     );
   };
 
   return (
     <div>
-      <div className="relative" style={{ height: 200 }}>
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            innerRadius={56}
-            outerRadius={80}
-            paddingAngle={1}
-            startAngle={90}
-            endAngle={-270}
-            stroke="rgba(7,14,28,0.9)"
-            strokeWidth={2}
-            activeIndex={activeIndex ?? -1}
-            activeShape={renderActiveShape}
-            onMouseEnter={(_, i) => setActiveIndex(i)}
-            onMouseLeave={() => setActiveIndex(null)}
-            animationDuration={900}
-            animationBegin={150}
-            animationEasing="ease-out"
-            isAnimationActive
-          >
-            {data.map((_, i) => (
-              <Cell key={i} fill={colors[i % colors.length]} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="relative" style={{ height: 220 }}>
+        {/* Ambient glow behind the ring */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="w-52 h-52 rounded-full opacity-15 blur-2xl"
+               style={{ background: `conic-gradient(${colors.map((c, i) => `${c} ${i * (100/colors.length)}%`).join(", ")})` }} />
+        </div>
 
-      {/* Center label — fades between idle (total) and hovered slice */}
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <motion.div
-          key={active?.name ?? "total"}
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center"
-        >
-          <div
-            className="text-2xl font-bold tabular-nums text-white"
-            style={active ? { color: activeColor } : undefined}
-          >
-            {activePct.toFixed(0)}%
-          </div>
-          <div className="text-[10px] uppercase tracking-widest text-white/45 mt-0.5">
-            {active ? active.name : "Total"}
-          </div>
-        </motion.div>
-      </div>
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              innerRadius={60}
+              outerRadius={88}
+              paddingAngle={3}
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+              activeIndex={activeIndex ?? -1}
+              activeShape={renderActiveShape}
+              onMouseEnter={(_, i) => setActiveIndex(i)}
+              onMouseLeave={() => setActiveIndex(null)}
+              animationDuration={1100}
+              animationBegin={200}
+              animationEasing="ease-out"
+              isAnimationActive
+            >
+              {data.map((_, i) => (
+                <Cell key={i} fill={colors[i % colors.length]}
+                      style={{ filter: activeIndex === i ? `drop-shadow(0 0 6px ${colors[i % colors.length]})` : undefined }} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+
+        {/* Center label */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active?.name ?? "total"}
+              initial={{ opacity: 0, scale: 0.82, y: 6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.82, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="text-center"
+            >
+              <div className="text-3xl font-bold tabular-nums leading-none"
+                   style={{ color: active ? activeColor : "#ffffff",
+                            textShadow: active ? `0 0 20px ${activeColor}88` : "none" }}>
+                {activePct.toFixed(0)}%
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-white/40 mt-1">
+                {active ? active.name : "Total"}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Legend — one row per item so percentages align to a single rail */}
-      <div className="mt-3 space-y-1">
+      {/* Legend */}
+      <div className="mt-4 space-y-1.5">
         {data.map((d, i) => {
-          const pct = (d.value / total) * 100;
+          const pct     = (d.value / total) * 100;
           const isActive = activeIndex === i;
+          const color   = colors[i % colors.length];
           return (
-            <button
+            <motion.button
               key={d.name}
               type="button"
               onMouseEnter={() => setActiveIndex(i)}
               onMouseLeave={() => setActiveIndex(null)}
-              className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md
-                          text-xs transition-colors
-                          ${isActive ? "bg-white/[.05]" : "hover:bg-white/[.03]"}`}
+              whileHover={{ x: 2 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg
+                          text-xs transition-all duration-200
+                          ${isActive ? "bg-white/[.06]" : "hover:bg-white/[.03]"}`}
+              style={isActive ? { boxShadow: `inset 0 0 0 1px ${color}30` } : undefined}
             >
               <motion.span
-                animate={{ scale: isActive ? 1.25 : 1 }}
-                transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                animate={{ scale: isActive ? 1.35 : 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 28 }}
                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                 style={{
-                  background: colors[i % colors.length],
+                  background: color,
                   boxShadow: isActive
-                    ? `0 0 12px ${colors[i % colors.length]}`
-                    : "none",
+                    ? `0 0 8px ${color}, 0 0 16px ${color}55`
+                    : `0 0 4px ${color}44`,
                 }}
               />
-              <span className={`w-16 flex-shrink-0 text-left
-                                ${isActive ? "text-white/85" : "text-white/55"}`}>
+              <span className={`w-16 flex-shrink-0 text-left font-medium
+                                ${isActive ? "text-white/90" : "text-white/55"}`}>
                 {d.name}
               </span>
-              {/* Proportional bar gives a secondary visual encoding so small
-                  shares read clearly even before hover. */}
-              <div className="flex-1 h-1 rounded-full bg-white/[.05] overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full bg-white/[.06] overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.8, delay: 0.2 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 1.1, delay: 0.3 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
                   className="h-full rounded-full"
                   style={{
-                    background: colors[i % colors.length],
-                    opacity: isActive ? 1 : 0.55,
-                    boxShadow: isActive ? `0 0 10px ${colors[i % colors.length]}` : "none",
+                    background: `linear-gradient(90deg, ${color}, ${color}88)`,
+                    opacity: isActive ? 1 : 0.6,
+                    boxShadow: isActive ? `0 0 8px ${color}` : "none",
                   }}
                 />
               </div>
-              <span className={`tabular-nums text-right w-9 flex-shrink-0
-                                ${isActive ? "text-white/80" : "text-white/40"}`}>
+              <span className={`tabular-nums text-right w-9 flex-shrink-0 text-[11px] font-medium
+                                ${isActive ? "text-white/85" : "text-white/40"}`}>
                 {pct.toFixed(0)}%
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
