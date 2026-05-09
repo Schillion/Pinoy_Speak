@@ -688,6 +688,8 @@ function LanguageMix({
   data: { name: string; value: number }[];
   colors: string[];
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const total      = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
   const active     = activeIndex != null ? data[activeIndex] : null;

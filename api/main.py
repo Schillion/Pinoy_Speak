@@ -532,7 +532,12 @@ def corpus_stats():
             kw = word.lower()
             return any(kw in (p.get("text") or "").lower() for p in _phrase_posts)
         return counts.get(word, 0) > 0
-    lexicon_count = sum(1 for w in all_tracked if _in_corpus(w))
+    lexicon_count = sum(
+        1 for w in all_tracked
+        if _in_corpus(w)
+        and w not in _STANDARD_FIL_BLOCKLIST
+        and not _STANDARD_FIL_PREFIX_RE.match(w)
+    )
     return {"total_posts": total, "top_slang": top, "slang_count": lexicon_count}
 
 

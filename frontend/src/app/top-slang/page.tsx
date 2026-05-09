@@ -247,8 +247,12 @@ export default function TopSlang() {
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1.5 text-sm capitalize transition-colors
                   ${period === p
-                    ? "bg-white/[.12] text-white font-medium"
-                    : "text-white/45 hover:text-white/70"}`}
+                    ? isLight
+                      ? "bg-blue-500/10 text-blue-700 font-semibold"
+                      : "bg-white/[.12] text-white font-medium"
+                    : isLight
+                      ? "text-slate-400 hover:text-slate-600"
+                      : "text-white/45 hover:text-white/70"}`}
               >
                 {p === "today" ? "Today" : "Overall"}
               </button>

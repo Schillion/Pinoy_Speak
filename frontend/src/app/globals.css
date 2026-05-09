@@ -351,6 +351,17 @@ html[data-theme="light"] .border-blue-400\/30,
 html[data-theme="light"] .border-blue-400\/35,
 html[data-theme="light"] .border-blue-400\/40 { border-color: rgba(59,130,246,0.55); }
 
+/* btn-primary softens slightly in light mode — the full dark gradient is too
+   heavy against a white surface; a lighter blue feels more native to light UI */
+html[data-theme="light"] .btn-primary {
+  background: linear-gradient(to right, #3b82f6, #6366f1) !important;
+  box-shadow: 0 0 16px -6px rgba(99,102,241,0.35) !important;
+}
+html[data-theme="light"] .btn-primary:hover {
+  background: linear-gradient(to right, #2563eb, #4f46e5) !important;
+  box-shadow: 0 0 22px -4px rgba(99,102,241,0.45) !important;
+}
+
 /* Recharts — axis text adapts to theme. Inline `tick={{ fill }}` props
    were removed so the CSS rule wins by default. */
 .recharts-cartesian-axis-tick-value { fill: rgba(255,255,255,0.42); }
