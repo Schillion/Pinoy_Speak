@@ -168,13 +168,14 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
-  // Measure chart container so BarChart fills it exactly
+  // Measure chart container width so BarChart fills it exactly (height is fixed)
+  const CHART_H = 280;
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const [chartSize, setChartSize] = useState({ w: 520, h: 220 });
+  const [chartW, setChartW] = useState(520);
   useEffect(() => {
     const el = chartContainerRef.current;
     if (!el) return;
-    const update = () => setChartSize({ w: el.clientWidth, h: el.clientHeight });
+    const update = () => { if (el.clientWidth > 0) setChartW(el.clientWidth); };
     const ro = new ResizeObserver(update);
     ro.observe(el);
     update();
@@ -317,8 +318,8 @@ export default function TopSlang() {
                   : <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
                 }
               </div>
-              {/* flex-1 so chart fills all remaining card height; ResizeObserver provides exact px */}
-              <div ref={chartContainerRef} className="flex-1 relative" style={{ minHeight: 180 }}>
+              {/* Fixed height container; ResizeObserver gives exact width so bars span full card */}
+              <div ref={chartContainerRef} className="relative" style={{ height: CHART_H }}>
                 {chartPage > 0 && (
                   <button
                     onClick={() => setChartPage((p) => p - 1)}
@@ -348,8 +349,8 @@ export default function TopSlang() {
                   </button>
                 )}
                 <BarChart
-                  width={chartSize.w}
-                  height={chartSize.h}
+                  width={chartW}
+                  height={CHART_H}
                   data={visibleBars}
                   barCategoryGap="22%"
                   barGap={0}
