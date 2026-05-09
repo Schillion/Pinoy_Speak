@@ -511,10 +511,24 @@ _DEFINITION_OVERRIDES: dict[str, dict] = {
         "pos": "noun / verb",
         "is_ambiguous": False,
     },
+    "budol": {
+        "definition": "to be tricked or persuaded into an impulse purchase; also means to scam / deceive someone into buying something they didn't plan to get",
+        "formation_type": "semantic_shift",
+        "plain": "scammed into buying",
+        "pos": "verb / noun",
+        "origin": "from 'budol-budol', the classic Filipino distraction scam; evolved in internet culture to mean impulsive or persuaded buying — 'na-budol ako sa TikTok'",
+        "example": "Na-budol na naman ako sa Shopee — grabe talaga yung mga 'budol finds' videos!",
+        "is_ambiguous": False,
+    },
 }
 
 for _w, _m in _DEFINITION_OVERRIDES.items():
     _merge_entry(_w, _m, overwrite=True)
+    # Also upsert into SEED_LEXICON so /lexicon includes new entries added here
+    if _w not in SEED_LEXICON:
+        SEED_LEXICON[_w] = _m
+    else:
+        SEED_LEXICON[_w] = {**SEED_LEXICON[_w], **{k: v for k, v in _m.items() if v is not None}}
 
 # Prune any standard Filipino words that slipped into the lexicon via
 # slang_seeds.json or discovered_slang.json. Runs once at startup.
