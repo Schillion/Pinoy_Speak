@@ -13,6 +13,7 @@ import { fetchCorpusStats, fetchTopSlang, fetchWordTrends, fetchLanguageMix } fr
 import type { CorpusStats, SlangWord } from "@/types";
 import SlangModal from "./_components/SlangModal";
 import { fadeUp, fadeUpSoft, staggerContainer } from "@/lib/motion";
+import { useTheme } from "@/context/ThemeContext";
 
 // Fallback shape used while the real /language-mix call is loading or if
 // the backend is offline. Real values overwrite this.
@@ -77,6 +78,8 @@ const ALL_SUBREDDITS = [
 ];
 
 export default function Home() {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [stats, setStats]         = useState<CorpusStats | null>(null);
   const [showSubInfo, setShowSubInfo] = useState(false);
   const [topWords, setTopWords]   = useState<SlangWord[]>([]);
@@ -539,7 +542,7 @@ export default function Home() {
                      tickFormatter={tickFormatter} interval={tickInterval}
                      axisLine={false} tickLine={false}
                      type="category" />
-              <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.4)" }} width={24} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: isLight ? "rgba(15,23,42,0.5)" : "rgba(255,255,255,0.4)" }} width={24} axisLine={false} tickLine={false} />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
@@ -548,20 +551,20 @@ export default function Home() {
                   if (items.length === 0) return null;
                   return (
                     <div style={{
-                      background: "rgba(7,14,28,0.96)",
+                      background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.96)",
                       backdropFilter: "blur(12px)",
-                      border: "1px solid rgba(96,165,250,0.2)",
+                      border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.2)",
                       borderRadius: 12,
                       padding: "10px 14px",
-                      boxShadow: "0 0 30px -8px rgba(96,165,250,0.35)",
+                      boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.35)",
                       minWidth: 130,
                     }}>
-                      <p style={{ color: "rgba(226,232,240,0.55)", fontSize: 11, marginBottom: 8 }}>{String(label)}</p>
+                      <p style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: 11, marginBottom: 8 }}>{String(label)}</p>
                       {items.map(({ name, value, color }) => (
                         <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                           <span style={{ display: "inline-block", width: 20, height: 3, borderRadius: 99, background: color, flexShrink: 0 }} />
-                          <span style={{ color: "rgba(226,232,240,0.85)", fontSize: 12, flex: 1 }}>{name}</span>
-                          <span style={{ color: "rgba(226,232,240,0.55)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+                          <span style={{ color: isLight ? "rgba(15,23,42,0.85)" : "rgba(226,232,240,0.85)", fontSize: 12, flex: 1 }}>{name}</span>
+                          <span style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{value}</span>
                         </div>
                       ))}
                     </div>
@@ -757,7 +760,7 @@ function LanguageMix({
               className="text-center"
             >
               <div className="text-3xl font-bold tabular-nums leading-none"
-                   style={{ color: active ? activeColor : "#ffffff",
+                   style={{ color: active ? activeColor : (isLight ? "#0f172a" : "#ffffff"),
                             textShadow: active ? `0 0 20px ${activeColor}88` : "none" }}>
                 {activePct.toFixed(0)}%
               </div>

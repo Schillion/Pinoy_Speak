@@ -12,6 +12,7 @@ import WordModal from "./_components/WordModal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import RevealText from "@/components/RevealText";
 import MagneticButton from "@/components/MagneticButton";
+import { useTheme } from "@/context/ThemeContext";
 
 const BAR_COLORS = ["#60a5fa", "#a78bfa", "#22d3ee", "#f472b6", "#818cf8", "#34d399"];
 
@@ -156,6 +157,8 @@ function TopNSelect({ value, onChange, options }: {
 const ALL_N_LIMIT = 1000;
 
 export default function TopSlang() {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [words,    setWords]    = useState<SlangWord[]>([]);
   const [lexicon,  setLexicon]  = useState<Record<string, LexiconEntry>>({});
   const [n,        setN]        = useState<TopN>(15);
@@ -303,15 +306,15 @@ export default function TopSlang() {
                   <YAxis tick={{ fontSize: 10 }} width={28} />
                   <Tooltip
                     contentStyle={{
-                      background: "rgba(7,14,28,0.92)",
+                      background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
                       backdropFilter: "blur(12px)",
-                      border: "1px solid rgba(96,165,250,0.25)",
+                      border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.25)",
                       borderRadius: 12,
-                      boxShadow: "0 0 30px -8px rgba(96,165,250,0.4)",
+                      boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
                     }}
-                    labelStyle={{ color: "#e2e8f0", fontWeight: 600 }}
-                    itemStyle={{ color: "#e2e8f0" }}
-                    cursor={{ fill: "rgba(255,255,255,.04)" }}
+                    labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
+                    itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
+                    cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
                   />
                   <Bar dataKey="count" radius={[6, 6, 0, 0]}
                        maxBarSize={32}
