@@ -52,6 +52,25 @@ _MODEL_PATH = "data/social_model.model"
 # write loads-then-overwrites the file, clobbering siblings' new entries.
 _lexicon_write_lock = threading.Lock()
 
+# ── Frontend cache invalidation ───────────────────────────────────────────────
+# After saving a new word, POST to Vercel's /api/revalidate so the cached
+# lexicon is purged immediately (no waiting for the 60-second TTL).
+_FRONTEND_URL = os.environ.get("FRONTEND_URL", "").rstrip("/")
+_REVALIDATE_SECRET = os.environ.get("REVALIDATE_SECRET", "")
+
+def _revalidate_frontend() -> None:
+    if not _FRONTEND_URL:
+        return
+    import requests as _req
+    try:
+        _req.post(
+            f"{_FRONTEND_URL}/api/revalidate",
+            json={"secret": _REVALIDATE_SECRET, "tags": ["lexicon"]},
+            timeout=3,
+        )
+    except Exception:
+        pass  # best-effort — never block the learn path
+
 
 def _continuous_learner() -> None:
     """
@@ -957,12 +976,19 @@ def _blocking_learn(req: "LearnSlangRequest") -> dict:
     # this word as slang immediately, without waiting for an API restart.
     _merge_entry(word, entry, overwrite=True)
 
+    # ── Also upsert into SEED_LEXICON so /lexicon reflects it right away ─
+    SEED_LEXICON[word] = entry
+
     # ── Incrementally update the RAG index with the new word ────────────
     try:
         import rag_store
         rag_store.add_entry(word, entry)
     except Exception:
         pass
+
+    # ── Bust the Vercel lexicon cache so the dictionary page updates within
+    # seconds instead of waiting for the 60-second TTL to expire ──────────
+    _revalidate_frontend()
 
     return {"saved": True, "word": word, "corpus_count": corpus_count, "corpus_grounded": corpus_count > 0}
 

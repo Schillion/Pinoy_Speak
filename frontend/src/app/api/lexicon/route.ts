@@ -14,7 +14,7 @@ const getCachedLexicon = unstable_cache(
     return res.json();
   },
   ["lexicon"],
-  { revalidate: 3600, tags: ["lexicon"] },
+  { revalidate: 60, tags: ["lexicon"] },
 );
 
 export async function GET() {
