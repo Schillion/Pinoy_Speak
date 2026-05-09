@@ -306,8 +306,8 @@ export default function TopSlang() {
                   : <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
                 }
               </div>
-              {/* mt-auto pushes chart to bottom of the flex-col card */}
-              <div className="relative mt-auto" style={{ height: CHART_H }}>
+              {/* flex-1 so chart grows to fill all remaining card height */}
+              <div className="relative flex-1 min-h-0">
                 {chartPage > 0 && (
                   <button
                     onClick={() => setChartPage((p) => p - 1)}
@@ -336,7 +336,7 @@ export default function TopSlang() {
                     </svg>
                   </button>
                 )}
-                <ResponsiveContainer width="100%" height={CHART_H}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={visibleBars}
                     barCategoryGap="22%"
