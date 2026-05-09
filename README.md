@@ -90,8 +90,8 @@ A background daemon that runs continuously:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Schillion/PinoySpeak.git
-cd PinoySpeak
+git clone https://github.com/Schillion/Pinoy_Speak.git
+cd Pinoy_Speak
 ```
 
 ### 2. Set up the backend
