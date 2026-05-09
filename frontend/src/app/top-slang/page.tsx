@@ -397,7 +397,7 @@ export default function TopSlang() {
             animate={{ rotate: 360 }}
             transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
           />
-          <p className="text-white/35 text-sm">Scanning corpus…</p>
+          <p className="text-white/35 text-sm">Scanning posts…</p>
         </div>
       )}
     </div>

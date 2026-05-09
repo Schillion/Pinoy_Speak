@@ -106,7 +106,7 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
                   <div className="shimmer h-3 rounded w-full" />
                   <div className="shimmer h-3 rounded w-5/6" />
                   <p className="text-[10px] text-white/30 text-center pt-2">
-                    Analysing corpus…
+                    Analysing posts…
                   </p>
                 </div>
               )}

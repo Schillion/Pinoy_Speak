@@ -239,14 +239,14 @@ export default function WordModal({
                       &ldquo;{meta.example}&rdquo;
                     </p>
                     <p className="text-[11px] text-white/30 italic">
-                      Hand-curated example — corpus posts will appear here once
-                      &ldquo;{word.word}&rdquo; shows up in scraped data.
+                      Hand-curated example — real posts will appear here once
+                      &ldquo;{word.word}&rdquo; shows up in collected data.
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-white/30 italic leading-relaxed">
-                    Still being collected — this word hasn&apos;t shown up in the
-                    scraped corpus yet. Run <span className="text-white/55">automate.py</span>
+                    Still being collected — this word hasn&apos;t shown up in
+                    collected posts yet. Run <span className="text-white/55">automate.py</span>
                     {" "}or wait for new posts.
                   </p>
                 )}

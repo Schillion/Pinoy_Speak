@@ -60,7 +60,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const runSweep = useCallback(async () => {
     if (sweeping) return;
     setSweeping(true);
-    setGrowMsg("Scanning corpus and asking LLM to confirm — this takes about a minute…");
+    setGrowMsg("Scanning posts and asking AI to confirm — this takes about a minute…");
     try {
       const res = await sweepCorpus(20);
       if (res.error) {
@@ -72,7 +72,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           setGrowMsg(`Found ${added} new slang word${added === 1 ? "" : "s"} · lexicon now ${res.lexicon_size}`);
           reloadLexicon();
         } else if (cands === 0) {
-          setGrowMsg("No corpus candidates — all frequent words are already known or standard dictionary words");
+          setGrowMsg("No new words found — all frequent words are already known or standard dictionary words");
         } else {
           setGrowMsg(`Scanned ${cands} candidate${cands === 1 ? "" : "s"}, LLM rejected them all as non-slang`);
         }
@@ -296,13 +296,13 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           <button
             onClick={runSweep}
             disabled={sweeping || importing}
-            title="Re-scan the corpus and ask the LLM to confirm any missed slang"
+            title="Re-scan posts and ask AI to confirm any missed slang"
             className="btn-ghost w-auto px-3 md:px-4 py-2 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 disabled:opacity-50"
           >
             {sweeping ? (
               <>
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-blue-300 rounded-full animate-spin" />
-                <span className="hidden sm:inline">Scanning corpus…</span>
+                <span className="hidden sm:inline">Scanning posts…</span>
               </>
             ) : (
               <>
