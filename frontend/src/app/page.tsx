@@ -353,6 +353,20 @@ export default function Home() {
 
       {modalWord && <SlangModal word={modalWord} onClose={closeModal} />}
 
+      {/* Data disclaimer */}
+      <motion.div
+        variants={fadeUp}
+        className="flex items-start gap-2 px-3 py-2.5 rounded-xl
+                   bg-white/[.03] border border-white/[.06] mb-1"
+      >
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-white/30" fill="currentColor">
+          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/>
+        </svg>
+        <p className="text-[11px] text-white/35 leading-relaxed">
+          Data is currently sourced from Reddit posts only. Results may not fully represent all Filipino slang in use — coverage will improve as more sources are added.
+        </p>
+      </motion.div>
+
       {/* Charts */}
       <motion.div variants={staggerContainer(0.1)} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5">
