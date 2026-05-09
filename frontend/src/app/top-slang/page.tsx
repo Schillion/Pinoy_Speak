@@ -168,6 +168,17 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
+  // Measure actual card width so chart fills it (ResizeObserver)
+  const chartCardRef   = useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = useState(520);
+  useEffect(() => {
+    const el = chartCardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setCardWidth(e.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // Horizontal scroll state for the bar chart
   const chartScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
@@ -183,7 +194,6 @@ export default function TopSlang() {
   useEffect(() => {
     const el = chartScrollRef.current;
     if (!el) return;
-    // reset scroll + recompute arrows whenever data changes
     el.scrollLeft = 0;
     updateScrollBtns();
     el.addEventListener("scroll", updateScrollBtns);
@@ -197,6 +207,13 @@ export default function TopSlang() {
   const scrollChart = (dir: "left" | "right") => {
     chartScrollRef.current?.scrollBy({ left: dir === "left" ? -240 : 240, behavior: "smooth" });
   };
+
+  // Ranked list pagination (10 per page)
+  const RANK_PAGE_SIZE = 10;
+  const [rankPage, setRankPage] = useState(0);
+  const rankTotalPages = Math.ceil(words.length / RANK_PAGE_SIZE);
+  const pagedWords = words.slice(rankPage * RANK_PAGE_SIZE, (rankPage + 1) * RANK_PAGE_SIZE);
+  useEffect(() => { setRankPage(0); }, [words]);
 
   const openWord = (word: SlangWord, e?: React.MouseEvent) => {
     const anchor = e ? { x: e.clientX, y: e.clientY } : null;
@@ -312,7 +329,7 @@ export default function TopSlang() {
             variants={staggerContainer(0.1)} initial="hidden" animate="show"
             className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-stretch"
           >
-            <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
+            <motion.div ref={chartCardRef} variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
                 <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
@@ -357,7 +374,8 @@ export default function TopSlang() {
                 >
                   {(() => {
                     const BAR_SLOT = 52;
-                    const chartW = Math.max(480, words.length * BAR_SLOT);
+                    // Fill the card at minimum; expand rightward when there are more bars
+                    const chartW = Math.max(cardWidth - 8, words.length * BAR_SLOT);
                     return (
                       <BarChart
                         width={chartW}
@@ -411,32 +429,83 @@ export default function TopSlang() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="card spotlight p-4 flex flex-col">
-              <p className="text-xs text-white/35 uppercase tracking-wider mb-3">Ranked list</p>
-              <div className="overflow-y-auto flex-1 min-h-0" style={{ minHeight: 300 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-white/35 uppercase tracking-wider">Ranked list</p>
+                {rankTotalPages > 1 && (
+                  <span className="text-[10px] text-white/25">
+                    {rankPage * RANK_PAGE_SIZE + 1}–{Math.min((rankPage + 1) * RANK_PAGE_SIZE, words.length)} of {words.length}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 min-h-0" style={{ minHeight: 300 }}>
                 <table className="w-full text-sm">
                   <tbody>
-                    {words.map((w, i) => (
-                      <tr
-                        key={w.word}
-                        onClick={(e) => openWord(w, e)}
-                        className="border-b border-white/[.04] last:border-0 cursor-pointer
-                                   hover:bg-white/[.04] hover:translate-x-0.5
-                                   transition-[background-color,transform] duration-150 group"
-                      >
-                        <td className="py-2 text-xs text-white/25 w-7 font-mono">
-                          {(i + 1).toString().padStart(2, "0")}
-                        </td>
-                        <td className="py-2 font-medium text-white/80 group-hover:text-gradient-static transition-colors">
-                          {w.word}
-                        </td>
-                        <td className="py-2 text-right text-xs text-white/35">
-                          {w.count.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
+                    {pagedWords.map((w, i) => {
+                      const globalIdx = rankPage * RANK_PAGE_SIZE + i;
+                      return (
+                        <tr
+                          key={w.word}
+                          onClick={(e) => openWord(w, e)}
+                          className="border-b border-white/[.04] last:border-0 cursor-pointer
+                                     hover:bg-white/[.04] hover:translate-x-0.5
+                                     transition-[background-color,transform] duration-150 group"
+                        >
+                          <td className="py-2 text-xs text-white/25 w-7 font-mono">
+                            {(globalIdx + 1).toString().padStart(2, "0")}
+                          </td>
+                          <td className="py-2 font-medium text-white/80 group-hover:text-gradient-static transition-colors">
+                            {w.word}
+                          </td>
+                          <td className="py-2 text-right text-xs text-white/35">
+                            {w.count.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+              {/* Pagination controls */}
+              {rankTotalPages > 1 && (
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[.05]">
+                  <button
+                    onClick={() => setRankPage((p) => Math.max(0, p - 1))}
+                    disabled={rankPage === 0}
+                    className="flex items-center gap-1 text-xs text-white/45 hover:text-white/80
+                               disabled:opacity-25 disabled:pointer-events-none transition-colors"
+                  >
+                    <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M7.5 2L4.5 6l3 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Prev
+                  </button>
+                  <div className="flex gap-1">
+                    {Array.from({ length: rankTotalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setRankPage(i)}
+                        className={`w-5 h-5 rounded text-[10px] transition-colors
+                          ${i === rankPage
+                            ? "bg-blue-500/30 text-blue-300"
+                            : "text-white/30 hover:text-white/60 hover:bg-white/[.06]"}`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setRankPage((p) => Math.min(rankTotalPages - 1, p + 1))}
+                    disabled={rankPage === rankTotalPages - 1}
+                    className="flex items-center gap-1 text-xs text-white/45 hover:text-white/80
+                               disabled:opacity-25 disabled:pointer-events-none transition-colors"
+                  >
+                    Next
+                    <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4.5 2L7.5 6l-3 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
 
