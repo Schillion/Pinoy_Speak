@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer,
 } from "recharts";
 import { fetchTopSlang, fetchLexicon } from "@/lib/api";
 import type { LexiconEntry, SlangWord } from "@/types";
@@ -168,19 +168,7 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
-  // Measure chart container width so BarChart fills the full card (height is fixed)
   const CHART_H = 280;
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const [chartW, setChartW] = useState(520);
-  useLayoutEffect(() => {
-    const el = chartContainerRef.current;
-    if (!el) return;
-    const update = () => setChartW(el.offsetWidth || 520);
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    update();
-    return () => ro.disconnect();
-  }, []);
 
   // Chart pagination — 15 bars per page, fills full card width each page
   const CHART_PAGE = 15;
@@ -318,8 +306,8 @@ export default function TopSlang() {
                   : <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
                 }
               </div>
-              {/* Fixed height container; ResizeObserver gives exact width so bars span full card */}
-              <div ref={chartContainerRef} className="relative" style={{ height: CHART_H }}>
+              {/* ResponsiveContainer handles its own width measurement reliably */}
+              <div className="relative" style={{ height: CHART_H }}>
                 {chartPage > 0 && (
                   <button
                     onClick={() => setChartPage((p) => p - 1)}
@@ -348,56 +336,56 @@ export default function TopSlang() {
                     </svg>
                   </button>
                 )}
-                <BarChart
-                  width={chartW}
-                  height={CHART_H}
-                  data={visibleBars}
-                  barCategoryGap="22%"
-                  barGap={0}
-                  margin={{
-                    top: 4,
-                    right: chartPage < chartPages - 1 ? 32 : 4,
-                    bottom: 28,
-                    left: chartPage > 0 ? 32 : 0,
-                  }}
-                >
-                  <defs>
-                    {BAR_COLORS.map((c, i) => (
-                      <linearGradient key={i} id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={c} stopOpacity={0.9} />
-                        <stop offset="100%" stopColor={c} stopOpacity={0.35} />
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <XAxis dataKey="word" tick={{ fontSize: 10 }}
-                         angle={-40} textAnchor="end" interval={0}
-                         type="category" />
-                  <YAxis tick={{ fontSize: 10 }} width={28} />
-                  <Tooltip
-                    contentStyle={{
-                      background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
-                      backdropFilter: "blur(12px)",
-                      border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.25)",
-                      borderRadius: 12,
-                      boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
+                <ResponsiveContainer width="100%" height={CHART_H}>
+                  <BarChart
+                    data={visibleBars}
+                    barCategoryGap="22%"
+                    barGap={0}
+                    margin={{
+                      top: 4,
+                      right: chartPage < chartPages - 1 ? 32 : 4,
+                      bottom: 28,
+                      left: chartPage > 0 ? 32 : 0,
                     }}
-                    labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
-                    itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
-                    cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
-                  />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}
-                       maxBarSize={32}
-                       style={{ cursor: "pointer" }}
-                       animationDuration={900}
-                       onClick={(data) => {
-                         const w = words.find((x) => x.word === data.word);
-                         if (w) setSelected({ word: w, anchor: null });
-                       }}>
-                    {visibleBars.map((_, i) => (
-                      <Cell key={i} fill={`url(#bar-grad-${i % BAR_COLORS.length})`} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                  >
+                    <defs>
+                      {BAR_COLORS.map((c, i) => (
+                        <linearGradient key={i} id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={c} stopOpacity={0.9} />
+                          <stop offset="100%" stopColor={c} stopOpacity={0.35} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <XAxis dataKey="word" tick={{ fontSize: 10 }}
+                           angle={-40} textAnchor="end" interval={0}
+                           type="category" />
+                    <YAxis tick={{ fontSize: 10 }} width={28} />
+                    <Tooltip
+                      contentStyle={{
+                        background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
+                        backdropFilter: "blur(12px)",
+                        border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.25)",
+                        borderRadius: 12,
+                        boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
+                      }}
+                      labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
+                      itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
+                      cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
+                    />
+                    <Bar dataKey="count" radius={[6, 6, 0, 0]}
+                         maxBarSize={48}
+                         style={{ cursor: "pointer" }}
+                         animationDuration={900}
+                         onClick={(data) => {
+                           const w = words.find((x) => x.word === data.word);
+                           if (w) setSelected({ word: w, anchor: null });
+                         }}>
+                      {visibleBars.map((_, i) => (
+                        <Cell key={i} fill={`url(#bar-grad-${i % BAR_COLORS.length})`} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
 
