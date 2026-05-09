@@ -21,7 +21,6 @@ export default function Sidebar() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { theme, toggleTheme, fontSize, setFontSize } = useTheme();
-  const isLight = theme === "light";
 
   return (
     <>
@@ -292,7 +291,7 @@ function SettingsPopover({
                                [&::-moz-range-thumb]:to-indigo-500
                                [&::-moz-range-thumb]:border-none"
                     style={{
-                      background: `linear-gradient(to right, #3b82f6 ${idx * 20}%, ${isLight ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.10)"} ${idx * 20}%)`
+                      background: `linear-gradient(to right, #3b82f6 ${idx * 20}%, ${theme === "light" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.10)"} ${idx * 20}%)`
                     }}
                   />
                 </>
