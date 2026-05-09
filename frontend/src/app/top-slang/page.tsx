@@ -327,15 +327,15 @@ export default function TopSlang() {
         <>
           <motion.div
             variants={staggerContainer(0.1)} initial="hidden" animate="show"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-stretch"
           >
             <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
                 <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
               </div>
-              {/* Fixed-height scrollable chart — width grows with bar count */}
-              <div className="relative" style={{ height: 200 }}>
+              {/* Push chart to bottom of card so empty space is at the top */}
+              <div className="mt-auto relative" style={{ height: 200 }}>
                 {/* Left scroll arrow */}
                 {canScrollLeft && (
                   <button
