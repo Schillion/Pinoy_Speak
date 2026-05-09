@@ -490,6 +490,27 @@ _DEFINITION_OVERRIDES: dict[str, dict] = {
         "pos": "verb",
         "is_ambiguous": False,
     },
+    "bonak": {
+        "definition": "stupid / dumb / idiot — used as a mild friendly insult among close friends",
+        "formation_type": "unknown",
+        "plain": "idiot",
+        "pos": "adjective / noun",
+        "is_ambiguous": True,
+    },
+    "marites": {
+        "definition": "nosy gossip queen — someone who loves spreading chismis (rumors) about others; from the viral Filipino meme 'Alam mo na ba? Si Marites...'",
+        "formation_type": "coinage",
+        "plain": "gossip",
+        "pos": "noun",
+        "is_ambiguous": False,
+    },
+    "dogshow": {
+        "definition": "shameless showing off / ostentatious display — being a total show-off in front of others",
+        "formation_type": "semantic_shift",
+        "plain": "show-off",
+        "pos": "noun / verb",
+        "is_ambiguous": False,
+    },
 }
 
 for _w, _m in _DEFINITION_OVERRIDES.items():

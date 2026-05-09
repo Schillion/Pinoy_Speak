@@ -16,7 +16,7 @@ async function getLexicon(): Promise<Record<string, LexiconEntry>> {
   }
   try {
     const res = await fetch(`${PY}/lexicon`, {
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(8000),
       cache: "no-store",
     });
     if (res.ok) {

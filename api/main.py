@@ -37,6 +37,7 @@ from dictionary_service import (
     KNOWN_SLANG, PLAIN_WORD, FORMATION_TYPE, SEED_LEXICON,
     is_standard_word, is_profane, get_formation_type, AMBIGUOUS_SLANG_SEEDS,
     KNOWN_MULTI_WORD_SLANG, resolve_canonical, _merge_entry,
+    _STANDARD_FIL_BLOCKLIST, _STANDARD_FIL_PREFIX_RE,
 )
 from api.corpus_utils import scan_corpus, get_top_slang, load_posts, _STOP_WORDS
 
@@ -1072,7 +1073,12 @@ def lexicon():
             return any(kw in (p.get("text") or "").lower() for p in _posts_cache)
         return counts.get(word, 0) > 0
 
-    filtered = {w: v for w, v in combined.items() if _in_corpus(w)}
+    filtered = {
+        w: v for w, v in combined.items()
+        if _in_corpus(w)
+        and w not in _STANDARD_FIL_BLOCKLIST
+        and not _STANDARD_FIL_PREFIX_RE.match(w)
+    }
     return {"entries": filtered, "count": len(filtered)}
 
 
