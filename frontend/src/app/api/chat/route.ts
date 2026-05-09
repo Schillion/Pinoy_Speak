@@ -424,6 +424,8 @@ const COMMON_WORDS = new Set([
   // Greetings + chat verbs that aren't slang
   "hi","hello","hey","kumusta","kamusta","musta","quiz","test","list","help","please",
   "sige","oo","ok","okay","tnx","thanks","salamat","thank","you","oo","yup","nope",
+  // Quiz non-answers — user saying they don't know, not asking about a word
+  "idk","idc","dno","dunno","pass","skip","give","hint","next","answer","reveal",
 ]);
 
 function detectUnknownWord(
