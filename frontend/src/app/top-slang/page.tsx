@@ -306,8 +306,8 @@ export default function TopSlang() {
                   : <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
                 }
               </div>
-              {/* ResponsiveContainer handles its own width measurement reliably */}
-              <div className="relative" style={{ height: CHART_H }}>
+              {/* mt-auto pushes chart to bottom of the flex-col card */}
+              <div className="relative mt-auto" style={{ height: CHART_H }}>
                 {chartPage > 0 && (
                   <button
                     onClick={() => setChartPage((p) => p - 1)}
