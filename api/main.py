@@ -517,28 +517,12 @@ def top_slang(n: int = 15, period: str = "overall"):
 
 @app.get("/corpus-stats")
 def corpus_stats():
-    from slang_enricher import load_discovered
     counts, total = scan_corpus()
     top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS and not is_standard_word(w)), "—")
-    # Use identical corpus-presence logic as /lexicon (including multi-word phrase check)
-    discovered = load_discovered()
-    all_tracked = list(SEED_LEXICON.keys()) + [w for w in discovered if w not in SEED_LEXICON]
-    _phrase_posts: list | None = None
-    def _in_corpus(word: str) -> bool:
-        nonlocal _phrase_posts
-        if " " in word:
-            if _phrase_posts is None:
-                _phrase_posts = load_posts()
-            kw = word.lower()
-            return any(kw in (p.get("text") or "").lower() for p in _phrase_posts)
-        return counts.get(word, 0) > 0
-    lexicon_count = sum(
-        1 for w in all_tracked
-        if _in_corpus(w)
-        and w not in _STANDARD_FIL_BLOCKLIST
-        and not _STANDARD_FIL_PREFIX_RE.match(w)
-    )
-    return {"total_posts": total, "top_slang": top, "slang_count": lexicon_count}
+    # Derive slang_count from lexicon() so the number is always identical to
+    # what the Dictionary page shows — no risk of the two endpoints drifting.
+    lex = lexicon()
+    return {"total_posts": total, "top_slang": top, "slang_count": lex["count"]}
 
 
 @app.post("/log-chat")

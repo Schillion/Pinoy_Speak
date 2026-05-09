@@ -12,7 +12,7 @@ const getCachedStats = unstable_cache(
     return res.json();
   },
   ["corpus-stats"],
-  { revalidate: 1800, tags: ["corpus-stats"] },
+  { revalidate: 60, tags: ["corpus-stats"] },
 );
 
 export async function GET() {
