@@ -229,15 +229,15 @@ export default function ChatPage() {
           >
             🤙
           </motion.div>
-          <div>
+          <div className="min-w-0">
             <h1 className="font-semibold text-shimmer text-base leading-none">Kuya Slang</h1>
             <div className="flex items-center gap-1.5 mt-1">
               <motion.span
                 animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.9)]"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.9)]"
               />
-              <p className="text-xs text-white/35">Online · Filipino slang tutor</p>
+              <p className="text-xs text-white/35 whitespace-nowrap">Online · Filipino slang tutor</p>
             </div>
           </div>
         </div>
