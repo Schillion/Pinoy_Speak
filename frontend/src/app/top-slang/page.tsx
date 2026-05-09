@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
 } from "recharts";
 import { fetchTopSlang, fetchLexicon } from "@/lib/api";
 import type { LexiconEntry, SlangWord } from "@/types";
@@ -168,12 +168,23 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
-  // No explicit width measurement needed — CSS min-width:"100%" fills the
-  // scroll viewport, and words.length * BAR_SLOT expands it when there are
-  // more bars than fit. See the chart section below.
-
-  // Horizontal scroll state for the bar chart
+  // Measure scroll viewport width so the chart always fills it exactly
   const chartScrollRef = useRef<HTMLDivElement>(null);
+  const [viewportW, setViewportW] = useState(520);
+
+  useEffect(() => {
+    const el = chartScrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setViewportW(el.clientWidth));
+    ro.observe(el);
+    setViewportW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  const BAR_SLOT = 52;
+  const chartW = Math.max(viewportW, words.length * BAR_SLOT);
+
+  // Horizontal scroll arrow visibility
   const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -190,12 +201,8 @@ export default function TopSlang() {
     el.scrollLeft = 0;
     updateScrollBtns();
     el.addEventListener("scroll", updateScrollBtns);
-    window.addEventListener("resize", updateScrollBtns);
-    return () => {
-      el.removeEventListener("scroll", updateScrollBtns);
-      window.removeEventListener("resize", updateScrollBtns);
-    };
-  }, [words, updateScrollBtns]);
+    return () => el.removeEventListener("scroll", updateScrollBtns);
+  }, [words, updateScrollBtns, chartW]);
 
   const scrollChart = (dir: "left" | "right") => {
     chartScrollRef.current?.scrollBy({ left: dir === "left" ? -240 : 240, behavior: "smooth" });
@@ -320,7 +327,7 @@ export default function TopSlang() {
         <>
           <motion.div
             variants={staggerContainer(0.1)} initial="hidden" animate="show"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-stretch"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start"
           >
             <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
@@ -365,10 +372,9 @@ export default function TopSlang() {
                   style={{ overflowX: "auto", overflowY: "hidden", height: 200, scrollbarWidth: "none" }}
                   className="[&::-webkit-scrollbar]:hidden"
                 >
-                  {/* min-width:100% fills the viewport; explicit width expands for many bars */}
-                  <div style={{ minWidth: "100%", width: words.length * 52, height: 200 }}>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart
+                  <BarChart
+                        width={chartW}
+                        height={200}
                         data={words}
                         barCategoryGap="22%"
                         barGap={0}
@@ -411,8 +417,6 @@ export default function TopSlang() {
                           ))}
                         </Bar>
                       </BarChart>
-                    </ResponsiveContainer>
-                  </div>
                 </div>
               </div>
             </motion.div>
