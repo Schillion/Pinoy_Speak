@@ -320,7 +320,7 @@ export default function TopSlang() {
         <>
           <motion.div
             variants={staggerContainer(0.1)} initial="hidden" animate="show"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-start"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8 items-stretch"
           >
             <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
@@ -328,7 +328,7 @@ export default function TopSlang() {
                 <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
               </div>
               {/* Fixed-height scrollable chart — width grows with bar count */}
-              <div className="relative" style={{ height: 280 }}>
+              <div className="relative" style={{ height: 200 }}>
                 {/* Left scroll arrow */}
                 {canScrollLeft && (
                   <button
@@ -362,12 +362,12 @@ export default function TopSlang() {
                 {/* Scrollable chart viewport */}
                 <div
                   ref={chartScrollRef}
-                  style={{ overflowX: "auto", overflowY: "hidden", height: 280, scrollbarWidth: "none" }}
+                  style={{ overflowX: "auto", overflowY: "hidden", height: 200, scrollbarWidth: "none" }}
                   className="[&::-webkit-scrollbar]:hidden"
                 >
                   {/* min-width:100% fills the viewport; explicit width expands for many bars */}
-                  <div style={{ minWidth: "100%", width: words.length * 52, height: 280 }}>
-                    <ResponsiveContainer width="100%" height={280}>
+                  <div style={{ minWidth: "100%", width: words.length * 52, height: 200 }}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <BarChart
                         data={words}
                         barCategoryGap="22%"
