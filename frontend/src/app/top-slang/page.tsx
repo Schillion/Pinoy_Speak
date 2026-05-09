@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
 } from "recharts";
 import { fetchTopSlang, fetchLexicon } from "@/lib/api";
 import type { LexiconEntry, SlangWord } from "@/types";
@@ -168,6 +168,36 @@ export default function TopSlang() {
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const reqId = useRef(0);
 
+  // Horizontal scroll state for the bar chart
+  const chartScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft,  setCanScrollLeft]  = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollBtns = useCallback(() => {
+    const el = chartScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = chartScrollRef.current;
+    if (!el) return;
+    // reset scroll + recompute arrows whenever data changes
+    el.scrollLeft = 0;
+    updateScrollBtns();
+    el.addEventListener("scroll", updateScrollBtns);
+    window.addEventListener("resize", updateScrollBtns);
+    return () => {
+      el.removeEventListener("scroll", updateScrollBtns);
+      window.removeEventListener("resize", updateScrollBtns);
+    };
+  }, [words, updateScrollBtns]);
+
+  const scrollChart = (dir: "left" | "right") => {
+    chartScrollRef.current?.scrollBy({ left: dir === "left" ? -240 : 240, behavior: "smooth" });
+  };
+
   const openWord = (word: SlangWord, e?: React.MouseEvent) => {
     const anchor = e ? { x: e.clientX, y: e.clientY } : null;
     setSelected({ word, anchor });
@@ -287,53 +317,96 @@ export default function TopSlang() {
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
                 <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
               </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%" minHeight={240}>
-                <BarChart
-                  data={words}
-                  barCategoryGap="22%"
-                  barGap={0}
-                  margin={{ top: 4, right: 4, bottom: 28, left: 0 }}
+              {/* Fixed-height scrollable chart — width grows with bar count */}
+              <div className="relative" style={{ height: 280 }}>
+                {/* Left scroll arrow */}
+                {canScrollLeft && (
+                  <button
+                    onClick={() => scrollChart("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10
+                               w-7 h-7 rounded-full flex items-center justify-center
+                               bg-black/50 backdrop-blur text-white/70 hover:text-white
+                               transition-colors shadow-lg"
+                    aria-label="Scroll left"
+                  >
+                    <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M7.5 2L4.5 6l3 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+                {/* Right scroll arrow */}
+                {canScrollRight && (
+                  <button
+                    onClick={() => scrollChart("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10
+                               w-7 h-7 rounded-full flex items-center justify-center
+                               bg-black/50 backdrop-blur text-white/70 hover:text-white
+                               transition-colors shadow-lg"
+                    aria-label="Scroll right"
+                  >
+                    <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4.5 2L7.5 6l-3 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+                {/* Scrollable chart viewport */}
+                <div
+                  ref={chartScrollRef}
+                  style={{ overflowX: "auto", overflowY: "hidden", height: "100%", scrollbarWidth: "none" }}
+                  className="[&::-webkit-scrollbar]:hidden"
                 >
-                  <defs>
-                    {BAR_COLORS.map((c, i) => (
-                      <linearGradient key={i} id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={c} stopOpacity={0.9} />
-                        <stop offset="100%" stopColor={c} stopOpacity={0.35} />
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <XAxis dataKey="word" tick={{ fontSize: 10 }}
-                         angle={-40} textAnchor="end" interval="preserveStartEnd"
-                         minTickGap={8}
-                         type="category" />
-                  <YAxis tick={{ fontSize: 10 }} width={28} />
-                  <Tooltip
-                    contentStyle={{
-                      background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
-                      backdropFilter: "blur(12px)",
-                      border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.25)",
-                      borderRadius: 12,
-                      boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
-                    }}
-                    labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
-                    itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
-                    cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
-                  />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}
-                       maxBarSize={32}
-                       style={{ cursor: "pointer" }}
-                       animationDuration={900}
-                       onClick={(data) => {
-                         const w = words.find((x) => x.word === data.word);
-                         if (w) setSelected({ word: w, anchor: null });
-                       }}>
-                    {words.map((_, i) => (
-                      <Cell key={i} fill={`url(#bar-grad-${i % BAR_COLORS.length})`} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                  {(() => {
+                    const BAR_SLOT = 52;
+                    const chartW = Math.max(480, words.length * BAR_SLOT);
+                    return (
+                      <BarChart
+                        width={chartW}
+                        height={280}
+                        data={words}
+                        barCategoryGap="22%"
+                        barGap={0}
+                        margin={{ top: 4, right: 4, bottom: 28, left: 0 }}
+                      >
+                        <defs>
+                          {BAR_COLORS.map((c, i) => (
+                            <linearGradient key={i} id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={c} stopOpacity={0.9} />
+                              <stop offset="100%" stopColor={c} stopOpacity={0.35} />
+                            </linearGradient>
+                          ))}
+                        </defs>
+                        <XAxis dataKey="word" tick={{ fontSize: 10 }}
+                               angle={-40} textAnchor="end" interval={0}
+                               type="category" />
+                        <YAxis tick={{ fontSize: 10 }} width={28} />
+                        <Tooltip
+                          contentStyle={{
+                            background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
+                            backdropFilter: "blur(12px)",
+                            border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.25)",
+                            borderRadius: 12,
+                            boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
+                          }}
+                          labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
+                          itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
+                          cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
+                        />
+                        <Bar dataKey="count" radius={[6, 6, 0, 0]}
+                             maxBarSize={32}
+                             style={{ cursor: "pointer" }}
+                             animationDuration={900}
+                             onClick={(data) => {
+                               const w = words.find((x) => x.word === data.word);
+                               if (w) setSelected({ word: w, anchor: null });
+                             }}>
+                          {words.map((_, i) => (
+                            <Cell key={i} fill={`url(#bar-grad-${i % BAR_COLORS.length})`} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    );
+                  })()}
+                </div>
               </div>
             </motion.div>
 
