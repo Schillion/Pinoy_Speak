@@ -230,7 +230,7 @@ export default function ChatPage() {
             🤙
           </motion.div>
           <div className="min-w-0">
-            <h1 className="font-semibold text-shimmer text-base leading-none">Kuya Slang</h1>
+            <h1 className="font-semibold text-shimmer text-base leading-none pb-0.5">Kuya Slang</h1>
             <div className="flex items-center gap-1.5 mt-1">
               <motion.span
                 animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }}
