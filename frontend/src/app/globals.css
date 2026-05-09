@@ -351,15 +351,19 @@ html[data-theme="light"] .border-blue-400\/30,
 html[data-theme="light"] .border-blue-400\/35,
 html[data-theme="light"] .border-blue-400\/40 { border-color: rgba(59,130,246,0.55); }
 
-/* btn-primary softens slightly in light mode — the full dark gradient is too
-   heavy against a white surface; a lighter blue feels more native to light UI */
+/* btn-primary in light mode: ghost-tinted style — very light fill so it sits
+   softly on a white/grey surface instead of a heavy dark gradient */
 html[data-theme="light"] .btn-primary {
-  background: linear-gradient(to right, #3b82f6, #6366f1) !important;
-  box-shadow: 0 0 16px -6px rgba(99,102,241,0.35) !important;
+  background: rgba(59,130,246,0.10) !important;
+  color: #1d4ed8 !important;
+  border: 1px solid rgba(59,130,246,0.35) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
 }
 html[data-theme="light"] .btn-primary:hover {
-  background: linear-gradient(to right, #2563eb, #4f46e5) !important;
-  box-shadow: 0 0 22px -4px rgba(99,102,241,0.45) !important;
+  background: rgba(59,130,246,0.18) !important;
+  border-color: rgba(59,130,246,0.55) !important;
+  box-shadow: none !important;
 }
 
 /* Recharts — axis text adapts to theme. Inline `tick={{ fill }}` props
