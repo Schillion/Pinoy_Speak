@@ -167,12 +167,16 @@ def get_top_slang(model, n: int = 15, period: str = "overall") -> list[dict]:
     if not counts:
         return []
 
+    # "today" has far fewer posts (~100s vs 50k), so lower the minimum frequency
+    min_count      = 1 if period == "today" else 3
+    min_nlp_count  = 1 if period == "today" else 5
+
     seen: set[str] = set()
     results: list[tuple[str, int]] = []
 
     # most_common() is already descending — no sort needed after this pass
     for word, count in counts.most_common():
-        if count < 3:
+        if count < min_count:
             break
         if word in AMBIGUOUS_SLANG_SEEDS and word not in seen and not is_standard_word(word):
             results.append((word, count))
@@ -183,7 +187,7 @@ def get_top_slang(model, n: int = 15, period: str = "overall") -> list[dict]:
         # Collect candidates first, then batch through NLP in one pipe call
         candidates = [
             (word, count) for word, count in counts.most_common(300)
-            if count >= 5 and word not in seen and word in model.wv
+            if count >= min_nlp_count and word not in seen and word in model.wv
         ]
         if candidates:
             oov_flags = [doc[0].is_oov for doc in NLP.pipe(w for w, _ in candidates)]
