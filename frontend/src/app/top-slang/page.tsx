@@ -157,8 +157,10 @@ function TopNSelect({ value, onChange, options }: {
 const ALL_N_LIMIT = 1000;
 
 export default function TopSlang() {
-  const { theme } = useTheme();
+  const { theme, fontSize } = useTheme();
   const isLight = theme === "light";
+  const TICK_SIZE: Record<string, number> = { small: 9, medium: 10, large: 11, xlarge: 12, xxlarge: 13, xxxlarge: 14 };
+  const tickFs = TICK_SIZE[fontSize] ?? 10;
   const [words,    setWords]    = useState<SlangWord[]>([]);
   const [lexicon,  setLexicon]  = useState<Record<string, LexiconEntry>>({});
   const [n,        setN]        = useState<TopN>(15);
@@ -356,10 +358,10 @@ export default function TopSlang() {
                         </linearGradient>
                       ))}
                     </defs>
-                    <XAxis dataKey="word" tick={{ fontSize: 10 }}
+                    <XAxis dataKey="word" tick={{ fontSize: tickFs }}
                            angle={-40} textAnchor="end" interval={0}
                            type="category" />
-                    <YAxis tick={{ fontSize: 10 }} width={28} />
+                    <YAxis tick={{ fontSize: tickFs }} width={28} />
                     <Tooltip
                       contentStyle={{
                         background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.92)",
@@ -368,8 +370,8 @@ export default function TopSlang() {
                         borderRadius: 12,
                         boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.4)",
                       }}
-                      labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600 }}
-                      itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0" }}
+                      labelStyle={{ color: isLight ? "rgba(15,23,42,0.85)" : "#e2e8f0", fontWeight: 600, fontSize: tickFs + 1 }}
+                      itemStyle={{ color: isLight ? "rgba(15,23,42,0.72)" : "#e2e8f0", fontSize: tickFs + 1 }}
                       cursor={{ fill: isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,.04)" }}
                     />
                     <Bar dataKey="count" radius={[6, 6, 0, 0]}
