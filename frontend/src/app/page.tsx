@@ -617,11 +617,14 @@ export default function Home() {
             )}
           </div>
           <LanguageMix data={langMix} colors={PIE_COLORS} />
-          <p className="text-[11px] text-white/30 text-center mt-2">
-            {langMixAvailable
-              ? "Language breakdown of all collected posts"
-              : "Showing estimated data while posts are being analyzed…"}
-          </p>
+          <div className="mt-3 text-center">
+            <p className="text-xs font-semibold text-white/55 uppercase tracking-wider">Language Breakdown</p>
+            <p className="text-[11px] text-white/30 mt-0.5">
+              {langMixAvailable
+                ? "of all collected posts"
+                : "Showing estimated data while posts are being analyzed…"}
+            </p>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -663,7 +666,7 @@ export default function Home() {
           </p>
           <p className="text-xs text-white/35 mt-2">
             <span className="font-medium text-white/55">Data sources:</span>{" "}
-            Posts are scraped from {ALL_SUBREDDITS.length} Filipino communities on Reddit (r/Philippines, r/CasualPH, r/OPM, r/PHmemes and more).
+            Posts are scraped from {ALL_SUBREDDITS.length} Filipino communities on Reddit (r/Philippines, r/CasualPH, r/OPM, r/PHmemes, and more).
             New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
           </p>
         </div>
