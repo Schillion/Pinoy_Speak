@@ -617,11 +617,6 @@ export default function Home() {
             )}
           </div>
           <LanguageMix data={langMix} colors={PIE_COLORS} />
-          <p className="text-[11px] text-white/30 text-center mt-1">
-            {langMixAvailable
-              ? "of all collected posts"
-              : "Showing estimated data while posts are being analyzed…"}
-          </p>
         </motion.div>
       </motion.div>
 
@@ -792,9 +787,10 @@ function LanguageMix({
       </div>
 
       {/* Language Breakdown label */}
-      <p className="text-xs font-semibold text-white/55 uppercase tracking-wider text-center mt-3 mb-1">
-        Language Breakdown
-      </p>
+      <div className="text-center mt-3 mb-2">
+        <p className="text-xs font-semibold text-white/55 uppercase tracking-wider">Language Breakdown</p>
+        <p className="text-[11px] text-white/30 mt-0.5">of all collected posts</p>
+      </div>
 
       {/* Legend */}
       <div className="mt-2 space-y-1.5">
