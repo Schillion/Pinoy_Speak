@@ -168,7 +168,11 @@ export default function TopSlang() {
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState("");
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
+  const [cooldown, setCooldown] = useState(false);
+  const [coolMsg,  setCoolMsg]  = useState("");
   const reqId = useRef(0);
+  const lastReqAt = useRef(0);
+  const COOLDOWN_MS = 4000;
 
   const CHART_H = 280;
 
@@ -193,9 +197,17 @@ export default function TopSlang() {
 
   const draggedRef = useRef(false);
 
-  const load = useCallback(async (count: TopN, p: "today" | "overall") => {
+  const load = useCallback(async (count: TopN, p: "today" | "overall", force = false) => {
+    const now = Date.now();
+    if (!force && now - lastReqAt.current < COOLDOWN_MS) {
+      setCoolMsg("Please wait a moment before refreshing again.");
+      setTimeout(() => setCoolMsg(""), 3000);
+      return;
+    }
+    lastReqAt.current = now;
     const id = ++reqId.current;
     setLoading(true);
+    setCooldown(true);
     setError("");
     try {
       const [topWords, lex] = await Promise.all([
@@ -209,7 +221,10 @@ export default function TopSlang() {
       if (id !== reqId.current) return;
       setError("Could not load top slang — the ML model may still be warming up. Try refreshing in a moment.");
     } finally {
-      if (id === reqId.current) setLoading(false);
+      if (id === reqId.current) {
+        setLoading(false);
+        setTimeout(() => setCooldown(false), COOLDOWN_MS);
+      }
     }
   }, []);
 
@@ -258,11 +273,12 @@ export default function TopSlang() {
         </div>
         <div className="flex items-center gap-2 md:gap-3 flex-wrap">
           {/* Today / Overall period toggle */}
-          <div className="flex rounded-lg overflow-hidden border border-white/[.08] bg-white/[.04]">
+          <div className={`flex rounded-lg overflow-hidden border border-white/[.08] bg-white/[.04] ${cooldown ? "opacity-50 pointer-events-none" : ""}`}>
             {(["today", "overall"] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
+                disabled={cooldown}
                 className={`px-3 py-1.5 text-sm capitalize transition-colors
                   ${period === p
                     ? isLight
@@ -276,10 +292,10 @@ export default function TopSlang() {
               </button>
             ))}
           </div>
-          <TopNSelect value={n} onChange={setN} options={[10, 15, 20, 30, "all"]} />
+          <TopNSelect value={n} onChange={(v) => { if (!cooldown) setN(v); }} options={[10, 15, 20, 30, "all"]} />
           <MagneticButton
-            onClick={() => load(n, period)}
-            disabled={loading}
+            onClick={() => load(n, period, true)}
+            disabled={loading || cooldown}
             className="btn-primary w-auto px-4 py-2 text-sm"
           >
             {loading ? (
@@ -292,6 +308,17 @@ export default function TopSlang() {
         </div>
       </motion.div>
 
+      {coolMsg && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+          className="text-xs text-amber-400/80 mb-3 flex items-center gap-1.5"
+        >
+          <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor">
+            <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/>
+          </svg>
+          {coolMsg}
+        </motion.p>
+      )}
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
       {words.length > 0 && (
