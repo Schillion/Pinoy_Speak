@@ -617,14 +617,11 @@ export default function Home() {
             )}
           </div>
           <LanguageMix data={langMix} colors={PIE_COLORS} />
-          <div className="mt-3 text-center">
-            <p className="text-xs font-semibold text-white/55 uppercase tracking-wider">Language Breakdown</p>
-            <p className="text-[11px] text-white/30 mt-0.5">
-              {langMixAvailable
-                ? "of all collected posts"
-                : "Showing estimated data while posts are being analyzed…"}
-            </p>
-          </div>
+          <p className="text-[11px] text-white/30 text-center mt-1">
+            {langMixAvailable
+              ? "of all collected posts"
+              : "Showing estimated data while posts are being analyzed…"}
+          </p>
         </motion.div>
       </motion.div>
 
@@ -794,8 +791,13 @@ function LanguageMix({
         </div>
       </div>
 
+      {/* Language Breakdown label */}
+      <p className="text-xs font-semibold text-white/55 uppercase tracking-wider text-center mt-3 mb-1">
+        Language Breakdown
+      </p>
+
       {/* Legend */}
-      <div className="mt-4 space-y-1.5">
+      <div className="mt-2 space-y-1.5">
         {data.map((d, i) => {
           const pct     = (d.value / total) * 100;
           const isActive = activeIndex === i;
