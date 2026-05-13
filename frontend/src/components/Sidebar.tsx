@@ -256,12 +256,12 @@ function SettingsPopover({
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           onMouseMove={onInteract}
           onTouchStart={onInteract}
-          style={{ maxHeight: "min(70vh, 480px)", fontSize: "15px", width: 240, padding: 12 }}
+          style={{ maxHeight: "min(70vh, 480px)", width: 240, padding: 12 }}
           className={`${positionCls} z-30 rounded-2xl overflow-y-auto
                      border border-white/[.10] bg-[#0a1224]/95 backdrop-blur-xl
                      shadow-[0_18px_40px_-14px_rgba(0,0,0,0.7),0_0_28px_-10px_rgba(96,165,250,0.3)]`}
         >
-          <p className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-3">
+          <p className="text-[0.48rem] font-semibold text-white/35 uppercase tracking-widest mb-3">
             Settings
           </p>
 
@@ -287,8 +287,8 @@ function SettingsPopover({
               return (
                 <>
                   <div className="flex items-center justify-between mb-2.5">
-                    <p className="text-[11px] text-white/55">Font size</p>
-                    <span className="text-[11px] font-semibold text-blue-300">{LABELS[idx]}</span>
+                    <p className="text-[0.52rem] text-white/55">Font size</p>
+                    <span className="text-[0.52rem] font-semibold text-blue-300">{LABELS[idx]}</span>
                   </div>
 
                   {/* Slider track + dots + thumb — all absolutely positioned */}
@@ -330,7 +330,7 @@ function SettingsPopover({
                   <div className="relative" style={{ height: 14, marginTop: 4 }}>
                     {LABELS.map((l, i) => (
                       <span key={i}
-                            className={`absolute -translate-x-1/2 text-[8px] leading-none
+                            className={`absolute -translate-x-1/2 text-[0.38rem] leading-none
                               ${i === idx ? "text-blue-300 font-semibold" : "text-white/30"}`}
                             style={{ left: pos(i) }}>
                         {l}
@@ -345,7 +345,7 @@ function SettingsPopover({
           {/* About creator — link */}
           <button
             onClick={onAbout}
-            className="mt-3 pt-3 border-t border-white/[.06] w-full text-left text-[12px]
+            className="mt-3 pt-3 border-t border-white/[.06] w-full text-left text-[0.57rem]
                        text-white/65 hover:text-white transition-colors flex items-center gap-2"
           >
             <span className="w-4 h-4 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
@@ -370,7 +370,7 @@ function SettingsToggle({
 }) {
   return (
     <label className="flex items-center justify-between cursor-pointer group py-1.5">
-      <span className="text-[13px] text-white/65 group-hover:text-white/95 transition-colors">
+      <span className="text-[0.62rem] text-white/65 group-hover:text-white/95 transition-colors">
         {label}
       </span>
       <button
