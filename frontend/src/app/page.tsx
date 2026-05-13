@@ -165,10 +165,12 @@ export default function Home() {
   const [trendData, setTrendData]       = useState<TrendRow[]>([]);
   const [chartWords, setChartWords]     = useState<string[]>([]);
   const [trendsAvailable, setTrendsAvailable] = useState(true);
+  const [trendsLoading, setTrendsLoading]     = useState(true);
   const trendsReqId = useRef(0);
 
   useEffect(() => {
     const id = ++trendsReqId.current;
+    setTrendsLoading(true);
     fetchWordTrends(TREND_WORDS, range)
       .then((res) => {
         if (id !== trendsReqId.current) return;
@@ -187,11 +189,13 @@ export default function Home() {
           return row;
         });
         setTrendData(points);
+        setTrendsLoading(false);
       })
       .catch(() => {
         if (id !== trendsReqId.current) return;
         setTrendsAvailable(false);
         setTrendData([]);
+        setTrendsLoading(false);
       });
   }, [range]);
 
@@ -498,7 +502,13 @@ export default function Home() {
               </motion.button>
             )}
           </div>
-          <div ref={chartWrapRef} className="flex-1 min-h-0" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 200 }}>
+          <div ref={chartWrapRef} className="flex-1 min-h-0 relative" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 200 }}>
+          {trendsLoading && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#0a1224]/40 backdrop-blur-[2px]">
+              <div className="w-7 h-7 rounded-full border-2 border-white/10 border-t-blue-400 animate-spin" />
+              <p className="text-[11px] text-white/35">Loading trend data…</p>
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={zoomDom ? trendData.slice(zoomIndices()[0], zoomIndices()[1] + 1) : trendData}
@@ -614,15 +624,16 @@ export default function Home() {
         <motion.div variants={fadeUp} className="card spotlight p-5">
           <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <p className="text-xs text-white/35 uppercase tracking-wider">Language mix</p>
-            {!langMixAvailable && (
-              <span className="text-[10px] uppercase tracking-widest font-semibold
-                               text-amber-300/90 bg-amber-500/[.10] border border-amber-400/30
-                               px-1.5 py-0.5 rounded">
-                Loading…
-              </span>
-            )}
           </div>
-          <LanguageMix data={langMix} colors={PIE_COLORS} />
+          <div className="relative">
+            {!langMixAvailable && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#0a1224]/40 backdrop-blur-[2px]">
+                <div className="w-7 h-7 rounded-full border-2 border-white/10 border-t-purple-400 animate-spin" />
+                <p className="text-[11px] text-white/35">Loading…</p>
+              </div>
+            )}
+            <LanguageMix data={langMix} colors={PIE_COLORS} />
+          </div>
         </motion.div>
       </motion.div>
 
