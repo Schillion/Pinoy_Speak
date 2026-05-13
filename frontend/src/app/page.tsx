@@ -31,11 +31,11 @@ const PIE_COLORS = ["#60a5fa", "#a78bfa", "#22d3ee", "#f472b6"];
 const WORD_COLORS = ["#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
 
 const RANGES = [
-  { label: "7D",  days: 7 },
-  { label: "30D", days: 30 },
-  { label: "3M",  days: 90 },
-  { label: "6M",  days: 180 },
-  { label: "1Y",  days: 365 },
+  { label: "7 days",   days: 7 },
+  { label: "30 days",  days: 30 },
+  { label: "3 months", days: 90 },
+  { label: "6 months", days: 180 },
+  { label: "1 year",   days: 365 },
 ];
 
 const STEPS = [
@@ -302,7 +302,7 @@ export default function Home() {
               <MetricCard
                 label="Top word right now"
                 value={stats?.top_slang ?? "—"}
-                sub="From real posts"
+                sub="All-time across all posts"
                 accent="purple"
                 onClick={
                   stats?.top_slang && stats.top_slang !== "—"
@@ -379,7 +379,7 @@ export default function Home() {
                 Word popularity over time
               </p>
               <p className="hidden sm:block text-[11px] text-white/35 mt-0.5">
-                Each line tracks one slang word
+                Each line tracks one slang word · counts for the selected period only
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -463,8 +463,8 @@ export default function Home() {
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               {trendsAvailable ? (
-                <p className="hidden sm:block text-[11px] text-white/35">
-                  Daily count · {zoomDom ? "drag to pan · " : ""}scroll to zoom in
+                <p className="hidden sm:block text-[11px] text-white/55 bg-white/[.04] border border-white/[.08] rounded px-2 py-0.5">
+                  💡 Scroll on chart to zoom in{zoomDom ? " · drag to pan" : ""}
                 </p>
               ) : (
                 <>
