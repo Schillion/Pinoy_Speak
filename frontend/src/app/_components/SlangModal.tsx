@@ -37,15 +37,13 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
     const target = word.toLowerCase();
     fetchLexicon().then((lexicon) => {
       const lexiconWords = new Set(Object.keys(lexicon).map((w) => w.toLowerCase()));
-      const checker = makeContextChecker(lexiconWords, target);
+      const checker = makeContextChecker(lexiconWords, target, 2);
       return fetchPosts(1, 20, word).then((data) => {
         const filtered = (data.posts ?? [])
-          .filter((p) => {
-            const t = p.text ?? "";
-            return t.toLowerCase().includes(target) && checker(t);
-          })
-          .slice(0, 3)
-          .map((p) => p.text ?? "");
+          .map((p) => p.text ?? "")
+          .filter((t) => t.length > 0 && t.length <= 280 && t.toLowerCase().includes(target) && checker(t))
+          .sort((a, b) => a.length - b.length)
+          .slice(0, 3);
         if (filtered.length > 0) setLiveExamples(filtered);
       });
     }).catch(() => null);

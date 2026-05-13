@@ -80,17 +80,15 @@ export default function Translator() {
 
       return Promise.all(
         [...slangKeys].map(async (word) => {
-          const isSlangContext = makeContextChecker(lexiconWords, word.toLowerCase());
+          const isSlangContext = makeContextChecker(lexiconWords, word.toLowerCase(), 2);
           try {
             const data = await fetchPosts(1, 20, word);
+            const target = word.toLowerCase();
             const texts = (data.posts ?? [])
-              .filter((p) => {
-                const t = p.text ?? "";
-                if (!t.toLowerCase().includes(word.toLowerCase())) return false;
-                return isSlangContext(t);
-              })
-              .slice(0, 3)
-              .map((p) => p.text ?? "");
+              .map((p) => p.text ?? "")
+              .filter((t) => t.length > 0 && t.length <= 280 && t.toLowerCase().includes(target) && isSlangContext(t))
+              .sort((a, b) => a.length - b.length)
+              .slice(0, 3);
             return [word, texts] as [string, string[]];
           } catch {
             return [word, []] as [string, string[]];

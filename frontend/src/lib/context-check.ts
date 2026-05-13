@@ -11,11 +11,21 @@ export const BASE_FILIPINO_SIGNALS = new Set([
 // context. Uses the live lexicon as the primary signal — any known slang word
 // (other than the target itself) is strong evidence. Falls back to the static
 // particle list for posts with no other lexicon words.
-export function makeContextChecker(lexiconWords: Set<string>, targetWord: string) {
+// minSignals=2 is recommended for semantic-shift words (e.g. "feels") to avoid
+// English-heavy posts that happen to contain one Filipino particle.
+export function makeContextChecker(
+  lexiconWords: Set<string>,
+  targetWord: string,
+  minSignals = 1,
+) {
   return function hasFilipinoCOntext(text: string): boolean {
     const tokens = text.toLowerCase().match(/[a-z'-]{2,}/g) ?? [];
-    return tokens.some(
-      (t) => t !== targetWord && (BASE_FILIPINO_SIGNALS.has(t) || lexiconWords.has(t))
-    );
+    let count = 0;
+    for (const t of tokens) {
+      if (t !== targetWord && (BASE_FILIPINO_SIGNALS.has(t) || lexiconWords.has(t))) {
+        if (++count >= minSignals) return true;
+      }
+    }
+    return false;
   };
 }
