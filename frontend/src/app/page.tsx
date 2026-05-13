@@ -31,11 +31,11 @@ const PIE_COLORS = ["#60a5fa", "#a78bfa", "#22d3ee", "#f472b6"];
 const WORD_COLORS = ["#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
 
 const RANGES = [
-  { label: "7 days",   days: 7 },
-  { label: "30 days",  days: 30 },
-  { label: "3 months", days: 90 },
-  { label: "6 months", days: 180 },
-  { label: "1 year",   days: 365 },
+  { label: "7d",  fullLabel: "7 days",   days: 7 },
+  { label: "30d", fullLabel: "30 days",  days: 30 },
+  { label: "3mo", fullLabel: "3 months", days: 90 },
+  { label: "6mo", fullLabel: "6 months", days: 180 },
+  { label: "1yr", fullLabel: "1 year",   days: 365 },
 ];
 
 const STEPS = [
@@ -96,6 +96,7 @@ export default function Home() {
   const [zoomDom, setZoomDom] = useState<[string, string] | null>(null);
   const [hoverDay, setHoverDay] = useState<string | null>(null);
   const [hiddenWords, setHiddenWords] = useState(new Set<string>());
+  const [focusedWord, setFocusedWord] = useState<string | null>(null);
   const toggleWord = useCallback((word: string) => {
     setHiddenWords((prev) => {
       const next = new Set(prev);
@@ -156,6 +157,7 @@ export default function Home() {
     setZoomDom(null);
     panRef.current = null;
     setPanning(false);
+    setFocusedWord(null);
     setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current));
   }, [range]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -200,6 +202,10 @@ export default function Home() {
   }, [range]);
 
   const COLORS = WORD_COLORS;
+  const colorMap = useMemo(
+    () => Object.fromEntries(chartWords.map((w, i) => [w, COLORS[i % COLORS.length]])),
+    [chartWords], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const tickFormatter = (val: string) => range > 90 ? val.slice(0, 7) : val.slice(5);
   const tickInterval  = Math.max(0, Math.floor(range / 6) - 1);
 
@@ -389,103 +395,132 @@ export default function Home() {
       {/* Charts */}
       <motion.div variants={staggerContainer(0.1)} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
-          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          {/* Header: title + segmented range control */}
+          <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
             <div>
               <p className="text-xs text-amber-300/80 uppercase tracking-wider font-semibold">
                 Word popularity over time
               </p>
-              <p className="hidden sm:block text-[11px] text-white/35 mt-0.5">
-                All slang words tracked · click legend to show/hide · counts for the selected period only
+              <p className="text-[11px] text-white/35 mt-0.5">
+                Hover a word pill to highlight · click to show/hide · scroll chart to zoom
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* range buttons */}
-              <div className="flex gap-1 relative">
-                {RANGES.map((r) => (
-                  <button
-                    key={r.label}
-                    onClick={() => setRange(r.days)}
-                    className={`relative px-2.5 py-1 rounded-lg text-xs font-medium transition-colors
-                      ${range === r.days ? "text-white" : "text-white/40 hover:text-white/70"}`}
-                  >
-                    {range === r.days && (
-                      <motion.span
-                        layoutId="home-range-pill"
-                        className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/30"
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative">{r.label}</span>
-                  </button>
-                ))}
-              </div>
+            {/* Segmented range control */}
+            <div className="flex items-center bg-white/[.04] border border-white/[.07] rounded-xl p-0.5 flex-shrink-0">
+              {RANGES.map((r) => (
+                <button
+                  key={r.days}
+                  onClick={() => setRange(r.days)}
+                  className={`relative px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-all
+                    ${range === r.days ? "text-white" : "text-white/40 hover:text-white/70"}`}
+                >
+                  {range === r.days && (
+                    <motion.span
+                      layoutId="home-range-pill"
+                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/30"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative sm:hidden">{r.label}</span>
+                  <span className="relative hidden sm:inline">{r.fullLabel}</span>
+                </button>
+              ))}
             </div>
           </div>
-          {/* Word legend — click to toggle a series on/off */}
+
+          {/* Word pills legend */}
           {chartWords.length > 0 && (() => {
-            const colorMap = Object.fromEntries(chartWords.map((w, i) => [w, COLORS[i % COLORS.length]]));
-            const visible  = chartWords.filter(w => !hiddenWords.has(w));
-            const hidden   = chartWords.filter(w =>  hiddenWords.has(w));
-            const sorted   = [...visible, ...hidden];
-            const allHidden = visible.length === 0;
+            const visible = chartWords.filter(w => !hiddenWords.has(w));
+            const sorted  = [...chartWords].sort((a, b) => {
+              const ah = hiddenWords.has(a), bh = hiddenWords.has(b);
+              return ah !== bh ? (ah ? 1 : -1) : 0;
+            });
             return (
-              <div className="mt-2 mb-3">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 max-h-[72px] overflow-y-auto pr-1">
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                  <p className="text-[10px] text-white/30">
+                    Showing <span className="text-white/55 font-medium">{visible.length}</span> of{" "}
+                    <span className="text-white/55 font-medium">{chartWords.length}</span> words
+                  </p>
+                  {/* Top 10 / All segmented toggle */}
+                  <div className="flex items-center bg-white/[.03] border border-white/[.06] rounded-lg p-0.5">
+                    <button
+                      onClick={() => setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current))}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all
+                        ${hiddenWords.size > 0 ? "text-white/80 bg-white/[.08]" : "text-white/35 hover:text-white/55"}`}
+                    >
+                      Top 10
+                    </button>
+                    <button
+                      onClick={() => setHiddenWords(new Set())}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all
+                        ${hiddenWords.size === 0 ? "text-white/80 bg-white/[.08]" : "text-white/35 hover:text-white/55"}`}
+                    >
+                      All ({chartWords.length})
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="flex flex-wrap gap-1.5 max-h-[92px] overflow-y-auto pr-1 pb-0.5"
+                  onMouseLeave={() => setFocusedWord(null)}
+                >
                   {sorted.map((word) => {
-                    const isHidden = hiddenWords.has(word);
+                    const isHidden  = hiddenWords.has(word);
+                    const isFocused = focusedWord === word;
+                    const color     = colorMap[word];
                     return (
                       <button
                         key={word}
                         onClick={() => toggleWord(word)}
-                        title={isHidden ? `Show ${word}` : `Hide ${word}`}
-                        className={`flex items-center gap-1.5 transition-opacity hover:opacity-80
-                                    ${isHidden ? "opacity-25" : "opacity-100"}`}
+                        onMouseEnter={() => !isHidden && setFocusedWord(word)}
+                        onMouseLeave={() => setFocusedWord(null)}
+                        title={isHidden ? `Show "${word}"` : `Hide "${word}"`}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                    border transition-all duration-150 select-none cursor-pointer
+                                    ${isHidden
+                                      ? "border-white/[.06] bg-transparent text-white/25 line-through"
+                                      : "hover:scale-[1.04] active:scale-95"}`}
+                        style={!isHidden ? {
+                          borderColor: `${color}55`,
+                          backgroundColor: `${color}18`,
+                          color: isFocused ? "#fff" : "rgba(255,255,255,0.75)",
+                          boxShadow: isFocused ? `0 0 0 2px ${color}55, 0 0 14px -4px ${color}66` : undefined,
+                        } : undefined}
                       >
                         <span
-                          className="w-6 h-[3px] rounded-full flex-shrink-0"
-                          style={{ background: colorMap[word] }}
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ background: isHidden ? "rgba(255,255,255,0.15)" : color }}
                         />
-                        <span className="text-xs text-white/70 font-medium tracking-tight">{word}</span>
+                        {word}
                       </button>
                     );
                   })}
                 </div>
-                <div className="flex gap-3 mt-1.5">
-                  {!allHidden && hiddenWords.size > 0 && (
-                    <button onClick={() => setHiddenWords(new Set())}
-                      className="text-[10px] text-blue-300/70 hover:text-blue-300 transition-colors">
-                      show all
-                    </button>
-                  )}
-                  {visible.length > 0 && chartWords.length > 10 && (
-                    <button onClick={() => setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current))}
-                      className="text-[10px] text-white/30 hover:text-white/60 transition-colors">
-                      top 10 only
-                    </button>
-                  )}
-                </div>
               </div>
             );
           })()}
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              {trendsAvailable ? (
-                <p className="hidden sm:block text-[11px] text-white/55 bg-white/[.04] border border-white/[.08] rounded px-2 py-0.5">
-                  💡 Scroll on chart to zoom in{zoomDom ? " · drag to pan" : ""}
-                </p>
-              ) : (
-                <>
-                  <span className="text-[10px] uppercase tracking-widest font-semibold
-                                   text-amber-300/90 bg-amber-500/[.10] border border-amber-400/30
-                                   px-1.5 py-0.5 rounded">
-                    No data
-                  </span>
-                  <p className="text-[11px] text-white/35">
-                    Word trend data is still loading — refresh in a moment
-                  </p>
-                </>
-              )}
-            </div>
+
+          {/* Zoom hint + Reset Zoom */}
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap min-h-[24px]">
+            {!trendsAvailable ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-widest font-semibold
+                                 text-amber-300/90 bg-amber-500/[.10] border border-amber-400/30
+                                 px-1.5 py-0.5 rounded">
+                  No data
+                </span>
+                <p className="text-[11px] text-white/35">Word trend data is still loading — refresh in a moment</p>
+              </div>
+            ) : (
+              <p className="text-[11px] text-white/35 flex items-center gap-1.5">
+                <svg viewBox="0 0 14 14" className="w-3 h-3 flex-shrink-0 opacity-40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="5.5" cy="5.5" r="4"/><line x1="9" y1="9" x2="13" y2="13"/>
+                  <line x1="5.5" y1="3.5" x2="5.5" y2="7.5"/><line x1="3.5" y1="5.5" x2="7.5" y2="5.5"/>
+                </svg>
+                <span className="hidden sm:inline">Scroll on chart to zoom{zoomDom ? " · drag to pan" : ""}</span>
+                <span className="sm:hidden">Pinch or scroll to zoom</span>
+              </p>
+            )}
             {zoomDom && (
               <motion.button
                 initial={{ opacity: 0, x: 4 }}
@@ -502,122 +537,153 @@ export default function Home() {
               </motion.button>
             )}
           </div>
-          <div ref={chartWrapRef} className="flex-1 min-h-0 relative" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 200 }}>
-          {trendsLoading && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#0a1224]/40 backdrop-blur-[2px]">
-              <div className="w-7 h-7 rounded-full border-2 border-white/10 border-t-blue-400 animate-spin" />
-              <p className="text-[11px] text-white/35">Loading trend data…</p>
-            </div>
-          )}
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={zoomDom ? trendData.slice(zoomIndices()[0], zoomIndices()[1] + 1) : trendData}
-              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              onMouseDown={(e) => {
-                if (!e || trendData.length === 0) return;
-                const x = (e as { chartX?: number }).chartX;
-                if (typeof x !== "number") return;
-                const [sIdx, eIdx] = zoomIndices();
-                panRef.current = {
-                  startX:  x,
-                  startSI: sIdx,
-                  startEI: eIdx,
-                  rangeLen: eIdx - sIdx + 1,
-                };
-                setPanning(true);
-              }}
-              onMouseMove={(e) => {
-                if (!e) return;
-                if (e.activeLabel) setHoverDay(String(e.activeLabel));
-                const p = panRef.current;
-                if (!p) return;
-                const x = (e as { chartX?: number }).chartX;
-                if (typeof x !== "number") return;
 
-                // Convert pixel delta → data-index delta. We approximate the
-                // chart's plot-area width as the wrapper div's width minus axis
-                // padding (recharts doesn't expose plot width directly).
-                const wrapWidth = chartWrapRef.current?.clientWidth ?? 600;
-                const plotWidth = Math.max(100, wrapWidth - 34);   // YAxis ≈ 30px + margins
-                const pixelDelta = x - p.startX;
-                const indexDelta = Math.round(-(pixelDelta / plotWidth) * p.rangeLen);
-                if (indexDelta === 0) return;
-
-                const fullEnd = trendData.length - 1;
-                let newSI = p.startSI + indexDelta;
-                let newEI = p.startEI + indexDelta;
-                if (newSI < 0)        { newEI -= newSI;            newSI = 0; }
-                if (newEI > fullEnd)  { newSI -= (newEI - fullEnd); newEI = fullEnd; }
-                newSI = Math.max(0, newSI);
-                newEI = Math.min(fullEnd, newEI);
-                if (newEI - newSI + 1 >= trendData.length) {
-                  setZoomDom(null);
-                } else {
-                  setZoomDom([trendData[newSI].day, trendData[newEI].day]);
-                }
-              }}
-              onMouseLeave={() => { setHoverDay(null); }}
-              style={{
-                cursor: panning ? "grabbing" : (zoomDom ? "grab" : "crosshair"),
-                userSelect: "none",
-              }}
-            >
-              <defs>
-                {COLORS.map((c, i) => (
-                  <linearGradient key={i} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={c} stopOpacity={0.20} />
-                    <stop offset="100%" stopColor={c} stopOpacity={0.01} />
-                  </linearGradient>
-                ))}
-              </defs>
-              <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-              <XAxis dataKey="day" tick={{ fontSize: tickFs, fill: "rgba(255,255,255,0.4)" }}
-                     tickFormatter={tickFormatter} interval={tickInterval}
-                     axisLine={false} tickLine={false}
-                     type="category" />
-              <YAxis tick={{ fontSize: tickFs, fill: isLight ? "rgba(15,23,42,0.5)" : "rgba(255,255,255,0.4)" }} width={24} axisLine={false} tickLine={false} />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null;
-                  const items = (payload as Array<{ name: string; value: number; color: string }>)
-                    .filter((p) => p.value > 0);
-                  if (items.length === 0) return null;
-                  return (
-                    <div style={{
-                      background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.96)",
-                      backdropFilter: "blur(12px)",
-                      border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.2)",
-                      borderRadius: 12,
-                      padding: "10px 14px",
-                      boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.35)",
-                      minWidth: 130,
-                    }}>
-                      <p style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: tickFs + 1, marginBottom: 8 }}>{String(label)}</p>
-                      {items.map(({ name, value, color }) => (
-                        <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                          <span style={{ display: "inline-block", width: 20, height: 3, borderRadius: 99, background: color, flexShrink: 0 }} />
-                          <span style={{ color: isLight ? "rgba(15,23,42,0.85)" : "rgba(226,232,240,0.85)", fontSize: tickFs + 2, flex: 1 }}>{name}</span>
-                          <span style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: tickFs + 2, fontVariantNumeric: "tabular-nums" }}>{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
+          {/* Chart */}
+          <div ref={chartWrapRef} className="flex-1 min-h-0 relative" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 220 }}>
+            {trendsLoading && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#0a1224]/40 backdrop-blur-[2px]">
+                <div className="w-7 h-7 rounded-full border-2 border-white/10 border-t-blue-400 animate-spin" />
+                <p className="text-[11px] text-white/35">Loading trend data…</p>
+              </div>
+            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={zoomDom ? trendData.slice(zoomIndices()[0], zoomIndices()[1] + 1) : trendData}
+                margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
+                onMouseDown={(e) => {
+                  if (!e || trendData.length === 0) return;
+                  const x = (e as { chartX?: number }).chartX;
+                  if (typeof x !== "number") return;
+                  const [sIdx, eIdx] = zoomIndices();
+                  panRef.current = {
+                    startX:  x,
+                    startSI: sIdx,
+                    startEI: eIdx,
+                    rangeLen: eIdx - sIdx + 1,
+                  };
+                  setPanning(true);
                 }}
-              />
-              {chartWords.map((word, i) => {
-                if (hiddenWords.has(word)) return null;
-                return (
-                  <Area key={word} type="monotone" dataKey={word}
-                        stroke={COLORS[i % COLORS.length]}
-                        fill={`url(#grad-${i % COLORS.length})`}
-                        strokeWidth={2.5}
-                        activeDot={{ r: 4, strokeWidth: 0, fill: COLORS[i % COLORS.length] }}
-                        animationDuration={1200}
-                        animationEasing="ease-out" />
-                );
-              })}
-            </AreaChart>
-          </ResponsiveContainer>
+                onMouseMove={(e) => {
+                  if (!e) return;
+                  if (e.activeLabel) setHoverDay(String(e.activeLabel));
+                  const p = panRef.current;
+                  if (!p) return;
+                  const x = (e as { chartX?: number }).chartX;
+                  if (typeof x !== "number") return;
+                  const wrapWidth = chartWrapRef.current?.clientWidth ?? 600;
+                  const plotWidth = Math.max(100, wrapWidth - 34);
+                  const pixelDelta = x - p.startX;
+                  const indexDelta = Math.round(-(pixelDelta / plotWidth) * p.rangeLen);
+                  if (indexDelta === 0) return;
+                  const fullEnd = trendData.length - 1;
+                  let newSI = p.startSI + indexDelta;
+                  let newEI = p.startEI + indexDelta;
+                  if (newSI < 0)       { newEI -= newSI; newSI = 0; }
+                  if (newEI > fullEnd) { newSI -= (newEI - fullEnd); newEI = fullEnd; }
+                  newSI = Math.max(0, newSI);
+                  newEI = Math.min(fullEnd, newEI);
+                  if (newEI - newSI + 1 >= trendData.length) {
+                    setZoomDom(null);
+                  } else {
+                    setZoomDom([trendData[newSI].day, trendData[newEI].day]);
+                  }
+                }}
+                onMouseLeave={() => { setHoverDay(null); }}
+                style={{
+                  cursor: panning ? "grabbing" : (zoomDom ? "grab" : "crosshair"),
+                  userSelect: "none",
+                }}
+              >
+                <defs>
+                  {COLORS.map((c, i) => (
+                    <linearGradient key={i} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={c} stopOpacity={0.20} />
+                      <stop offset="100%" stopColor={c} stopOpacity={0.01} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: tickFs, fill: "rgba(255,255,255,0.35)" }}
+                  tickFormatter={tickFormatter}
+                  interval={tickInterval}
+                  axisLine={false}
+                  tickLine={false}
+                  type="category"
+                  label={{ value: "Date →", position: "insideBottomRight", offset: -2, fill: "rgba(255,255,255,0.18)", fontSize: 9 }}
+                />
+                <YAxis
+                  tick={{ fontSize: tickFs, fill: isLight ? "rgba(15,23,42,0.5)" : "rgba(255,255,255,0.35)" }}
+                  width={30}
+                  axisLine={false}
+                  tickLine={false}
+                  label={{ value: "Count", angle: -90, position: "insideLeft", offset: 12, fill: "rgba(255,255,255,0.18)", fontSize: 9 }}
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const items = (payload as Array<{ name: string; value: number; color: string }>)
+                      .filter((p) => p.value > 0)
+                      .sort((a, b) => b.value - a.value);
+                    if (items.length === 0) return null;
+                    const dayTotal = items.reduce((s, p) => s + p.value, 0);
+                    return (
+                      <div style={{
+                        background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.96)",
+                        backdropFilter: "blur(12px)",
+                        border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.2)",
+                        borderRadius: 12,
+                        padding: "10px 14px",
+                        boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.35)",
+                        minWidth: 155,
+                        maxWidth: 220,
+                      }}>
+                        <p style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.4)", fontSize: tickFs + 1, marginBottom: 6 }}>{String(label)}</p>
+                        {items.map(({ name, value, color }) => {
+                          const pct = dayTotal > 0 ? Math.round((value / dayTotal) * 100) : 0;
+                          return (
+                            <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                              <span style={{ display: "inline-block", width: 20, height: 3, borderRadius: 99, background: color, flexShrink: 0 }} />
+                              <span style={{ color: isLight ? "rgba(15,23,42,0.85)" : "rgba(226,232,240,0.85)", fontSize: tickFs + 2, flex: 1 }}>{name}</span>
+                              <span style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: tickFs + 2, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+                              {items.length > 1 && <span style={{ color: "rgba(255,255,255,0.22)", fontSize: tickFs - 1, minWidth: 28, textAlign: "right" }}>{pct}%</span>}
+                            </div>
+                          );
+                        })}
+                        {items.length > 1 && (
+                          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 6, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ color: "rgba(255,255,255,0.28)", fontSize: tickFs }}>Total</span>
+                            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: tickFs + 1, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{dayTotal}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }}
+                />
+                {chartWords.map((word, i) => {
+                  if (hiddenWords.has(word)) return null;
+                  const color       = colorMap[word];
+                  const isFocused   = focusedWord === word;
+                  const isDefocused = focusedWord !== null && !isFocused;
+                  return (
+                    <Area
+                      key={word}
+                      type="monotone"
+                      dataKey={word}
+                      stroke={color}
+                      fill={`url(#grad-${i % COLORS.length})`}
+                      strokeWidth={isFocused ? 3 : isDefocused ? 1 : 2}
+                      strokeOpacity={isDefocused ? 0.12 : 1}
+                      fillOpacity={isDefocused ? 0 : 1}
+                      activeDot={{ r: isFocused ? 5 : 3, strokeWidth: 0, fill: color }}
+                      animationDuration={900}
+                      animationEasing="ease-out"
+                    />
+                  );
+                })}
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </motion.div>
 
