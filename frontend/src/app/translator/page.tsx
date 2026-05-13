@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { analyzeText, fetchPosts, verifySlang, translateSentence } from "@/lib/api";
+import { analyzeText, fetchPosts, verifySlang, translateSentence, fetchLexicon } from "@/lib/api";
 import { useProfanityFilter } from "@/context/ProfanityContext";
 import { FORMATION_LABELS } from "@/lib/slang-data";
 import type { AnalyzeResponse, WordResult } from "@/types";
