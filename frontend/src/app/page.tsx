@@ -372,7 +372,7 @@ export default function Home() {
 
       {/* Charts */}
       <motion.div variants={staggerContainer(0.1)} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5">
+        <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
           <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
             <div>
               <p className="text-xs text-amber-300/80 uppercase tracking-wider font-semibold">
@@ -495,8 +495,8 @@ export default function Home() {
               </motion.button>
             )}
           </div>
-          <div ref={chartWrapRef} style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}>
-          <ResponsiveContainer width="100%" height={250}>
+          <div ref={chartWrapRef} className="flex-1 min-h-0" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={zoomDom ? trendData.slice(zoomIndices()[0], zoomIndices()[1] + 1) : trendData}
               margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
