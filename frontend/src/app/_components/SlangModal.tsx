@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchDefine } from "@/lib/api";
+import { fetchDefine, fetchLexicon, fetchPosts } from "@/lib/api";
 import { FORMATION_LABELS } from "@/lib/slang-data";
+import { makeContextChecker } from "@/lib/context-check";
 import type { DefineResult } from "@/types";
 import { modalBackdrop, modalContent, staggerContainer, fadeUp } from "@/lib/motion";
 
 export default function SlangModal({ word, onClose }: { word: string; onClose: () => void }) {
-  const [result, setResult]   = useState<DefineResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(false);
+  const [result, setResult]         = useState<DefineResult | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(false);
+  const [liveExamples, setLiveExamples] = useState<string[] | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -21,10 +23,32 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
   useEffect(() => {
     setLoading(true);
     setError(false);
+    setLiveExamples(null);
     fetchDefine(word)
       .then((data) => setResult(data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
+  }, [word]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch posts filtered by Filipino context so examples show the slang
+  // usage, not the word's everyday English meaning.
+  useEffect(() => {
+    if (!word) return;
+    const target = word.toLowerCase();
+    fetchLexicon().then((lexicon) => {
+      const lexiconWords = new Set(Object.keys(lexicon).map((w) => w.toLowerCase()));
+      const checker = makeContextChecker(lexiconWords, target);
+      return fetchPosts(1, 20, word).then((data) => {
+        const filtered = (data.posts ?? [])
+          .filter((p) => {
+            const t = p.text ?? "";
+            return t.toLowerCase().includes(target) && checker(t);
+          })
+          .slice(0, 3)
+          .map((p) => p.text ?? "");
+        if (filtered.length > 0) setLiveExamples(filtered);
+      });
+    }).catch(() => null);
   }, [word]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isCorpusDerived = result?.source === "corpus";
@@ -156,13 +180,13 @@ export default function SlangModal({ word, onClose }: { word: string; onClose: (
                     </motion.div>
                   )}
 
-                  {result.examples && result.examples.length > 0 && (
+                  {((liveExamples ?? result.examples)?.length ?? 0) > 0 && (
                     <motion.div variants={fadeUp}>
                       <p className="text-[10px] text-white/30 uppercase tracking-widest mb-2">
                         Real usage from posts
                       </p>
                       <div className="space-y-2">
-                        {result.examples.slice(0, 3).map((ex, i) => (
+                        {(liveExamples ?? result.examples!).slice(0, 3).map((ex, i) => (
                           <motion.p
                             key={i}
                             initial={{ opacity: 0, x: -4 }}

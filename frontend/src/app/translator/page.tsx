@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { analyzeText, fetchPosts, verifySlang, translateSentence, fetchLexicon } from "@/lib/api";
 import { useProfanityFilter } from "@/context/ProfanityContext";
 import { FORMATION_LABELS } from "@/lib/slang-data";
+import { makeContextChecker } from "@/lib/context-check";
 import type { AnalyzeResponse, WordResult } from "@/types";
 import { fadeUp, staggerContainer, popIn } from "@/lib/motion";
 import RevealText from "@/components/RevealText";
@@ -15,29 +16,6 @@ import ConcordanceView from "./_components/ConcordanceView";
 type Tab = "translator" | "concordance";
 
 const DEFAULT = "Sobrang solid ng vibes kagabi, sana all nakapunta!";
-
-// Immutable particles/pronouns that will never be in the slang lexicon but
-// reliably indicate Filipino/Taglish text. Kept small — the live lexicon
-// covers everything else dynamically (see hasFilipinoCOntext below).
-const BASE_FILIPINO_SIGNALS = new Set([
-  "ang","ng","sa","na","at","ay","si","ni","ko","mo","ka","kami","kayo","sila",
-  "ako","tayo","pero","kasi","lang","yung","ung","din","rin","raw","daw","pala",
-  "naman","talaga","sana","ba","ha","eh","sige","oo","hindi","wala","ano",
-  "sobrang","parang","kahit","kaya","kuya","ate","tsaka","tol","pare","pre",
-]);
-
-// Returns a context-checker that uses the live lexicon as its primary signal.
-// Any post that contains a known slang word (besides the target) is almost
-// certainly in a Filipino slang context. Falls back to the static particle
-// list for posts where no other lexicon word appears.
-function makeContextChecker(lexiconWords: Set<string>, targetWord: string) {
-  return function hasFilipinoCOntext(text: string): boolean {
-    const tokens = text.toLowerCase().match(/[a-z'-]{2,}/g) ?? [];
-    return tokens.some(
-      (t) => t !== targetWord && (BASE_FILIPINO_SIGNALS.has(t) || lexiconWords.has(t))
-    );
-  };
-}
 const MAX_CHARS = 500;
 
 function trendLabel(z: number) {
