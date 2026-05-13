@@ -87,10 +87,10 @@ export default function Home() {
   const [showSubInfo, setShowSubInfo] = useState(false);
   const [topWords, setTopWords]   = useState<SlangWord[]>([]);
   const [range, setRange]         = useState(30);
-  const [topN, setTopN]           = useState(5);
   const [modalWord, setModalWord] = useState<string | null>(null);
   const closeModal = useCallback(() => setModalWord(null), []);
   const topNReqId = useRef(0);
+  const TREND_WORDS = 50;
 
   // Wheel-zoom + drag-to-pan state for the area chart
   const [zoomDom, setZoomDom] = useState<[string, string] | null>(null);
@@ -137,18 +137,18 @@ export default function Home() {
 
   useEffect(() => {
     const id = ++topNReqId.current;
-    fetchTopSlang(topN)
+    fetchTopSlang(15)
       .then((words) => { if (id === topNReqId.current) setTopWords(words); })
       .catch(() => null);
-  }, [topN]);
+  }, []);
 
-  // Reset zoom + hidden-word filter when range or word count changes
+  // Reset zoom + hidden-word filter when range changes
   useEffect(() => {
     setZoomDom(null);
     panRef.current = null;
     setPanning(false);
     setHiddenWords(new Set());
-  }, [range, topN]);
+  }, [range]);
 
   // Real per-day trends — top-N words are chosen within the selected window,
   // so the chart reflects what was actually popular during that period.
@@ -160,7 +160,7 @@ export default function Home() {
 
   useEffect(() => {
     const id = ++trendsReqId.current;
-    fetchWordTrends(topN, range)
+    fetchWordTrends(TREND_WORDS, range)
       .then((res) => {
         if (id !== trendsReqId.current) return;
         setTrendsAvailable(res.available);
@@ -181,7 +181,7 @@ export default function Home() {
         setTrendsAvailable(false);
         setTrendData([]);
       });
-  }, [topN, range]);
+  }, [range]);
 
   const COLORS = WORD_COLORS;
   const tickFormatter = (val: string) => range > 90 ? val.slice(0, 7) : val.slice(5);
@@ -379,32 +379,10 @@ export default function Home() {
                 Word popularity over time
               </p>
               <p className="hidden sm:block text-[11px] text-white/35 mt-0.5">
-                Each line tracks one slang word · counts for the selected period only
+                All slang words tracked · click legend to show/hide · counts for the selected period only
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {/* word count stepper */}
-              <div className="flex items-center gap-0.5 bg-white/[.04] rounded-lg px-2 py-0.5 border border-white/[.08] backdrop-blur-sm">
-                <span className="text-white/35 text-xs mr-1">Top</span>
-                <button
-                  onClick={() => setTopN((n) => Math.max(1, n - 1))}
-                  aria-label="Decrease word count"
-                  className="w-8 h-8 flex items-center justify-center rounded text-white/55 hover:text-blue-300 hover:bg-white/[.04] active:bg-white/[.08] text-base font-bold transition-colors"
-                >−</button>
-                <input
-                  type="number" min={1} max={20} value={topN}
-                  onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 1 && v <= 20) setTopN(v); }}
-                  aria-label="Number of top words"
-                  className="w-7 bg-transparent text-center text-sm text-white/85 focus:outline-none
-                             [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <button
-                  onClick={() => setTopN((n) => Math.min(20, n + 1))}
-                  aria-label="Increase word count"
-                  className="w-8 h-8 flex items-center justify-center rounded text-white/55 hover:text-blue-300 hover:bg-white/[.04] active:bg-white/[.08] text-base font-bold transition-colors"
-                >+</button>
-                <span className="text-white/35 text-xs ml-1">words</span>
-              </div>
               {/* range buttons */}
               <div className="flex gap-1 relative">
                 {RANGES.map((r) => (
