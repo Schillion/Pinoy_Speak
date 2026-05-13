@@ -417,7 +417,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-5">
           {ALPHABET.map((letter) => {
             const entries = grouped[letter];
             if (!entries || entries.length === 0) return null;
@@ -427,7 +427,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
                 ref={(el) => { sectionRefs.current[letter] = el; }}
                 className="scroll-mt-24"
               >
-                <h2 className="text-4xl sm:text-5xl font-bold text-shimmer mb-3 select-none uppercase tracking-tight">
+                <h2 className="text-3xl sm:text-4xl font-bold text-shimmer mb-2 select-none uppercase tracking-tight">
                   {letter}
                 </h2>
                 <div className="space-y-3">
@@ -484,13 +484,13 @@ function DictionaryEntry({
   return (
     <article
       onClick={onClick}
-      className="card p-4 sm:p-5 md:p-6 hover:border-blue-400/35 transition-colors cursor-pointer
+      className="card p-3 sm:p-4 hover:border-blue-400/35 transition-colors cursor-pointer
                  hover:shadow-[0_0_30px_-10px_rgba(96,165,250,0.35)]
                  active:scale-[.997] active:translate-y-px"
     >
       {/* Headword line: word + pronunciation hint + part of speech */}
-      <header className="flex items-baseline flex-wrap gap-x-2.5 sm:gap-x-3 gap-y-1 mb-2.5 sm:mb-3">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient-static tracking-tight">
+      <header className="flex items-baseline flex-wrap gap-x-2 sm:gap-x-3 gap-y-1 mb-2">
+        <h3 className="text-lg sm:text-2xl font-bold text-gradient-static tracking-tight">
           <Highlight text={entry.word} q={query} />
         </h3>
         {entry.pos && (
@@ -512,7 +512,7 @@ function DictionaryEntry({
 
       {/* Plain English chip */}
       {entry.plain && (
-        <p className="text-sm mb-3 text-white/60">
+        <p className="text-sm mb-2 text-white/60">
           <span className="text-[11px] text-white/35 uppercase tracking-widest mr-2">Plain English</span>
           <span className="bg-blue-500/[.12] border border-blue-400/30 text-blue-100
                            px-2 py-0.5 rounded-md text-[13px] font-medium">
@@ -522,16 +522,16 @@ function DictionaryEntry({
       )}
 
       {/* Numbered definition */}
-      <div className="flex gap-3 mb-3">
-        <span className="text-blue-300 font-bold text-lg leading-tight">1</span>
-        <p className="text-base text-white/80 leading-relaxed flex-1">
+      <div className="flex gap-2.5 mb-2">
+        <span className="text-blue-300 font-bold text-base leading-tight">1</span>
+        <p className="text-sm text-white/80 leading-relaxed flex-1">
           <Highlight text={entry.definition || "Definition still being learned."} q={query} />
         </p>
       </div>
 
       {/* Example */}
       {entry.example && (
-        <div className="border-l-2 border-blue-400/40 pl-3 mb-3">
+        <div className="border-l-2 border-blue-400/40 pl-3 mb-2">
           <p className="text-[10px] text-white/35 uppercase tracking-widest mb-1">Example</p>
           <p className="text-sm text-white/65 italic leading-relaxed">
             &ldquo;{entry.example}&rdquo;

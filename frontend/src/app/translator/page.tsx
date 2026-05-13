@@ -50,6 +50,7 @@ export default function Translator() {
   // confirmed slang), and without this set we'd waste an LLM call re-verifying
   // every previously-rejected word on each pass.
   const verifiedWords = useRef<Set<string>>(new Set());
+  const autoAnalyzed = useRef(false);
 
   // Set initial tab from ?tab= query param (so /concordance redirect lands on it)
   useEffect(() => {
@@ -57,6 +58,16 @@ export default function Translator() {
     const t = params.get("tab");
     if (t === "concordance") setTab("concordance");
   }, []);
+
+  // Auto-analyze the DEFAULT sample on first load so the page isn't empty
+  useEffect(() => {
+    if (autoAnalyzed.current) return;
+    autoAnalyzed.current = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "concordance") return;
+    handleAnalyze();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!result) return;

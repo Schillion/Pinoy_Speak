@@ -256,8 +256,8 @@ export default function ChatPage() {
               <button
                 key={t.id}
                 onClick={() => setMode(t.id)}
-                className={`relative px-3 py-2 transition-colors border-r border-white/[.07] last:border-0
-                            flex items-center gap-1.5 ${
+                className={`relative px-2 sm:px-3 py-2 transition-colors border-r border-white/[.07] last:border-0
+                            flex items-center gap-1 sm:gap-1.5 ${
                   mode === t.id ? "text-blue-200" : "text-white/40 hover:text-white/70"
                 }`}
               >
@@ -269,7 +269,7 @@ export default function ChatPage() {
                   />
                 )}
                 <span className="relative">{t.icon}</span>
-                <span className="relative hidden sm:inline">{t.label}</span>
+                <span className="relative text-[9px] sm:text-xs font-medium leading-none">{t.label}</span>
               </button>
             ))}
           </div>

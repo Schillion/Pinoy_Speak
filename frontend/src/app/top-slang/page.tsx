@@ -320,7 +320,28 @@ export default function TopSlang() {
           {coolMsg}
         </motion.p>
       )}
-      {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="card border-red-500/25 p-4 mb-6 flex items-start gap-3"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor"
+               className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-11.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4zm.75 7a1 1 0 110-2 1 1 0 010 2z" clipRule="evenodd"/>
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-red-300 font-medium mb-0.5">Failed to load</p>
+            <p className="text-xs text-white/50 leading-relaxed">{error}</p>
+          </div>
+          <button
+            onClick={() => load(n, period, true)}
+            disabled={loading}
+            className="flex-shrink-0 btn-primary w-auto px-3 py-1.5 text-xs disabled:opacity-50"
+          >
+            {loading ? "Retrying…" : "Retry"}
+          </button>
+        </motion.div>
+      )}
 
       {words.length > 0 && (
         <>
@@ -339,7 +360,7 @@ export default function TopSlang() {
                 </div>
               </div>
               {/* flex-1 so chart grows to fill all remaining card height */}
-              <div className="relative flex-1 min-h-0">
+              <div className="relative flex-1 min-h-0" style={{ minHeight: CHART_H }}>
                 {chartPage > 0 && (
                   <button
                     onClick={() => setChartPage((p) => p - 1)}
@@ -530,6 +551,27 @@ export default function TopSlang() {
             </Link>
           </motion.div>
         </>
+      )}
+
+      {!loading && !error && words.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          className="card p-10 text-center"
+        >
+          <p className="text-4xl mb-3">🔍</p>
+          <p className="text-base font-medium text-white/70 mb-1">No data yet</p>
+          <p className="text-sm text-white/45 mb-5 max-w-sm mx-auto">
+            {period === "today"
+              ? "No posts were processed today. Try the Overall view or come back later."
+              : "No slang words have been tracked yet. The scraper may still be warming up."}
+          </p>
+          <button
+            onClick={() => load(n, period, true)}
+            className="btn-primary w-auto px-5 py-2 text-sm"
+          >
+            Refresh
+          </button>
+        </motion.div>
       )}
 
       {loading && words.length === 0 && (
