@@ -15,6 +15,16 @@ import ConcordanceView from "./_components/ConcordanceView";
 type Tab = "translator" | "concordance";
 
 const DEFAULT = "Sobrang solid ng vibes kagabi, sana all nakapunta!";
+
+// Filipino/Taglish signal words — if a post contains at least one of these
+// alongside the slang word, it's likely using the word in its Filipino slang
+// context rather than a plain English meaning.
+const FILIPINO_SIGNAL =
+  /\b(ang|ng|sa|na|at|ay|si|ni|ko|mo|ka|kami|kayo|sila|ako|tayo|pero|kasi|lang|yung|ung|din|rin|raw|daw|pala|naman|talaga|sana|grabe|jusko|nako|bes|besh|lods|lodi|petmalu|charot|char|werpa|ganon|ganito|dito|doon|diyan|ba|ha|eh|sige|oo|hindi|wala|ano|jusko|nakaka|sobrang|sobra|parang|kahit|kaya|kuya|ate|tsaka|tol|pare|pre|bro|sis|idol|lol|haha|hahaha|omg|omfg|ngl|tbh)\b/i;
+
+function hasFilipinoCOntext(text: string): boolean {
+  return FILIPINO_SIGNAL.test(text);
+}
 const MAX_CHARS = 500;
 
 function trendLabel(z: number) {
@@ -74,9 +84,17 @@ export default function Translator() {
     Promise.all(
       [...slangKeys].map(async (word) => {
         try {
-          const data = await fetchPosts(1, 8, word);
+          // Fetch more candidates so we have room to filter after context check
+          const data = await fetchPosts(1, 20, word);
           const texts = (data.posts ?? [])
-            .filter((p) => p.text?.toLowerCase().includes(word.toLowerCase()))
+            .filter((p) => {
+              const t = p.text ?? "";
+              // Must contain the word
+              if (!t.toLowerCase().includes(word.toLowerCase())) return false;
+              // Must have at least one Filipino/Taglish signal — filters out posts
+              // where a word like "solid" or "level" is used in plain English.
+              return hasFilipinoCOntext(t);
+            })
             .slice(0, 3)
             .map((p) => p.text ?? "");
           return [word, texts] as [string, string[]];
