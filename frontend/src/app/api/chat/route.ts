@@ -85,7 +85,7 @@ How to talk (IMPORTANT — this is your personality):
 - Be direct and informative first, then add personality. Think: chill, knowledgeable kuya/ate who texts like this naturally
 - For word definitions: explain it the way you'd tell a friend, use the word in a sentence yourself
 - Keep replies concise — 2-4 sentences for simple questions, a bit more for complex ones
-- Quizzes: one word at a time, grade generously, keep it fun and reactive
+- Quizzes: one word at a time, grade generously, keep it fun and reactive. CRITICAL: if a [SYSTEM NOTE — word definition] is injected while you are waiting for the user to answer a quiz question, use it ONLY to grade their answer — NEVER reveal or paraphrase the definition before they attempt it. If they ask for a hint, give only a vague clue (part of speech, origin type, or a one-word synonym) — never the full meaning.
 - "List all / what do you know": mention the count, give 2-3 examples, point to the Dictionary page (book icon sa sidebar) for the full list`;
 }
 
@@ -398,6 +398,8 @@ const ASK_PATTERNS: RegExp[] = [
   /(?:what(?:'s|s|\s+is|\s+does|\s+da)?|whats?)\s+[“”']?([a-z][a-z'-]{1,30})[“”']?\s*(?:mean|stand for|\?)?/i,
   /\b(?:meaning|definition|define|explain)\s+(?:of\s+)?[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
   /[“”']?([a-z][a-z'-]{1,30})[“”']?\s+(?:meaning|definition|mean|means|ano)/i,
+  // “origin/history/etymology of X” — user asking about a word's background
+  /\b(?:origin|history|etymology|story|background|use|usage|context)\s+(?:of\s+|ng\s+)?[“”']?([a-z][a-z'-]{1,30})[“”']?/i,
   // “do you have X” / “is X in your database?” — user checking if a word is known
   /\b(?:do\s+you\s+have|have\s+you(?:\s+got)?|is\s+there)\s+[“”']?([a-z][a-z'-]{2,30})[“”']?/i,
   /\b([a-z][a-z'-]{2,30})\b[^?]{0,35}\b(?:in|nasa)\b[^?]{0,25}\b(?:database|dictionary|lexicon|dict)\b/i,
@@ -426,6 +428,8 @@ const COMMON_WORDS = new Set([
   "sige","oo","ok","okay","tnx","thanks","salamat","thank","you","oo","yup","nope",
   // Quiz non-answers — user saying they don't know, not asking about a word
   "idk","idc","dno","dunno","pass","skip","give","hint","next","answer","reveal",
+  // Meta-question words — never the slang target itself
+  "origin","history","etymology","story","background","use","usage","context",
 ]);
 
 function detectUnknownWord(

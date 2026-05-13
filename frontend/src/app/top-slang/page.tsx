@@ -279,6 +279,7 @@ export default function TopSlang() {
                 key={p}
                 onClick={() => setPeriod(p)}
                 disabled={cooldown}
+                title={p === "today" ? "Slang from posts made today only" : "Slang from all posts ever collected"}
                 className={`px-3 py-1.5 text-sm capitalize transition-colors
                   ${period === p
                     ? isLight
@@ -330,10 +331,12 @@ export default function TopSlang() {
             <motion.div variants={fadeUp} className="lg:col-span-2 card spotlight p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-white/35 uppercase tracking-wider">Usage frequency</p>
-                {chartPages > 1
-                  ? <span className="text-[10px] text-white/35">{chartPage + 1} / {chartPages}</span>
-                  : <span className="text-[10px] text-white/25 hidden sm:inline">Click a bar for details</span>
-                }
+                <div className="flex items-center gap-2">
+                  {chartPages > 1 && <span className="text-[10px] text-white/35">{chartPage + 1} / {chartPages}</span>}
+                  <span className="text-[10px] text-white/40 bg-white/[.04] border border-white/[.07] rounded px-1.5 py-0.5 hidden sm:inline">
+                    👆 Click a bar
+                  </span>
+                </div>
               </div>
               {/* flex-1 so chart grows to fill all remaining card height */}
               <div className="relative flex-1 min-h-0">
@@ -437,17 +440,22 @@ export default function TopSlang() {
                           key={w.word}
                           onClick={(e) => openWord(w, e)}
                           className="border-b border-white/[.04] last:border-0 cursor-pointer
-                                     hover:bg-white/[.04] hover:translate-x-0.5
+                                     hover:bg-white/[.06] hover:translate-x-0.5 rounded
                                      transition-[background-color,transform] duration-150 group"
                         >
                           <td className="py-2 text-xs text-white/25 w-7 font-mono">
                             {(globalIdx + 1).toString().padStart(2, "0")}
                           </td>
-                          <td className="py-2 font-medium text-white/80 group-hover:text-gradient-static transition-colors">
+                          <td className="py-2 font-medium text-white/80 group-hover:text-blue-300 underline-offset-2 group-hover:underline transition-colors">
                             {w.word}
                           </td>
                           <td className="py-2 text-right text-xs text-white/35">
                             {w.count.toLocaleString()}
+                          </td>
+                          <td className="py-2 pl-2 text-white/20 group-hover:text-white/50 transition-colors">
+                            <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M4.5 2L7.5 6l-3 4" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
                           </td>
                         </tr>
                       );

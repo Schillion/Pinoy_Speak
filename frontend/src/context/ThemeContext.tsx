@@ -29,10 +29,10 @@ const FONT_KEY  = "pinoyspeak_font_size";
 const FONT_PX: Record<FontSize, number> = {
   small:    15,
   medium:   17.5,
-  large:    19.5,
-  xlarge:   22,
-  xxlarge:  25,
-  xxxlarge: 28,
+  large:    21,
+  xlarge:   24,
+  xxlarge:  27,
+  xxxlarge: 30,
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

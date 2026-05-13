@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import AboutModal from "./AboutModal";
 import PinoyLogo from "./PinoyLogo";
 import { useTheme } from "@/context/ThemeContext";
@@ -20,6 +20,22 @@ export default function Sidebar() {
   const path = usePathname();
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openSettings = () => {
+    setSettingsOpen(true);
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    dismissTimer.current = setTimeout(() => setSettingsOpen(false), 6000);
+  };
+  const keepOpen = () => {
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    dismissTimer.current = setTimeout(() => setSettingsOpen(false), 6000);
+  };
+  const closeSettings = () => {
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    setSettingsOpen(false);
+  };
+  useEffect(() => () => { if (dismissTimer.current) clearTimeout(dismissTimer.current); }, []);
   const { theme, toggleTheme, fontSize, setFontSize } = useTheme();
 
   return (
@@ -153,7 +169,7 @@ export default function Sidebar() {
           <div className="md:hidden flex-1 flex relative">
             <SettingsButton
               open={settingsOpen}
-              onClick={() => setSettingsOpen((o) => !o)}
+              onClick={() => settingsOpen ? closeSettings() : openSettings()}
             />
             <SettingsPopover
               open={settingsOpen}
@@ -161,7 +177,8 @@ export default function Sidebar() {
               toggleTheme={toggleTheme}
               fontSize={fontSize}
               setFontSize={setFontSize}
-              onAbout={() => { setSettingsOpen(false); setAboutOpen(true); }}
+              onAbout={() => { closeSettings(); setAboutOpen(true); }}
+              onInteract={keepOpen}
               placement="up"
             />
           </div>
@@ -171,7 +188,7 @@ export default function Sidebar() {
         <div className="hidden md:block border-t border-white/[.05] px-2 py-3 relative">
           <SettingsButton
             open={settingsOpen}
-            onClick={() => setSettingsOpen((o) => !o)}
+            onClick={() => settingsOpen ? closeSettings() : openSettings()}
           />
           <SettingsPopover
             open={settingsOpen}
@@ -179,7 +196,8 @@ export default function Sidebar() {
             toggleTheme={toggleTheme}
             fontSize={fontSize}
             setFontSize={setFontSize}
-            onAbout={() => { setSettingsOpen(false); setAboutOpen(true); }}
+            onAbout={() => { closeSettings(); setAboutOpen(true); }}
+            onInteract={keepOpen}
             placement="right"
           />
         </div>
@@ -216,12 +234,13 @@ interface SettingsPopoverProps {
   fontSize: FontSize;
   setFontSize: (s: FontSize) => void;
   onAbout: () => void;
+  onInteract: () => void;
   placement: "right" | "up";
 }
 
 function SettingsPopover({
   open, theme, toggleTheme, fontSize, setFontSize,
-  onAbout, placement,
+  onAbout, onInteract, placement,
 }: SettingsPopoverProps) {
   const positionCls = placement === "right"
     ? "absolute bottom-3 left-[100%] ml-2"
@@ -235,6 +254,8 @@ function SettingsPopover({
           animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
           exit={{ opacity: 0, y: placement === "up" ? 6 : 0, x: placement === "right" ? -6 : 0, scale: 0.97 }}
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          onMouseMove={onInteract}
+          onTouchStart={onInteract}
           style={{ maxHeight: "min(70vh, 480px)" }}
           className={`${positionCls} z-30 w-60 p-3 rounded-2xl overflow-y-auto
                      border border-white/[.10] bg-[#0a1224]/95 backdrop-blur-xl

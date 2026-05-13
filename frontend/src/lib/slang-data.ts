@@ -23,7 +23,7 @@ export const FORMATION_LABELS: Record<FormationType, string> = {
   blending:        "Blending — two words fused",
   coinage:         "Coinage — invented internet expression",
   native:          "Native Filipino — no English equivalent",
-  semantic_shift:  "Semantic shift — standard word, new internet meaning",
+  semantic_shift:  "Same word, new meaning — a common word used differently online",
   borrowing:       "Borrowing — adopted from another language",
   jejemon:         "Jejemon — leet-speak letter substitution",
   number_syllable: "Number-as-syllable — digits replace syllable sounds (su10, gr8)",

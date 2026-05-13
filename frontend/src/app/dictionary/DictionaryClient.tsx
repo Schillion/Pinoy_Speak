@@ -505,7 +505,7 @@ function DictionaryEntry({
         {entry.is_ambiguous && entry.formation_type !== "semantic_shift" && (
           <span className="text-[11px] text-purple-300 bg-purple-500/[.12] border border-purple-400/30
                            px-2 py-0.5 rounded-md uppercase tracking-widest">
-            semantic shift
+            new meaning
           </span>
         )}
       </header>
@@ -579,7 +579,7 @@ const GUIDE_ENTRIES: { label: string; key: string; desc: string; example: string
   { key: "blending",       label: "Blending",            desc: "Two words fused into one.",                                                  example: "\"chillax\" ← chill + relax" },
   { key: "coinage",        label: "Coinage",             desc: "A brand-new word invented on the internet.",                                 example: "\"lodi\" ← idol (reversed)" },
   { key: "native",         label: "Native coinage",      desc: "An original Filipino word with no direct English equivalent.",               example: "\"kilig\" (romantic giddiness)" },
-  { key: "semantic_shift", label: "Semantic shift",      desc: "A standard word that took on a new meaning online.",                         example: "\"solid\" now means reliable/great" },
+  { key: "semantic_shift", label: "Same word, new meaning", desc: "A common word used in a new way online — the spelling stays the same but the meaning changed.",  example: "\"solid\" now means reliable/great" },
   { key: "borrowing",      label: "Borrowing",           desc: "A word adopted from another language.",                                      example: "\"werpa\" ← power (Bekimon)" },
   { key: "jejemon",        label: "Jejemon",             desc: "Deliberate leet-speak letter substitution style.",                           example: "\"eow\" for hi/ow" },
   { key: "number_syllable",label: "Number-as-syllable",  desc: "Digits replace syllable sounds.",                                            example: "\"su10\" ← sutin, \"gr8\" ← grabe" },

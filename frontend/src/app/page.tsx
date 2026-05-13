@@ -484,10 +484,13 @@ export default function Home() {
                 initial={{ opacity: 0, x: 4 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => setZoomDom(null)}
-                className="text-[11px] text-blue-300 hover:text-blue-200 transition-colors
-                           border border-blue-400/30 rounded-md px-2 py-0.5
-                           bg-blue-500/[.08] hover:bg-blue-500/[.15]"
+                className="text-[11px] font-medium text-blue-300 hover:text-blue-200 transition-colors
+                           border border-blue-400/40 rounded-md px-2.5 py-1
+                           bg-blue-500/[.12] hover:bg-blue-500/[.20] flex items-center gap-1"
               >
+                <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 6a5 5 0 105-5H4M4 1L2 3l2 2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
                 Reset zoom
               </motion.button>
             )}

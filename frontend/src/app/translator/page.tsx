@@ -317,7 +317,12 @@ export default function Translator() {
           >
             {/* Step 1 */}
             <motion.section variants={fadeUp}>
-              <SectionLabel num={1} title="Slang Detected" sub="Blue = slang · gray = regular" />
+              <SectionLabel num={1} title="Slang Detected" sub="" />
+              <div className="flex flex-wrap gap-2 mb-3 -mt-1">
+                <span className="badge-slang text-[11px] pointer-events-none">slang</span>
+                <span className="badge-regular text-[11px] pointer-events-none">regular</span>
+                <span className="badge-censored text-[11px] pointer-events-none">profane</span>
+              </div>
               {verifying.size > 0 && (
                 <motion.p
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
