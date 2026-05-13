@@ -147,7 +147,7 @@ export default function Translator() {
       // Locative demonstratives
       "doon","dito","diyan",
       // English function words
-      "the","and","for","that","this","with","from","but","not","its","its",
+      "the","and","for","that","this","with","from","but","not","its",
     ]);
 
     const candidates = new Set<string>();

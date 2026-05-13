@@ -30,7 +30,8 @@ function getQuickReplies(content: string, words: WordEntry[]): string[] {
   if (/what does "[\w]+" mean/i.test(content)) return [];
 
   const mentioned = words.find((w) => {
-    return new RegExp(`\\b${w.word}\\b`, "i").test(content);
+    const escaped = w.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b${escaped}\\b`, "i").test(content);
   });
 
   if (mentioned) {
@@ -199,7 +200,7 @@ export default function ChatPage() {
       setLoading(false);
       setTimeout(() => textareaRef.current?.focus(), 50);
     }
-  }, [messages, loading]);
+  }, [messages, loading, words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); }

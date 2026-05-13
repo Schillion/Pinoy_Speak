@@ -16,7 +16,7 @@ interface Entry extends LexiconEntry {
 
 export default function DictionaryClient({ initialLexicon }: { initialLexicon: Record<string, LexiconEntry> }) {
   const [lexicon, setLexicon] = useState<Record<string, LexiconEntry>>(initialLexicon);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => Object.keys(initialLexicon).length === 0);
   const [search,  setSearch]  = useState("");
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const [showGuide, setShowGuide] = useState(false);
