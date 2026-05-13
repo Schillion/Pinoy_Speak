@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shuffle, WordEntry } from "./words-data";
+import { getQuizProgress, saveQuizResult } from "@/lib/progress";
 
 export default function QuizGame({ words }: { words: WordEntry[] }) {
   const [deck]              = useState(() => shuffle(words));
@@ -10,7 +11,10 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
   const [score, setScore]   = useState({ right: 0, wrong: 0 });
   const [picked, setPicked] = useState<string | null>(null);
   const [done, setDone]     = useState(false);
+  const [saved, setSaved]   = useState(false);
   const nextBtnRef          = useRef<HTMLButtonElement>(null);
+
+  const { bestPct, attempts } = getQuizProgress();
 
   useEffect(() => {
     if (picked) {
@@ -33,7 +37,10 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
   }
 
   function next() {
-    if (qIdx + 1 >= deck.length) { setDone(true); return; }
+    if (qIdx + 1 >= deck.length) {
+      setDone(true);
+      return;
+    }
     setPicked(null);
     setQIdx((i) => i + 1);
   }
@@ -43,12 +50,24 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
     setScore({ right: 0, wrong: 0 });
     setPicked(null);
     setDone(false);
+    setSaved(false);
   }
 
   const total = score.right + score.wrong;
   const pct   = total > 0 ? Math.round((score.right / total) * 100) : 0;
 
+  // Save result once when the done screen first mounts
+  useEffect(() => {
+    if (done && !saved) {
+      saveQuizResult(pct);
+      setSaved(true);
+    }
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const newBest = done && pct > bestPct && attempts > 0;
+
   if (done) {
+    const { bestPct: storedBest, attempts: storedAttempts } = getQuizProgress();
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -64,12 +83,30 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
                style={{ background: "radial-gradient(circle, rgba(96,165,250,0.55), transparent 70%)" }} />
           <div className="relative text-6xl font-bold text-gradient-static tracking-tight">{pct}%</div>
         </motion.div>
+
         <p className="text-white/55 text-sm">
           {score.right} correct · {score.wrong} wrong out of {deck.length} words
         </p>
         <p className="text-white/40 text-xs italic">
           {pct >= 80 ? "Petmalu! You're basically fluent. 🔥" : pct >= 50 ? "Solid! Keep practicing. 💪" : "Keri lang, practice more! 😄"}
         </p>
+
+        {/* Personal stats */}
+        <div className="flex gap-5 text-xs">
+          <div className="text-center">
+            <p className="text-white/25 uppercase tracking-wider mb-0.5">Personal best</p>
+            <p className={`font-bold text-lg ${newBest ? "text-amber-300" : "text-white/60"}`}>
+              {storedBest}%
+              {newBest && <span className="ml-1 text-xs">🏆 new!</span>}
+            </p>
+          </div>
+          <div className="w-px bg-white/[.06]" />
+          <div className="text-center">
+            <p className="text-white/25 uppercase tracking-wider mb-0.5">Attempts</p>
+            <p className="font-bold text-lg text-white/60">{storedAttempts}</p>
+          </div>
+        </div>
+
         <button onClick={restart} className="btn-primary w-auto px-6 py-2.5 text-sm">Play again</button>
       </motion.div>
     );
@@ -82,6 +119,9 @@ export default function QuizGame({ words }: { words: WordEntry[] }) {
         <span className="flex items-center gap-3">
           <span className="text-green-300">✓ {score.right}</span>
           <span className="text-red-300">✗ {score.wrong}</span>
+          {bestPct > 0 && (
+            <span className="text-white/25">best {bestPct}%</span>
+          )}
         </span>
       </div>
 

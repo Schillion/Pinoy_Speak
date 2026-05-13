@@ -3,12 +3,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shuffle, WordEntry } from "./words-data";
+import { getKnownWords, markWordKnown, resetFlashcardProgress } from "@/lib/progress";
 
 export default function FlashcardGame({ words }: { words: WordEntry[] }) {
-  const [remaining, setRemaining] = useState(() => shuffle(words));
-  const [learned, setLearned]     = useState<WordEntry[]>([]);
-  const [flipped, setFlipped]     = useState(false);
-  const [leaving, setLeaving]     = useState<"right" | "left" | null>(null);
+  const [learned, setLearned]   = useState<WordEntry[]>(() => {
+    const known = getKnownWords();
+    return words.filter((w) => known.has(w.word));
+  });
+  const [remaining, setRemaining] = useState<WordEntry[]>(() => {
+    const known = getKnownWords();
+    return shuffle(words.filter((w) => !known.has(w.word)));
+  });
+  const [flipped, setFlipped]   = useState(false);
+  const [leaving, setLeaving]   = useState<"right" | "left" | null>(null);
 
   const card = remaining[0];
 
@@ -18,6 +25,7 @@ export default function FlashcardGame({ words }: { words: WordEntry[] }) {
   }
 
   function markKnown() {
+    markWordKnown(card.word);
     animateOut("right", () => {
       setLearned((k) => [...k, card]);
       setRemaining((r) => r.slice(1));
@@ -30,11 +38,16 @@ export default function FlashcardGame({ words }: { words: WordEntry[] }) {
     });
   }
 
-  function restart() {
-    setRemaining(shuffle(words));
-    setLearned([]);
+  function restart(resetProgress = false) {
+    if (resetProgress) resetFlashcardProgress();
+    const known = resetProgress ? new Set<string>() : getKnownWords();
+    setRemaining(shuffle(words.filter((w) => !known.has(w.word))));
+    setLearned(words.filter((w) => known.has(w.word)));
     setFlipped(false);
   }
+
+  const totalKnown = learned.length;
+  const totalWords = words.length;
 
   if (!card) {
     return (
@@ -49,8 +62,19 @@ export default function FlashcardGame({ words }: { words: WordEntry[] }) {
           className="text-5xl"
         >🎉</motion.p>
         <p className="text-2xl font-bold text-gradient-static">Deck complete!</p>
-        <p className="text-white/45 text-sm">You learned all {words.length} words. Petmalu!</p>
-        <button onClick={restart} className="btn-primary w-auto px-6 py-2.5 text-sm">Start over</button>
+        <p className="text-white/45 text-sm">You know all {totalWords} words. Petmalu!</p>
+        <div className="flex gap-3 flex-wrap justify-center">
+          <button onClick={() => restart(false)} className="btn-primary w-auto px-6 py-2.5 text-sm">
+            Review again
+          </button>
+          <button
+            onClick={() => restart(true)}
+            className="px-6 py-2.5 rounded-xl border border-white/[.10] text-sm text-white/40
+                       hover:text-white/70 hover:border-white/20 transition-colors"
+          >
+            Reset progress
+          </button>
+        </div>
       </motion.div>
     );
   }
@@ -59,12 +83,12 @@ export default function FlashcardGame({ words }: { words: WordEntry[] }) {
     <div className="flex flex-col items-center gap-6 py-4">
       {/* Progress */}
       <div className="flex items-center gap-3 text-xs w-full max-w-md">
-        <span className="text-green-300 w-16 text-right">{learned.length} learned</span>
+        <span className="text-green-300 w-16 text-right">{totalKnown} known</span>
         <div className="flex-1 h-1.5 bg-white/[.06] rounded-full overflow-hidden border border-white/[.04]">
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"
             initial={false}
-            animate={{ width: `${(learned.length / words.length) * 100}%` }}
+            animate={{ width: `${(totalKnown / totalWords) * 100}%` }}
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
             style={{ boxShadow: "0 0 12px -2px rgba(74,222,128,0.7)" }}
           />
@@ -164,6 +188,12 @@ export default function FlashcardGame({ words }: { words: WordEntry[] }) {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {totalKnown > 0 && (
+        <p className="text-[10px] text-white/20">
+          {totalKnown} of {totalWords} words saved · progress persists across visits
+        </p>
+      )}
     </div>
   );
 }

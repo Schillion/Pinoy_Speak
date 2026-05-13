@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shuffle, WordEntry } from "./words-data";
+import { getMatchProgress, saveMatchRound } from "@/lib/progress";
 
 const MATCH_BATCH = 6;
 
@@ -22,6 +23,9 @@ export default function WordMatchGame({ words }: { words: WordEntry[] }) {
   const [score, setScore]     = useState(0);
   const [errors, setErrors]   = useState(0);
   const [rounds, setRounds]   = useState(0);
+  const [roundSaved, setRoundSaved] = useState(false);
+
+  const { totalRounds, totalMatches } = getMatchProgress();
 
   function pickWord(word: string) {
     if (matched.has(word)) return;
@@ -41,14 +45,25 @@ export default function WordMatchGame({ words }: { words: WordEntry[] }) {
     }
   }
 
+  const allDone = matched.size === MATCH_BATCH;
+
+  // Save when the round completes
+  useEffect(() => {
+    if (allDone && !roundSaved) {
+      saveMatchRound(MATCH_BATCH);
+      setRoundSaved(true);
+    }
+  }, [allDone]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function nextRound() {
     setBatch(makeBatch());
     setMatched(new Set());
     setSel(null);
     setRounds((r) => r + 1);
+    setRoundSaved(false);
   }
 
-  const allDone = matched.size === MATCH_BATCH;
+  const { totalRounds: latestRounds, totalMatches: latestMatches } = getMatchProgress();
 
   return (
     <div className="flex flex-col gap-4 py-2 max-w-md mx-auto">
@@ -57,6 +72,9 @@ export default function WordMatchGame({ words }: { words: WordEntry[] }) {
         <span className="flex gap-3">
           <span className="text-green-300">✓ {score}</span>
           {errors > 0 && <span className="text-red-300">✗ {errors}</span>}
+          {latestRounds > 0 && (
+            <span className="text-white/25">{latestMatches} total matched</span>
+          )}
         </span>
       </div>
 
@@ -77,6 +95,20 @@ export default function WordMatchGame({ words }: { words: WordEntry[] }) {
             <p className="text-white/45 text-sm">
               {errors === 0 ? "Petmalu! Perfect round, walang mali!" : `${errors} mistake${errors !== 1 ? "s" : ""}. Keri, keep going!`}
             </p>
+
+            {/* Cumulative stats */}
+            <div className="flex gap-5 text-xs">
+              <div className="text-center">
+                <p className="text-white/25 uppercase tracking-wider mb-0.5">Rounds played</p>
+                <p className="font-bold text-lg text-white/60">{latestRounds}</p>
+              </div>
+              <div className="w-px bg-white/[.06]" />
+              <div className="text-center">
+                <p className="text-white/25 uppercase tracking-wider mb-0.5">Total matched</p>
+                <p className="font-bold text-lg text-white/60">{latestMatches}</p>
+              </div>
+            </div>
+
             <button onClick={nextRound} className="btn-primary w-auto px-6 py-2.5 text-sm">
               Next round →
             </button>
