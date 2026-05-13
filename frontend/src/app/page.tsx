@@ -818,20 +818,20 @@ function LanguageMix({
 
   return (
     <div>
-      <div className="relative" style={{ height: 220 }}>
+      <div className="relative aspect-square max-w-[240px] lg:max-w-[280px] xl:max-w-[320px] mx-auto">
         {/* Ambient glow behind the ring */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="w-52 h-52 rounded-full opacity-15 blur-2xl"
+          <div className="w-3/4 h-3/4 rounded-full opacity-15 blur-2xl"
                style={{ background: `conic-gradient(${colors.map((c, i) => `${c} ${i * (100/colors.length)}%`).join(", ")})` }} />
         </div>
 
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="value"
-              innerRadius={60}
-              outerRadius={88}
+              innerRadius="42%"
+              outerRadius="62%"
               paddingAngle={3}
               startAngle={90}
               endAngle={-270}
