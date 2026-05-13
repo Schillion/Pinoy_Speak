@@ -256,8 +256,8 @@ function SettingsPopover({
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           onMouseMove={onInteract}
           onTouchStart={onInteract}
-          style={{ maxHeight: "min(70vh, 480px)", fontSize: "15px" }}
-          className={`${positionCls} z-30 w-60 p-3 rounded-2xl overflow-y-auto
+          style={{ maxHeight: "min(70vh, 480px)", fontSize: "15px", width: 240, padding: 12 }}
+          className={`${positionCls} z-30 rounded-2xl overflow-y-auto
                      border border-white/[.10] bg-[#0a1224]/95 backdrop-blur-xl
                      shadow-[0_18px_40px_-14px_rgba(0,0,0,0.7),0_0_28px_-10px_rgba(96,165,250,0.3)]`}
         >
@@ -375,14 +375,16 @@ function SettingsToggle({
       </span>
       <button
         onClick={onClick}
-        className={`relative w-10 h-5 rounded-full transition-colors duration-300 ring-1 ring-inset
+        style={{ width: 40, height: 20 }}
+        className={`relative flex-shrink-0 rounded-full transition-colors duration-300 ring-1 ring-inset
           ${on ? onColor : "bg-white/[.12] ring-black/10"}`}
         aria-pressed={on}
       >
         <motion.span
           animate={{ x: on ? 22 : 2 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          className="absolute top-0.5 left-0 w-4 h-4 rounded-full
+          style={{ width: 16, height: 16, top: 2 }}
+          className="absolute left-0 rounded-full
                      bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] ring-1 ring-black/5
                      flex items-center justify-center"
         >
