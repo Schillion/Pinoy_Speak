@@ -256,7 +256,7 @@ function SettingsPopover({
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           onMouseMove={onInteract}
           onTouchStart={onInteract}
-          style={{ maxHeight: "min(70vh, 480px)" }}
+          style={{ maxHeight: "min(70vh, 480px)", fontSize: "15px" }}
           className={`${positionCls} z-30 w-60 p-3 rounded-2xl overflow-y-auto
                      border border-white/[.10] bg-[#0a1224]/95 backdrop-blur-xl
                      shadow-[0_18px_40px_-14px_rgba(0,0,0,0.7),0_0_28px_-10px_rgba(96,165,250,0.3)]`}
