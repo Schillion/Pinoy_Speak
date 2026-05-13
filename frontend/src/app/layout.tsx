@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Backdrop from "@/components/Backdrop";
 import PageTransition from "@/components/PageTransition";
+import UpdateNotice from "@/components/UpdateNotice";
 import { ProfanityProvider } from "@/context/ProfanityContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { useEffect, useState } from "react";
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <ProfanityProvider>
             <Backdrop />
+            <UpdateNotice />
             <SidebarWithFilter />
             <ModelStatusBanner />
             <main
