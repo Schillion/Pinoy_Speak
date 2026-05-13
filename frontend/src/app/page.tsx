@@ -539,7 +539,7 @@ export default function Home() {
           </div>
 
           {/* Chart */}
-          <div ref={chartWrapRef} className="flex-1 min-h-0 relative" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 220 }}>
+          <div ref={chartWrapRef} className="flex-1 min-h-0 relative" style={{ overscrollBehavior: "contain", touchAction: "pan-y", minHeight: 280 }}>
             {trendsLoading && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#0a1224]/40 backdrop-blur-[2px]">
                 <div className="w-7 h-7 rounded-full border-2 border-white/10 border-t-blue-400 animate-spin" />
@@ -611,14 +611,12 @@ export default function Home() {
                   axisLine={false}
                   tickLine={false}
                   type="category"
-                  label={{ value: "Date →", position: "insideBottomRight", offset: -2, fill: "rgba(255,255,255,0.18)", fontSize: 9 }}
                 />
                 <YAxis
                   tick={{ fontSize: tickFs, fill: isLight ? "rgba(15,23,42,0.5)" : "rgba(255,255,255,0.35)" }}
                   width={30}
                   axisLine={false}
                   tickLine={false}
-                  label={{ value: "Count", angle: -90, position: "insideLeft", offset: 12, fill: "rgba(255,255,255,0.18)", fontSize: 9 }}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
