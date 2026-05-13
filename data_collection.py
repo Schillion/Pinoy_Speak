@@ -11,8 +11,9 @@ console = Console()
 # Constants
 # ---------------------------------------------------------------------------
 
-SCRAPE_SINCE      = date(2025, 5, 1)   # ignore posts older than this
-COMMENT_MIN_SCORE = 3                   # only fetch comments for posts with score >= this
+SCRAPE_SINCE      = date(2025, 5, 1)   # live-round cutoff — don't fetch posts older than this
+SEED_SINCE        = date(2023, 1, 1)   # historical backfill cutoff for scrape_seed_data()
+COMMENT_MIN_SCORE = 10                  # only fetch comments for posts with score >= this
 REQUEST_TIMEOUT   = 15                  # seconds
 
 # Arctic Shift — free Reddit archive API that works from cloud IPs.
@@ -147,7 +148,7 @@ def _fetch_arctic_sub(sub: str, since: date, pages: int = 3,
             if min_ts is None or min_ts <= since_ts:
                 break  # reached the cutoff — nothing older to fetch
             before_ts = min_ts - 1
-            time.sleep(0.5)
+            time.sleep(0.2)
 
         except Exception as e:
             console.print(f"[red]Arctic r/{sub}: {e}[/red]")
@@ -191,7 +192,7 @@ def _fetch_arctic_comments(post_ids: list[str]) -> list[dict]:
                     "likes":  c.get("score", 0),
                     "source": "reddit",
                 })
-            time.sleep(0.4)
+            time.sleep(0.2)
         except Exception:
             pass
 
@@ -205,9 +206,12 @@ def _fetch_arctic_comments(post_ids: list[str]) -> list[dict]:
 def scrape_reddit(subreddits: list[str] = None, limit: int = 100,
                   pages: int = 3, workers: int = 3,
                   seed: bool = False,
+                  since: date = None,
                   output_file: str = "data/raw_reddit.json") -> list[dict]:
     if subreddits is None:
         subreddits = REDDIT_SUBREDDITS
+    if since is None:
+        since = SCRAPE_SINCE
 
     fetch_pages = pages * 3 if seed else pages  # seed gets more pages
 
@@ -220,7 +224,7 @@ def scrape_reddit(subreddits: list[str] = None, limit: int = 100,
     all_posts: list[dict] = []
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = {
-            executor.submit(_fetch_arctic_sub, sub, SCRAPE_SINCE, fetch_pages, limit): sub
+            executor.submit(_fetch_arctic_sub, sub, since, fetch_pages, limit): sub
             for sub in subreddits
         }
         completed = 0
@@ -267,18 +271,19 @@ CORE_SUBREDDITS = [
 
 
 def scrape_seed_data(output_file: str = "data/raw_reddit.json",
-                     workers: int = 5) -> list[dict]:
-    """One-shot historical scrape. Run this once to seed the Aug 2025+ dataset."""
+                     workers: int = 15) -> list[dict]:
+    """One-shot historical scrape. Run this once to backfill Jan 2023 → now."""
     console.print(
         f"\n[bold cyan]Seed Scrape — {len(CORE_SUBREDDITS)} subreddits "
-        f"(Aug 2025 → now)[/bold cyan]"
+        f"(Jan 2023 → now)[/bold cyan]"
     )
     return scrape_reddit(
         subreddits=CORE_SUBREDDITS,
         limit=100,
-        pages=10,   # 10 pages × 100 = up to 1,000 posts/sub
+        pages=10,   # seed=True triples this → 30 pages × 100 = up to 3,000 posts/sub
         workers=workers,
         seed=True,
+        since=SEED_SINCE,
         output_file=output_file,
     )
 

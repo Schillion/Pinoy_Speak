@@ -16,9 +16,9 @@ from youtube_scraper import scrape_youtube
 console = Console()
 
 REDDIT_LIMIT         = 100
-REDDIT_PAGES         = 10
-REDDIT_WORKERS       = 5
-SLEEP_BETWEEN_ROUNDS = 30
+REDDIT_PAGES         = 20
+REDDIT_WORKERS       = 15
+SLEEP_BETWEEN_ROUNDS = 15
 
 
 def _handle_sigint(_sig, _frame):
