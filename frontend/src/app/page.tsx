@@ -103,6 +103,15 @@ export default function Home() {
       return next;
     });
   }, []);
+  const lastSeriesRef = useRef<Record<string, number[]>>({});
+  const lastWordsRef  = useRef<string[]>([]);
+  function computeDefaultHidden(words: string[], series: Record<string, number[]>, visN = 10): Set<string> {
+    const sorted = [...words].sort(
+      (a, b) => (series[b] ?? []).reduce((s, v) => s + v, 0) - (series[a] ?? []).reduce((s, v) => s + v, 0)
+    );
+    const top = new Set(sorted.slice(0, visN));
+    return new Set(words.filter(w => !top.has(w)));
+  }
   // Active drag — pixel-anchored. Using data coordinates fails because the
   // chart's visible domain shifts mid-drag (when we call setZoomDom), which
   // means the same screen pixel maps to a different `activeLabel` after each
@@ -142,13 +151,13 @@ export default function Home() {
       .catch(() => null);
   }, []);
 
-  // Reset zoom + hidden-word filter when range changes
+  // Reset zoom when range changes; hidden-word filter resets to default in the data fetch
   useEffect(() => {
     setZoomDom(null);
     panRef.current = null;
     setPanning(false);
-    setHiddenWords(new Set());
-  }, [range]);
+    setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current));
+  }, [range]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Real per-day trends — top-N words are chosen within the selected window,
   // so the chart reflects what was actually popular during that period.
@@ -164,9 +173,12 @@ export default function Home() {
       .then((res) => {
         if (id !== trendsReqId.current) return;
         setTrendsAvailable(res.available);
-        setChartWords(res.words ?? []);
-        if (!res.days.length) { setTrendData([]); return; }
         const wordList = res.words ?? [];
+        lastSeriesRef.current = res.series;
+        lastWordsRef.current  = wordList;
+        setChartWords(wordList);
+        setHiddenWords(computeDefaultHidden(wordList, res.series));
+        if (!res.days.length) { setTrendData([]); return; }
         const points: TrendRow[] = res.days.map((day, i) => {
           const row: TrendRow = { day };
           for (const w of wordList) {
@@ -406,38 +418,51 @@ export default function Home() {
             </div>
           </div>
           {/* Word legend — click to toggle a series on/off */}
-          {chartWords.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 mb-3 overflow-x-auto">
-              {chartWords.map((word, i) => {
-                const hidden = hiddenWords.has(word);
-                return (
-                  <button
-                    key={word}
-                    onClick={() => toggleWord(word)}
-                    title={hidden ? `Show ${word}` : `Hide ${word}`}
-                    className={`flex items-center gap-1.5 transition-opacity hover:opacity-80
-                                ${hidden ? "opacity-30" : "opacity-100"}`}
-                  >
-                    <span
-                      className="w-6 h-[3px] rounded-full flex-shrink-0"
-                      style={{ background: COLORS[i % COLORS.length] }}
-                    />
-                    <span className="text-xs text-white/70 font-medium tracking-tight">
-                      {word}
-                    </span>
-                  </button>
-                );
-              })}
-              {hiddenWords.size > 0 && (
-                <button
-                  onClick={() => setHiddenWords(new Set())}
-                  className="text-[10px] text-white/30 hover:text-white/60 transition-colors ml-1"
-                >
-                  show all
-                </button>
-              )}
-            </div>
-          )}
+          {chartWords.length > 0 && (() => {
+            const colorMap = Object.fromEntries(chartWords.map((w, i) => [w, COLORS[i % COLORS.length]]));
+            const visible  = chartWords.filter(w => !hiddenWords.has(w));
+            const hidden   = chartWords.filter(w =>  hiddenWords.has(w));
+            const sorted   = [...visible, ...hidden];
+            const allHidden = visible.length === 0;
+            return (
+              <div className="mt-2 mb-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 max-h-[72px] overflow-y-auto pr-1">
+                  {sorted.map((word) => {
+                    const isHidden = hiddenWords.has(word);
+                    return (
+                      <button
+                        key={word}
+                        onClick={() => toggleWord(word)}
+                        title={isHidden ? `Show ${word}` : `Hide ${word}`}
+                        className={`flex items-center gap-1.5 transition-opacity hover:opacity-80
+                                    ${isHidden ? "opacity-25" : "opacity-100"}`}
+                      >
+                        <span
+                          className="w-6 h-[3px] rounded-full flex-shrink-0"
+                          style={{ background: colorMap[word] }}
+                        />
+                        <span className="text-xs text-white/70 font-medium tracking-tight">{word}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-3 mt-1.5">
+                  {!allHidden && hiddenWords.size > 0 && (
+                    <button onClick={() => setHiddenWords(new Set())}
+                      className="text-[10px] text-blue-300/70 hover:text-blue-300 transition-colors">
+                      show all
+                    </button>
+                  )}
+                  {visible.length > 0 && chartWords.length > 10 && (
+                    <button onClick={() => setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current))}
+                      className="text-[10px] text-white/30 hover:text-white/60 transition-colors">
+                      top 10 only
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               {trendsAvailable ? (
