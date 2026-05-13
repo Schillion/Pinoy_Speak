@@ -160,15 +160,18 @@ export default function Translator() {
     if (!result) return;
     const id = ++verifyReqId.current;
 
+    // Only true grammatical function words — never content words that could
+    // later acquire slang meanings (e.g. "grabe" graduated to slang status).
     const STOP = new Set([
+      // Filipino grammatical particles
       "ang","ng","sa","na","at","ay","si","ni","para","pero","kasi","lang",
       "din","rin","po","daw","raw","pala","naman","talaga","sana","yung","ung",
-      "the","and","for","that","this","with","from","but","not",
-      // Common standard Tagalog words that aren't slang despite being OOV for English NLP
-      "sobrang","kagabi","asan","nakapunta","grabe","talaga","naman","kasi",
+      // Filipino conjunctions / adverbs that will never be slang
       "kahit","hanggang","habang","dahil","ngayon","bukas","kahapon",
-      "nasaan","doon","dito","diyan","ganoon","ganito","ganyan",
-      "mahal","maganda","mabuti","malaki","maliit","bata","tao","bahay",
+      // Locative demonstratives
+      "doon","dito","diyan",
+      // English function words
+      "the","and","for","that","this","with","from","but","not","its","its",
     ]);
 
     const candidates = new Set<string>();

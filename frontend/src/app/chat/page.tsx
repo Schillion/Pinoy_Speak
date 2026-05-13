@@ -46,17 +46,24 @@ function getQuickReplies(content: string, words: WordEntry[]): string[] {
     return r ? [`Tell me about "${r.word}"`, "Quiz me!"] : ["Quiz me!"];
   }
 
-  return ["What does 'grabe' mean?", "Quiz me!", "Tell me about 'kilig'"];
+  const pool = [...words];
+  const a = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+  const b = pool[Math.floor(Math.random() * pool.length)];
+  return [
+    a ? `What does "${a.word}" mean?` : "Quiz me!",
+    "Quiz me!",
+    b ? `Tell me about "${b.word}"` : "List all words",
+  ];
 }
 
 const GREETING =
-  'Kumusta! I\'m Kuya Slang — your Filipino slang tutor. 🤙\n\nAsk me about any slang word like "grabe" or "kilig", say "quiz me" to test yourself, or type "list all" to see every word I know.';
+  "Kumusta! I'm Kuya Slang — your Filipino slang tutor. 🤙\n\nAsk me about any Filipino slang word, say \"quiz me\" to test yourself, or type \"list all\" to see every word I know.";
 
 const INITIAL_SUGGESTIONS = [
-  "What does 'grabe' mean?",
+  "What's a popular Filipino slang word?",
   "Quiz me!",
-  "How do I use 'kilig' in a sentence?",
-  "What's the origin of 'lodi'?",
+  "How do I use slang in a sentence?",
+  "What's the origin of a slang word?",
   "List all words",
 ];
 
