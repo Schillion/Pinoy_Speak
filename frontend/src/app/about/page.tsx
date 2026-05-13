@@ -115,6 +115,34 @@ export default function AboutPage() {
         </div>
       </motion.div>
 
+      {/* Data & Privacy */}
+      <motion.div variants={fadeUp} className="card p-6 mb-6">
+        <p className="text-[11px] text-white/35 uppercase tracking-widest mb-3">Data &amp; Privacy</p>
+        <div className="space-y-2.5 text-sm text-white/65 leading-relaxed">
+          <p>
+            <span className="text-white/85 font-medium">What we collect</span> — Only the text of
+            publicly visible posts from Filipino Reddit communities. No usernames, profile data,
+            private messages, or any other personal information is stored.
+          </p>
+          <p>
+            <span className="text-white/85 font-medium">How it&apos;s used</span> — Post text is
+            used exclusively for linguistic analysis: detecting slang words, tracking usage frequency
+            over time, and generating example sentences. It is never sold, shared with third parties,
+            or used for advertising.
+          </p>
+          <p>
+            <span className="text-white/85 font-medium">No tracking</span> — This site has no user
+            accounts, requires no login, and sets no tracking or analytics cookies. Your visits are
+            not logged or associated with any identity.
+          </p>
+          <p>
+            <span className="text-white/85 font-medium">Reddit&apos;s terms</span> — Data is collected
+            in compliance with Reddit&apos;s publicly available API and content policy. All source
+            communities are public subreddits accessible to any visitor without an account.
+          </p>
+        </div>
+      </motion.div>
+
       {/* Creator */}
       <motion.div variants={fadeUp} className="card p-6">
         <p className="text-[11px] text-white/35 uppercase tracking-widest mb-4">About the creator</p>

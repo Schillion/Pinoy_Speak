@@ -678,6 +678,16 @@ export default function Home() {
             Posts are scraped from {ALL_SUBREDDITS.length} Filipino communities on Reddit (r/Philippines, r/CasualPH, r/OPM, r/PHmemes, and more).
             New slang words are also discovered from Reddit threads, Wikipedia, and LLM brainstorming.
           </p>
+          <div className="mt-3 pt-3 border-t border-white/[.06] flex items-start gap-2">
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-white/25" fill="currentColor">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/>
+            </svg>
+            <p className="text-xs text-white/35 leading-relaxed">
+              <span className="font-medium text-white/50">Privacy notice:</span>{" "}
+              Only publicly visible Reddit posts are collected — no private messages, no account details, and no personal identifiers are stored.
+              Post text is used solely for linguistic research. This site has no user accounts, no login, and sets no tracking cookies.
+            </p>
+          </div>
         </div>
       </motion.div>
 
