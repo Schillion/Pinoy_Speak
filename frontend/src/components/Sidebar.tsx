@@ -266,55 +266,44 @@ function SettingsPopover({
           </p>
 
           <SettingsToggle
-            label={theme === "dark" ? "Dark mode" : "Light mode"}
+            label="Light mode"
             on={theme === "light"}
             onClick={toggleTheme}
             onColor="bg-gradient-to-r from-amber-400 to-orange-400 ring-white/20 shadow-[0_0_14px_-2px_rgba(251,191,36,0.8)]"
-            thumbContent={theme === "light" ? "☀" : "☾"}
+            thumbIcon={theme === "light" ? <SunThumbIcon /> : <MoonThumbIcon />}
           />
 
-          {/* Font size */}
+          {/* Font size — discrete step buttons with scaled "A" preview */}
           <div className="pt-3 mt-2 border-t border-white/[.06]">
             {(() => {
               const SIZES = ["small","medium","large","xlarge","xxlarge","xxxlarge"] as const;
               const LABELS = ["S","M","L","XL","2XL","3XL"];
-              const idx = SIZES.indexOf(fontSize as typeof SIZES[number]);
+              // Fixed px so preview isn't affected by current root font-size setting
+              const A_PX   = [10, 11.5, 13, 15.5, 18, 21];
               return (
                 <>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] text-white/55">Font size</p>
-                    <span className="text-[11px] font-semibold text-blue-300">{LABELS[idx]}</span>
+                  <p className="text-[11px] text-white/55 mb-2">Font size</p>
+                  <div className="grid grid-cols-6 gap-1">
+                    {SIZES.map((s, i) => {
+                      const active = s === fontSize;
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => setFontSize(s)}
+                          title={LABELS[i]}
+                          className={`flex flex-col items-center justify-center pt-1.5 pb-1 rounded-lg
+                                      transition-all duration-150
+                                      ${active
+                                        ? "bg-blue-500/20 border border-blue-400/45 text-blue-300"
+                                        : "border border-white/[.07] text-white/50 hover:bg-white/[.06] hover:text-white/80"
+                                      }`}
+                        >
+                          <span style={{ fontSize: A_PX[i], lineHeight: 1 }} className="font-bold mb-0.5">A</span>
+                          <span className="text-[8px] opacity-60">{LABELS[i]}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={5}
-                    step={1}
-                    value={idx}
-                    onChange={e => setFontSize(SIZES[Number(e.target.value)])}
-                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer
-                               bg-white/[.10]
-                               [&::-webkit-slider-thumb]:appearance-none
-                               [&::-webkit-slider-thumb]:w-4
-                               [&::-webkit-slider-thumb]:h-4
-                               [&::-webkit-slider-thumb]:rounded-full
-                               [&::-webkit-slider-thumb]:bg-gradient-to-br
-                               [&::-webkit-slider-thumb]:from-blue-400
-                               [&::-webkit-slider-thumb]:to-indigo-500
-                               [&::-webkit-slider-thumb]:shadow-[0_0_6px_rgba(96,165,250,0.6)]
-                               [&::-webkit-slider-thumb]:border-2
-                               [&::-webkit-slider-thumb]:border-white/30
-                               [&::-moz-range-thumb]:w-4
-                               [&::-moz-range-thumb]:h-4
-                               [&::-moz-range-thumb]:rounded-full
-                               [&::-moz-range-thumb]:bg-gradient-to-br
-                               [&::-moz-range-thumb]:from-blue-400
-                               [&::-moz-range-thumb]:to-indigo-500
-                               [&::-moz-range-thumb]:border-none"
-                    style={{
-                      background: `linear-gradient(to right, #3b82f6 ${idx * 20}%, ${theme === "light" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.10)"} ${idx * 20}%)`
-                    }}
-                  />
                 </>
               );
             })()}
@@ -338,13 +327,13 @@ function SettingsPopover({
 }
 
 function SettingsToggle({
-  label, on, onClick, onColor, thumbContent,
+  label, on, onClick, onColor, thumbIcon,
 }: {
   label: string;
   on: boolean;
   onClick: () => void;
   onColor: string;
-  thumbContent?: string;
+  thumbIcon?: React.ReactNode;
 }) {
   return (
     <label className="flex items-center justify-between cursor-pointer group py-1.5">
@@ -354,7 +343,7 @@ function SettingsToggle({
       <button
         onClick={onClick}
         className={`relative w-10 h-5 rounded-full transition-colors duration-300 ring-1 ring-inset
-          ${on ? onColor : "bg-white/[.10] ring-white/15"}`}
+          ${on ? onColor : "bg-white/[.12] ring-black/10"}`}
         aria-pressed={on}
       >
         <motion.span
@@ -362,12 +351,36 @@ function SettingsToggle({
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
           className="absolute top-0.5 left-0 w-4 h-4 rounded-full
                      bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] ring-1 ring-black/5
-                     flex items-center justify-center text-[9px] text-slate-700"
+                     flex items-center justify-center"
         >
-          {thumbContent ?? ""}
+          {thumbIcon}
         </motion.span>
       </button>
     </label>
+  );
+}
+
+function SunThumbIcon() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" fill="#d97706" stroke="none" />
+      <line x1="12" y1="2"    x2="12" y2="5"    />
+      <line x1="12" y1="19"   x2="12" y2="22"   />
+      <line x1="2"  y1="12"   x2="5"  y2="12"   />
+      <line x1="19" y1="12"   x2="22" y2="12"   />
+      <line x1="4.9"  y1="4.9"  x2="7"   y2="7"   />
+      <line x1="17"   y1="17"   x2="19.1" y2="19.1"/>
+      <line x1="4.9"  y1="19.1" x2="7"   y2="17"  />
+      <line x1="17"   y1="7"    x2="19.1" y2="4.9" />
+    </svg>
+  );
+}
+
+function MoonThumbIcon() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 24 24" fill="#94a3b8" stroke="none">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   );
 }
 
