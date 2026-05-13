@@ -16,14 +16,27 @@ type Tab = "translator" | "concordance";
 
 const DEFAULT = "Sobrang solid ng vibes kagabi, sana all nakapunta!";
 
-// Filipino/Taglish signal words — if a post contains at least one of these
-// alongside the slang word, it's likely using the word in its Filipino slang
-// context rather than a plain English meaning.
-const FILIPINO_SIGNAL =
-  /\b(ang|ng|sa|na|at|ay|si|ni|ko|mo|ka|kami|kayo|sila|ako|tayo|pero|kasi|lang|yung|ung|din|rin|raw|daw|pala|naman|talaga|sana|grabe|jusko|nako|bes|besh|lods|lodi|petmalu|charot|char|werpa|ganon|ganito|dito|doon|diyan|ba|ha|eh|sige|oo|hindi|wala|ano|jusko|nakaka|sobrang|sobra|parang|kahit|kaya|kuya|ate|tsaka|tol|pare|pre|bro|sis|idol|lol|haha|hahaha|omg|omfg|ngl|tbh)\b/i;
+// Immutable particles/pronouns that will never be in the slang lexicon but
+// reliably indicate Filipino/Taglish text. Kept small — the live lexicon
+// covers everything else dynamically (see hasFilipinoCOntext below).
+const BASE_FILIPINO_SIGNALS = new Set([
+  "ang","ng","sa","na","at","ay","si","ni","ko","mo","ka","kami","kayo","sila",
+  "ako","tayo","pero","kasi","lang","yung","ung","din","rin","raw","daw","pala",
+  "naman","talaga","sana","ba","ha","eh","sige","oo","hindi","wala","ano",
+  "sobrang","parang","kahit","kaya","kuya","ate","tsaka","tol","pare","pre",
+]);
 
-function hasFilipinoCOntext(text: string): boolean {
-  return FILIPINO_SIGNAL.test(text);
+// Returns a context-checker that uses the live lexicon as its primary signal.
+// Any post that contains a known slang word (besides the target) is almost
+// certainly in a Filipino slang context. Falls back to the static particle
+// list for posts where no other lexicon word appears.
+function makeContextChecker(lexiconWords: Set<string>, targetWord: string) {
+  return function hasFilipinoCOntext(text: string): boolean {
+    const tokens = text.toLowerCase().match(/[a-z'-]{2,}/g) ?? [];
+    return tokens.some(
+      (t) => t !== targetWord && (BASE_FILIPINO_SIGNALS.has(t) || lexiconWords.has(t))
+    );
+  };
 }
 const MAX_CHARS = 500;
 
@@ -71,8 +84,7 @@ export default function Translator() {
     if (!result) return;
     const id = ++exReqId.current;
     setExamples({});
-    // Fetch examples for each unique slang word AND its canonical form —
-    // canonical often has more posts to draw from than a rare variant spelling.
+
     const slangKeys = new Set<string>();
     for (const raw of result.tokens) {
       const w = raw.replace(/[.,!?'"]/g, "");
@@ -81,30 +93,35 @@ export default function Translator() {
       slangKeys.add(w);
       if (info.canonical) slangKeys.add(info.canonical);
     }
-    Promise.all(
-      [...slangKeys].map(async (word) => {
-        try {
-          // Fetch more candidates so we have room to filter after context check
-          const data = await fetchPosts(1, 20, word);
-          const texts = (data.posts ?? [])
-            .filter((p) => {
-              const t = p.text ?? "";
-              // Must contain the word
-              if (!t.toLowerCase().includes(word.toLowerCase())) return false;
-              // Must have at least one Filipino/Taglish signal — filters out posts
-              // where a word like "solid" or "level" is used in plain English.
-              return hasFilipinoCOntext(t);
-            })
-            .slice(0, 3)
-            .map((p) => p.text ?? "");
-          return [word, texts] as [string, string[]];
-        } catch {
-          return [word, []] as [string, string[]];
-        }
-      })
-    ).then((pairs) => {
+
+    // Build lexicon word set once — used by all per-word context checks.
+    // Words already in result.results are slang, but fetchLexicon gives the
+    // full dictionary so the signal set grows automatically as words are added.
+    fetchLexicon().then((lexicon) => {
+      const lexiconWords = new Set(Object.keys(lexicon).map((w) => w.toLowerCase()));
+
+      return Promise.all(
+        [...slangKeys].map(async (word) => {
+          const isSlangContext = makeContextChecker(lexiconWords, word.toLowerCase());
+          try {
+            const data = await fetchPosts(1, 20, word);
+            const texts = (data.posts ?? [])
+              .filter((p) => {
+                const t = p.text ?? "";
+                if (!t.toLowerCase().includes(word.toLowerCase())) return false;
+                return isSlangContext(t);
+              })
+              .slice(0, 3)
+              .map((p) => p.text ?? "");
+            return [word, texts] as [string, string[]];
+          } catch {
+            return [word, []] as [string, string[]];
+          }
+        })
+      );
+    }).then((pairs) => {
       if (id === exReqId.current) setExamples(Object.fromEntries(pairs));
-    });
+    }).catch(() => null);
   }, [result]);
 
   async function handleAnalyze() {
