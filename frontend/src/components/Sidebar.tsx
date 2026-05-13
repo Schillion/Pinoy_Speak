@@ -273,66 +273,66 @@ function SettingsPopover({
             thumbIcon={theme === "light" ? <SunThumbIcon /> : <MoonThumbIcon />}
           />
 
-          {/* Font size — slider with visible stop markers */}
+          {/* Font size — custom slider with stop dots on the track */}
           <div className="pt-3 mt-2 border-t border-white/[.06]">
             {(() => {
-              const SIZES = ["small","medium","large","xlarge","xxlarge","xxxlarge"] as const;
+              const SIZES  = ["small","medium","large","xlarge","xxlarge","xxxlarge"] as const;
               const LABELS = ["S","M","L","XL","2XL","3XL"];
-              const idx = SIZES.indexOf(fontSize as typeof SIZES[number]);
+              const idx    = SIZES.indexOf(fontSize as typeof SIZES[number]);
+              // Fixed 16px thumb → half = 8px. Using fixed px so dots don't
+              // shift when the root font-size changes via the slider itself.
+              const TH  = 8; // thumb half-width in px
+              const pos = (i: number) => `calc(${i} / 5 * (100% - ${TH * 2}px) + ${TH}px)`;
+              const bgTrack = theme === "light" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.10)";
               return (
                 <>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2.5">
                     <p className="text-[11px] text-white/55">Font size</p>
                     <span className="text-[11px] font-semibold text-blue-300">{LABELS[idx]}</span>
                   </div>
-                  <div className="relative">
-                    <input
-                      type="range"
-                      min={0} max={5} step={1}
-                      value={idx}
-                      onChange={e => setFontSize(SIZES[Number(e.target.value)])}
-                      className="w-full h-1.5 rounded-full appearance-none cursor-pointer
-                                 [&::-webkit-slider-thumb]:appearance-none
-                                 [&::-webkit-slider-thumb]:w-4
-                                 [&::-webkit-slider-thumb]:h-4
-                                 [&::-webkit-slider-thumb]:rounded-full
-                                 [&::-webkit-slider-thumb]:bg-gradient-to-br
-                                 [&::-webkit-slider-thumb]:from-blue-400
-                                 [&::-webkit-slider-thumb]:to-indigo-500
-                                 [&::-webkit-slider-thumb]:shadow-[0_0_6px_rgba(96,165,250,0.6)]
-                                 [&::-webkit-slider-thumb]:border-2
-                                 [&::-webkit-slider-thumb]:border-white/30
-                                 [&::-moz-range-thumb]:w-4
-                                 [&::-moz-range-thumb]:h-4
-                                 [&::-moz-range-thumb]:rounded-full
-                                 [&::-moz-range-thumb]:bg-blue-500
-                                 [&::-moz-range-thumb]:border-none"
-                      style={{
-                        background: `linear-gradient(to right, #3b82f6 ${idx * 20}%, ${theme === "light" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.10)"} ${idx * 20}%)`
-                      }}
-                    />
-                    {/* Stop dots — px-[7px] offsets for thumb half-width alignment */}
-                    <div className="flex justify-between px-[7px] pointer-events-none"
-                         style={{ marginTop: "-7px" }}>
-                      {SIZES.map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-1.5 h-1.5 rounded-full border
-                            ${i < idx
-                              ? "bg-blue-400 border-blue-300"
-                              : i === idx
-                                ? "bg-white border-white/60"
-                                : theme === "light" ? "bg-slate-300 border-slate-300" : "bg-white/20 border-white/10"
-                            }`}
-                        />
-                      ))}
-                    </div>
+
+                  {/* Slider track + dots + thumb — all absolutely positioned */}
+                  <div className="relative" style={{ height: 20 }}>
+                    {/* Full track bg */}
+                    <div className="absolute top-1/2 -translate-y-1/2 rounded-full"
+                         style={{ left: TH, right: TH, height: 6, background: bgTrack }} />
+                    {/* Filled portion */}
+                    <div className="absolute top-1/2 -translate-y-1/2 rounded-full bg-blue-500 transition-[width] duration-100"
+                         style={{ left: TH, height: 6, width: `calc(${idx} / 5 * (100% - ${TH * 2}px))` }} />
+                    {/* Stop dots — same formula as thumb, sit on the track center */}
+                    {SIZES.map((_, i) => (
+                      <div key={i}
+                           className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-100 ${
+                             i < idx
+                               ? "w-2 h-2 bg-blue-300"
+                               : i === idx
+                                 ? "hidden"
+                                 : theme === "light"
+                                   ? "w-[5px] h-[5px] bg-slate-400"
+                                   : "w-[5px] h-[5px] bg-white/30"
+                           }`}
+                           style={{ left: pos(i) }} />
+                    ))}
+                    {/* Thumb (visual only — native input handles interaction) */}
+                    <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full z-10 pointer-events-none
+                                    bg-gradient-to-br from-blue-400 to-indigo-500
+                                    shadow-[0_0_6px_rgba(96,165,250,0.6)]
+                                    border-2 border-white/30 transition-[left] duration-100"
+                         style={{ left: pos(idx), width: 16, height: 16 }} />
+                    {/* Invisible native input for interaction + a11y */}
+                    <input type="range" min={0} max={5} step={1} value={idx}
+                           onChange={e => setFontSize(SIZES[Number(e.target.value)])}
+                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                           style={{ margin: 0 }} />
                   </div>
-                  {/* Step labels */}
-                  <div className="flex justify-between px-0.5 mt-2">
+
+                  {/* Labels aligned to stop positions */}
+                  <div className="relative" style={{ height: 14, marginTop: 4 }}>
                     {LABELS.map((l, i) => (
-                      <span key={i} className={`text-[8px] leading-none
-                        ${i === idx ? "text-blue-300 font-semibold" : "text-white/30"}`}>
+                      <span key={i}
+                            className={`absolute -translate-x-1/2 text-[8px] leading-none
+                              ${i === idx ? "text-blue-300 font-semibold" : "text-white/30"}`}
+                            style={{ left: pos(i) }}>
                         {l}
                       </span>
                     ))}
