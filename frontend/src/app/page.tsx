@@ -633,10 +633,10 @@ export default function Home() {
                     const dayTotal = items.reduce((s, p) => s + p.value, 0);
                     return (
                       <div style={{
-                        background: isLight ? "rgba(248,250,252,0.22)" : "rgba(7,14,28,0.45)",
-                        backdropFilter: "blur(16px)",
-                        WebkitBackdropFilter: "blur(16px)",
-                        border: isLight ? "1px solid rgba(15,23,42,0.08)" : "1px solid rgba(255,255,255,0.07)",
+                        background: isLight ? "rgba(255,255,255,0.08)" : "rgba(7,14,28,0.45)",
+                        backdropFilter: "blur(20px)",
+                        WebkitBackdropFilter: "blur(20px)",
+                        border: isLight ? "1px solid rgba(15,23,42,0.06)" : "1px solid rgba(255,255,255,0.07)",
                         borderRadius: 12,
                         padding: "10px 14px",
                         boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.08)" : "0 4px 24px -8px rgba(0,0,0,0.5)",
