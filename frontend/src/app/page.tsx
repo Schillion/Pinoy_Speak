@@ -90,7 +90,7 @@ export default function Home() {
   const [topN, setTopN]           = useState(5);
   const [modalWord, setModalWord] = useState<string | null>(null);
   const closeModal = useCallback(() => setModalWord(null), []);
-  const topNReqId = useRef(0);
+
 
   // Wheel-zoom + drag-to-pan state for the area chart
   const [zoomDom, setZoomDom] = useState<[string, string] | null>(null);
@@ -145,12 +145,6 @@ export default function Home() {
       .catch(() => null);
   }, []);
 
-  useEffect(() => {
-    const id = ++topNReqId.current;
-    fetchTopSlang(topN)
-      .then((words) => { if (id === topNReqId.current) setTopWords(words); })
-      .catch(() => null);
-  }, [topN]);
 
   // Reset zoom + hidden-word filter when range or word count changes
   useEffect(() => {
@@ -161,8 +155,8 @@ export default function Home() {
     setHiddenWords(new Set());
   }, [range, topN]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Real per-day trends — top-N words are chosen within the selected window,
-  // so the chart reflects what was actually popular during that period.
+  // Real per-day trends — fetch all-time top-N first so the chart words always
+  // match the ranked list, then get per-day counts for those specific words.
   type TrendRow = { day: string; [word: string]: string | number };
   const [trendData, setTrendData]       = useState<TrendRow[]>([]);
   const [chartWords, setChartWords]     = useState<string[]>([]);
@@ -173,7 +167,16 @@ export default function Home() {
   useEffect(() => {
     const id = ++trendsReqId.current;
     setTrendsLoading(true);
-    fetchWordTrends(topN, range)
+
+    // Step 1: get canonical all-time top-N (same source as ranked list)
+    fetchTopSlang(topN)
+      .then((topSlangWords) => {
+        if (id !== trendsReqId.current) return Promise.reject("stale");
+        setTopWords(topSlangWords);
+        const wordNames = topSlangWords.map((w) => w.word);
+        // Step 2: get per-day counts for those exact words in the selected window
+        return fetchWordTrends(topN, range, wordNames);
+      })
       .then((res) => {
         if (id !== trendsReqId.current) return;
         setTrendsAvailable(res.available);
@@ -182,7 +185,7 @@ export default function Home() {
         lastWordsRef.current  = wordList;
         setChartWords(wordList);
         setHiddenWords(new Set());
-        if (!res.days.length) { setTrendData([]); return; }
+        if (!res.days.length) { setTrendData([]); setTrendsLoading(false); return; }
         const points: TrendRow[] = res.days.map((day, i) => {
           const row: TrendRow = { day };
           for (const w of wordList) {
@@ -193,8 +196,8 @@ export default function Home() {
         setTrendData(points);
         setTrendsLoading(false);
       })
-      .catch(() => {
-        if (id !== trendsReqId.current) return;
+      .catch((e) => {
+        if (e === "stale" || id !== trendsReqId.current) return;
         setTrendsAvailable(false);
         setTrendData([]);
         setTrendsLoading(false);

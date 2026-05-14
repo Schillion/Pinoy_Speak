@@ -47,8 +47,13 @@ export async function fetchLanguageMix(): Promise<LanguageMixResult> {
   return res.json();
 }
 
-export async function fetchWordTrends(n: number, days: number): Promise<WordTrendsResult> {
-  const params = new URLSearchParams({ n: String(n), days: String(days) });
+export async function fetchWordTrends(n: number, days: number, words?: string[]): Promise<WordTrendsResult> {
+  const params = new URLSearchParams({ days: String(days) });
+  if (words && words.length > 0) {
+    params.set("words", words.join(","));
+  } else {
+    params.set("n", String(n));
+  }
   const res = await fetch(`${base}/api/word-trends?${params}`, { cache: "no-store" });
   if (!res.ok) return { days: [], series: {}, words: [], available: false };
   return res.json();

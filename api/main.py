@@ -594,7 +594,9 @@ def top_slang(n: int = 15, period: str = "overall"):
 @app.get("/corpus-stats")
 def corpus_stats():
     counts, total = scan_corpus()
-    top = next((w for w, _ in counts.most_common(500) if w in AMBIGUOUS_SLANG_SEEDS and not is_standard_word(w)), "—")
+    # Use KNOWN_SLANG directly — AMBIGUOUS_SLANG_SEEDS + is_standard_word filtered
+    # out most words (basic, extra, legit are standard English), yielding "—".
+    top = next((w for w, _ in counts.most_common(500) if w in KNOWN_SLANG), "—")
     # Derive slang_count from lexicon() so the number is always identical to
     # what the Dictionary page shows — no risk of the two endpoints drifting.
     lex = lexicon()
