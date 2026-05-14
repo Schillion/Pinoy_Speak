@@ -88,7 +88,7 @@ export default function UpdateNotice() {
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
-                   className="text-blue-300">
+                   style={{ color: "#93c5fd" }}>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
@@ -99,7 +99,8 @@ export default function UpdateNotice() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
-              className="text-xl font-bold text-white mb-2 tracking-tight"
+              className="text-xl font-bold mb-2 tracking-tight"
+              style={{ color: "#ffffff" }}
             >
               Update Ready
             </motion.h2>
@@ -108,7 +109,8 @@ export default function UpdateNotice() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.4 }}
-              className="text-sm text-white/55 leading-relaxed mb-7"
+              className="text-sm leading-relaxed mb-7"
+              style={{ color: "rgba(255,255,255,0.55)" }}
             >
               PinoySpeak just got an update.
               <br />

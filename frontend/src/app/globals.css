@@ -291,9 +291,9 @@ html[data-theme="light"] input[type="number"].bg-transparent { color: #0f172a; }
 
 /* Badges */
 html[data-theme="light"] .badge-regular {
-  background: rgba(15,23,42,0.04);
-  border-color: rgba(15,23,42,0.10);
-  color: rgba(15,23,42,0.62);
+  background: rgba(15,23,42,0.06);
+  border-color: rgba(15,23,42,0.18);
+  color: rgba(15,23,42,0.65);
   backdrop-filter: none;
 }
 html[data-theme="light"] .badge-slang {
