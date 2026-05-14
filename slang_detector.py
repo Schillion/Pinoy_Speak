@@ -287,13 +287,10 @@ class SlangDetector:
         if clean_word in _STANDARD_FIL_BLOCKLIST or _STANDARD_FIL_PREFIX_RE.match(clean_word):
             return "standard", "Standard Filipino word — not slang."
 
-        # 1. Profanity check first (ethical gate)
-        if is_profane(clean_word):
-            return "profane", "Word is on the profanity list."
-
-        # 2. Known slang lexicon — immediate match (genuinely non-standard coinages).
-        # Also catches registered variant spellings via resolve_canonical, so
-        # char/chariz/chz resolve back to charot's entry.
+        # 1. Known slang lexicon — immediate match wins over profanity check.
+        # A word like "tanga" that is both in the slang dictionary and the
+        # profanity list should be shown as slang (it has cultural/linguistic
+        # value beyond just being offensive).
         canonical = resolve_canonical(clean_word)
         if canonical:
             formation = get_formation_type(canonical)
@@ -301,6 +298,10 @@ class SlangDetector:
             if canonical == clean_word:
                 return "slang", f"Known Filipino slang [{formation}]: {definition}"
             return "slang", f"Variant of '{canonical}' [{formation}]: {definition}"
+
+        # 2. Profanity check — only fires for words NOT in the slang lexicon.
+        if is_profane(clean_word):
+            return "profane", "Word is on the profanity list."
 
         # 3. Binaliktad auto-detection — reversed syllables of a known word.
         # detect_binaliktad relies on calamanCy's OOV check, which is loose —
