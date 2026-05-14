@@ -329,7 +329,7 @@ export default function ChatPage() {
                   <div className={`flex flex-col gap-1.5 max-w-[72%] ${m.role === "user" ? "items-end" : "items-start"}`}>
                     <div className={`rounded-2xl px-4 py-3 text-sm backdrop-blur-sm ${
                       m.role === "user"
-                        ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-tr-sm shadow-[0_0_20px_-6px_rgba(99,102,241,0.6)]"
+                        ? "bg-gradient-to-br from-blue-400 to-blue-500 text-white rounded-tr-sm shadow-[0_0_20px_-6px_rgba(96,165,250,0.45)]"
                         : "bg-white/[.05] border border-white/[.08] text-white/80 rounded-tl-sm"
                     }`}>
                       <MessageBubble content={m.content} />
