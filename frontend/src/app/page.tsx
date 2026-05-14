@@ -90,7 +90,7 @@ export default function Home() {
   const [modalWord, setModalWord] = useState<string | null>(null);
   const closeModal = useCallback(() => setModalWord(null), []);
   const topNReqId = useRef(0);
-  const TREND_WORDS = 50;
+  const TREND_WORDS = 15;
 
   // Wheel-zoom + drag-to-pan state for the area chart
   const [zoomDom, setZoomDom] = useState<[string, string] | null>(null);
@@ -430,36 +430,12 @@ export default function Home() {
 
           {/* Word pills legend */}
           {chartWords.length > 0 && (() => {
-            const visible = chartWords.filter(w => !hiddenWords.has(w));
-            const sorted  = [...chartWords].sort((a, b) => {
+            const sorted = [...chartWords].sort((a, b) => {
               const ah = hiddenWords.has(a), bh = hiddenWords.has(b);
               return ah !== bh ? (ah ? 1 : -1) : 0;
             });
             return (
               <div className="mb-3">
-                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                  <p className="text-[10px] text-white/30">
-                    Showing <span className="text-white/55 font-medium">{visible.length}</span> of{" "}
-                    <span className="text-white/55 font-medium">{chartWords.length}</span> words
-                  </p>
-                  {/* Top 10 / All segmented toggle */}
-                  <div className="flex items-center bg-white/[.03] border border-white/[.06] rounded-lg p-0.5">
-                    <button
-                      onClick={() => setHiddenWords(computeDefaultHidden(lastWordsRef.current, lastSeriesRef.current))}
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all
-                        ${hiddenWords.size > 0 ? "text-white/80 bg-white/[.08]" : "text-white/35 hover:text-white/55"}`}
-                    >
-                      Top 10
-                    </button>
-                    <button
-                      onClick={() => setHiddenWords(new Set())}
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-all
-                        ${hiddenWords.size === 0 ? "text-white/80 bg-white/[.08]" : "text-white/35 hover:text-white/55"}`}
-                    >
-                      All ({chartWords.length})
-                    </button>
-                  </div>
-                </div>
                 <div
                   className="flex flex-wrap gap-1.5 max-h-[92px] overflow-y-auto pr-1 pb-0.5"
                   onMouseLeave={() => setFocusedWord(null)}
