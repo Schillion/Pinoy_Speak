@@ -7,6 +7,7 @@ import { FALLBACK_WORDS, WordEntry } from "./_components/words-data";
 import { fetchLexicon } from "@/lib/api";
 import MessageBubble from "./_components/MessageBubble";
 import MagneticButton from "@/components/MagneticButton";
+import { useTheme } from "@/context/ThemeContext";
 
 // Game components are heavy (animations, state) and only render when their
 // tab is active. Dynamic imports keep them out of the initial Tutor bundle —
@@ -92,6 +93,8 @@ const TABS: { id: Mode; label: string; icon: string }[] = [
 ];
 
 export default function ChatPage() {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [mode, setMode]         = useState<Mode>("chat");
   const [messages, setMessages] = useState<Message[]>(makeInitialMessages);
   const [input, setInput]       = useState("");
@@ -331,7 +334,9 @@ export default function ChatPage() {
                     <div className={`rounded-2xl px-4 py-3 text-sm backdrop-blur-sm ${
                       m.role === "user"
                         ? "bg-gradient-to-br from-blue-400 to-blue-500 text-white rounded-tr-sm shadow-[0_0_20px_-6px_rgba(96,165,250,0.45)]"
-                        : "bg-white/[.05] border border-white/[.08] text-white/80 rounded-tl-sm"
+                        : isLight
+                          ? "bg-slate-100 border border-slate-200 text-slate-800 rounded-tl-sm"
+                          : "bg-white/[.05] border border-white/[.08] text-white/80 rounded-tl-sm"
                     }`}>
                       <MessageBubble content={m.content} />
                     </div>
