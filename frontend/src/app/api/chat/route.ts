@@ -243,6 +243,11 @@ function buildFallbackResponse(
     return `**${hit}**${e.pos ? ` (${e.pos})` : ""}\n\n${e.definition}\n\n${e.example ? `Example: ${e.example}\n\n` : ""}${e.origin ? `Origin: ${e.origin}\n\n` : ""}${e.plain ? `Plain English: "${e.plain}"` : ""}`;
   }
 
+  if (/^(where is|where are|where('s| is)|saan (si|ang)|who is|who('s| is)|sino si|anong nangyari|what happened|when (is|was|did)|kailan)/i.test(lower.trim())) {
+    const samples = allWords.slice(0, 3).join(", ");
+    return `Haha, hindi ako Google! 😄 I only know Filipino slang — not people, places, or news.\n\nAsk me about a slang word like **${samples}**, or say "quiz me" to test yourself!`;
+  }
+
   if (/sino ka|who are you|anong pangalan mo|what('s| is) your name|ikaw na?$/i.test(lower)) {
     return `Ako si Kuya Slang — your Filipino slang tutor! 🤙\n\nI know ${allWords.length} slang words from real Filipino social media. Ask me about any word, or say "quiz me" to test yourself!`;
   }
@@ -599,13 +604,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (reply == null) {
-    const allErrs = [groqErr, geminiErr, ollamaErr].join(" ");
-    const isRateLimit = /429|rate.?limit|quota.?exceed|RESOURCE_EXHAUSTED|tokens.?per.?day/i.test(allErrs);
-    const fallback = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
-    const note = isRateLimit
-      ? "\n\n⚠️ The AI hit its daily free-tier limit — answering from the local dictionary for now. Full AI responses reset tomorrow."
-      : "\n\n⚠️ AI is temporarily unavailable — answering from the local dictionary.";
-    reply = fallback + note;
+    reply = buildFallbackResponse(last?.content ?? "", messages.slice(0, -1), lexicon);
   }
 
   // Auto-learn — fire-and-forget. Only meaningful when an LLM is configured.
