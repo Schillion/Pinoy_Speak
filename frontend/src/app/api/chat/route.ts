@@ -432,6 +432,11 @@ const COMMON_WORDS = new Set([
   "origin","history","etymology","story","background","use","usage","context",
 ]);
 
+function normalizeRepeats(word: string): string {
+  // Collapse 3+ repeated chars to 1: "hellooo" → "hello", "hiiii" → "hi"
+  return word.replace(/(.)\1{2,}/g, "$1");
+}
+
 function detectUnknownWord(
   userMsg: string,
   lexicon: Record<string, LexiconEntry>,
@@ -442,7 +447,8 @@ function detectUnknownWord(
   for (const pat of ASK_PATTERNS) {
     const m = text.match(pat);
     if (!m) continue;
-    const word = (m[1] || "").trim().replace(/^['"]+|['"]+$/g, "");
+    const raw  = (m[1] || "").trim().replace(/^['"]+|['"]+$/g, "");
+    const word = normalizeRepeats(raw);
     if (!word || word.length < 3 || COMMON_WORDS.has(word)) continue;
     return word;  // return known words too so their definition gets injected via lookupNote
   }
@@ -456,7 +462,8 @@ function detectUnknownWord(
 
   const isQuery = /\?|database|dictionary|lexicon|dict\b|nasa\b|have\b|mayroon/i.test(text);
   for (const t of tokens) {
-    if (COMMON_WORDS.has(t)) continue;
+    const tn = normalizeRepeats(t);
+    if (COMMON_WORDS.has(t) || COMMON_WORDS.has(tn)) continue;
     if (lexicon[t]) {
       // Known word: only inject its definition when the message is clearly
       // asking about it (contains "?", "database", etc.). For casual slang
@@ -540,9 +547,9 @@ export async function POST(req: NextRequest) {
           lookupNote =
             `\n\n[SYSTEM NOTE]\n` +
             `The user is asking about "${targetWord}". It is NOT in your dictionary ` +
-            `and could not be confirmed as Filipino slang. Tell them you don't recognize it yet, ` +
-            `ask how they heard it used, and suggest "Find missed slang" or "Import from web" on ` +
-            `the Top Slang page. Do NOT invent a definition.`;
+            `and could not be confirmed as Filipino slang. Tell them you haven't encountered it yet, ` +
+            `ask how they heard it used or in what context, and say you might learn it soon. ` +
+            `Do NOT invent a definition. Do NOT mention any admin tools or pages.`;
         }
       }
     }
