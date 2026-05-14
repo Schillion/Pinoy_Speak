@@ -13,7 +13,7 @@ const NAV: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "/top-slang",  label: "Top Slang",  icon: <StarIcon />     },
   { href: "/dictionary", label: "Dictionary", icon: <BookIcon />     },
   { href: "/translator", label: "Translator", icon: <TranslateIcon />},
-  { href: "/chat",       label: "Tutor",      icon: <SparkIcon />    },
+  { href: "/tutor",      label: "Tutor",      icon: <SparkIcon />    },
 ];
 
 export default function Sidebar() {
