@@ -225,6 +225,7 @@ _STANDARD_FIL_BLOCKLIST: frozenset[str] = frozenset({
     "sweet",    # same
     "chill",    # same
     "sure",     # same
+    "feels",    # English verb "feels like" — corps matches normal usage not the slang noun
 
     # ── Common Filipino nouns (household / nature / places) ─────────────────
     "bahay",    # house
