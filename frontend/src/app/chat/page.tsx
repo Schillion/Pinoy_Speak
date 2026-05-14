@@ -418,7 +418,7 @@ export default function ChatPage() {
                   onClick={() => send(input)}
                   disabled={loading || !input.trim()}
                   strength={0.25}
-                  className="btn-primary w-auto px-5 h-12 flex-shrink-0 flex items-center gap-2"
+                  className="btn-primary w-auto px-5 h-12 flex-shrink-0 flex items-center gap-2 !shadow-none hover:!shadow-none"
                 >
                   Send
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">

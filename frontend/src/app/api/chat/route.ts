@@ -433,8 +433,7 @@ const COMMON_WORDS = new Set([
 ]);
 
 function normalizeRepeats(word: string): string {
-  // Collapse 3+ repeated chars to 1: "hellooo" → "hello", "hiiii" → "hi"
-  return word.replace(/(.)\1{2,}/g, "$1");
+  return word.replace(/(.)\1+/g, "$1");
 }
 
 function detectUnknownWord(
