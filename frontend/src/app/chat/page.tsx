@@ -310,7 +310,8 @@ export default function ChatPage() {
         {mode === "chat" && (
           <motion.div key="ch" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto space-y-5 pr-1">
+            <div className="flex-1 overflow-y-auto pr-1">
+              <div className="min-h-full flex flex-col justify-end gap-5 pb-1">
               {messages.map((m, i) => (
                 <motion.div
                   key={i}
@@ -390,6 +391,7 @@ export default function ChatPage() {
                 </motion.div>
               )}
               <div ref={bottomRef} />
+              </div>
             </div>
 
             <div className="flex-shrink-0 pt-4 border-t border-white/[.06] mt-4">
