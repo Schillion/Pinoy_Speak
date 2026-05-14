@@ -633,31 +633,32 @@ export default function Home() {
                     const dayTotal = items.reduce((s, p) => s + p.value, 0);
                     return (
                       <div style={{
-                        background: isLight ? "rgba(255,255,255,0.97)" : "rgba(7,14,28,0.96)",
-                        backdropFilter: "blur(12px)",
-                        border: isLight ? "1px solid rgba(15,23,42,0.12)" : "1px solid rgba(96,165,250,0.2)",
+                        background: isLight ? "rgba(248,250,252,0.55)" : "rgba(7,14,28,0.45)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        border: isLight ? "1px solid rgba(15,23,42,0.08)" : "1px solid rgba(255,255,255,0.07)",
                         borderRadius: 12,
                         padding: "10px 14px",
-                        boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.15)" : "0 0 30px -8px rgba(96,165,250,0.35)",
+                        boxShadow: isLight ? "0 4px 20px -6px rgba(15,23,42,0.08)" : "0 4px 24px -8px rgba(0,0,0,0.5)",
                         minWidth: 155,
                         maxWidth: 220,
                       }}>
-                        <p style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.4)", fontSize: tickFs + 1, marginBottom: 6 }}>{String(label)}</p>
+                        <p style={{ color: isLight ? "rgba(15,23,42,0.45)" : "rgba(226,232,240,0.35)", fontSize: tickFs + 1, marginBottom: 6 }}>{String(label)}</p>
                         {items.map(({ name, value, color }) => {
                           const pct = dayTotal > 0 ? Math.round((value / dayTotal) * 100) : 0;
                           return (
                             <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                               <span style={{ display: "inline-block", width: 20, height: 3, borderRadius: 99, background: color, flexShrink: 0 }} />
-                              <span style={{ color: isLight ? "rgba(15,23,42,0.85)" : "rgba(226,232,240,0.85)", fontSize: tickFs + 2, flex: 1 }}>{name}</span>
-                              <span style={{ color: isLight ? "rgba(15,23,42,0.55)" : "rgba(226,232,240,0.55)", fontSize: tickFs + 2, fontVariantNumeric: "tabular-nums" }}>{value}</span>
-                              {items.length > 1 && <span style={{ color: "rgba(255,255,255,0.22)", fontSize: tickFs - 1, minWidth: 28, textAlign: "right" }}>{pct}%</span>}
+                              <span style={{ color: isLight ? "rgba(15,23,42,0.80)" : "rgba(226,232,240,0.80)", fontSize: tickFs + 2, flex: 1 }}>{name}</span>
+                              <span style={{ color: isLight ? "rgba(15,23,42,0.50)" : "rgba(226,232,240,0.50)", fontSize: tickFs + 2, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+                              {items.length > 1 && <span style={{ color: isLight ? "rgba(15,23,42,0.30)" : "rgba(255,255,255,0.22)", fontSize: tickFs - 1, minWidth: 28, textAlign: "right" }}>{pct}%</span>}
                             </div>
                           );
                         })}
                         {items.length > 1 && (
-                          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 6, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ color: "rgba(255,255,255,0.28)", fontSize: tickFs }}>Total</span>
-                            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: tickFs + 1, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{dayTotal}</span>
+                          <div style={{ borderTop: isLight ? "1px solid rgba(15,23,42,0.07)" : "1px solid rgba(255,255,255,0.06)", marginTop: 6, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ color: isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.25)", fontSize: tickFs }}>Total</span>
+                            <span style={{ color: isLight ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.55)", fontSize: tickFs + 1, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{dayTotal}</span>
                           </div>
                         )}
                       </div>
