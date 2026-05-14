@@ -376,13 +376,6 @@ export default function Translator() {
                   const clean = token.replace(/[.,!?'"]/g, "");
                   const info  = result.results[clean];
                   const cls   = info?.classification ?? "unknown";
-                  if (profanityFilter && cls === "profane") {
-                    return (
-                      <div key={i} className="badge-censored min-w-[44px]">
-                        ****<br /><span className="text-[10px] opacity-60">hidden</span>
-                      </div>
-                    );
-                  }
                   return (
                     <div
                       key={i}
@@ -394,6 +387,7 @@ export default function Translator() {
                       <span className="text-[10px] opacity-60">
                         {cls === "slang"
                           ? (info?.canonical ? `= ${info.canonical}` : "slang")
+                          : cls === "profane" ? "profane"
                           : cls === "standard" ? "regular" : "—"}
                       </span>
                     </div>
