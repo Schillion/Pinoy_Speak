@@ -354,9 +354,12 @@ export default function ChatPage() {
                             transition={{ delay: 0.25 + si * 0.05 }}
                             whileHover={{ y: -2, scale: 1.03 }}
                             onClick={() => send(s)}
-                            className="text-xs bg-white/[.04] border border-white/[.10] rounded-full
-                                       px-3 py-1.5 text-white/50 hover:text-blue-200 hover:border-blue-400/40
-                                       hover:bg-blue-500/[.08] transition-colors"
+                            className={`text-xs rounded-full px-3 py-1.5 transition-colors
+                                       hover:text-blue-500 hover:border-blue-400/50
+                                       hover:bg-blue-500/[.08]
+                                       ${isLight
+                                         ? "bg-white border border-slate-200 text-slate-500"
+                                         : "bg-white/[.04] border border-white/[.10] text-white/50 hover:text-blue-200 hover:border-blue-400/40"}`}
                           >
                             {s}
                           </motion.button>
@@ -364,7 +367,7 @@ export default function ChatPage() {
                       </motion.div>
                     )}
 
-                    <span className="text-[10px] text-white/25 px-1">{m.time}</span>
+                    <span className={`text-[10px] px-1 ${isLight ? "text-slate-400" : "text-white/25"}`}>{m.time}</span>
                   </div>
                 </motion.div>
               ))}
@@ -415,12 +418,7 @@ export default function ChatPage() {
                   onClick={() => send(input)}
                   disabled={loading || !input.trim()}
                   strength={0.25}
-                  className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500
-                             disabled:opacity-35 disabled:hover:from-blue-500 disabled:hover:to-indigo-600
-                             text-white rounded-xl px-5 h-12 text-sm font-medium
-                             transition-colors flex-shrink-0 flex items-center gap-2
-                             shadow-[0_0_24px_-4px_rgba(99,102,241,0.75)]
-                             hover:shadow-[0_0_34px_-2px_rgba(99,102,241,0.9)]"
+                  className="btn-primary w-auto px-5 h-12 flex-shrink-0 flex items-center gap-2"
                 >
                   Send
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -428,7 +426,7 @@ export default function ChatPage() {
                   </svg>
                 </MagneticButton>
               </div>
-              <p className="text-[10px] text-white/20 mt-2 text-center">
+              <p className={`text-[10px] mt-2 text-center ${isLight ? "text-slate-400" : "text-white/20"}`}>
                 Enter to send · Shift+Enter for new line
               </p>
             </div>

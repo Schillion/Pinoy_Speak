@@ -32,10 +32,27 @@ function trendColor(z: number) {
   return "text-white/35 bg-white/[.04] border-white/[.09]";
 }
 
+const TRANSLATOR_STORAGE_KEY = "pinoypeak_translator_v1";
+
+function loadSaved(): { input: string; result: AnalyzeResponse | null } {
+  try {
+    const raw = localStorage.getItem(TRANSLATOR_STORAGE_KEY);
+    if (!raw) return { input: DEFAULT, result: null };
+    const parsed = JSON.parse(raw);
+    return {
+      input:  typeof parsed.input === "string" ? parsed.input : DEFAULT,
+      result: parsed.result ?? null,
+    };
+  } catch {
+    return { input: DEFAULT, result: null };
+  }
+}
+
 export default function Translator() {
   const [tab, setTab] = useState<Tab>("translator");
-  const [input,    setInput]    = useState(DEFAULT);
-  const [result,   setResult]   = useState<AnalyzeResponse | null>(null);
+  const saved = useRef(loadSaved());
+  const [input,    setInput]    = useState(() => saved.current.input);
+  const [result,   setResult]   = useState<AnalyzeResponse | null>(() => saved.current.result);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
   const [examples, setExamples] = useState<Record<string, string[]>>({});
@@ -52,6 +69,11 @@ export default function Translator() {
   const verifiedWords = useRef<Set<string>>(new Set());
   const autoAnalyzed = useRef(false);
 
+  // Persist input + result across navigation
+  useEffect(() => {
+    try { localStorage.setItem(TRANSLATOR_STORAGE_KEY, JSON.stringify({ input, result })); } catch { /* ignore */ }
+  }, [input, result]);
+
   // Set initial tab from ?tab= query param (so /concordance redirect lands on it)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -59,10 +81,12 @@ export default function Translator() {
     if (t === "concordance") setTab("concordance");
   }, []);
 
-  // Auto-analyze the DEFAULT sample on first load so the page isn't empty
+  // Auto-analyze the DEFAULT sample on first load so the page isn't empty.
+  // Skip if we already restored a saved result from localStorage.
   useEffect(() => {
     if (autoAnalyzed.current) return;
     autoAnalyzed.current = true;
+    if (saved.current.result) return; // already have a result — don't re-analyze
     const params = new URLSearchParams(window.location.search);
     if (params.get("tab") === "concordance") return;
     handleAnalyze();
