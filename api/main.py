@@ -301,6 +301,51 @@ def health():
     }
 
 
+# ---------------------------------------------------------------------------
+# Context-window check for ambiguous seed words
+# ---------------------------------------------------------------------------
+# Filipino articles/particles that strongly signal a word is being used as a
+# slang noun rather than a standard English verb.
+_FIL_BEFORE = frozenset({
+    "ang", "ng", "sa", "mga", "sobrang", "grabe", "daming",
+    "napaka", "super", "sobra",
+})
+_FIL_AFTER = frozenset({
+    "na", "naman", "ko", "mo", "niya", "nila", "natin", "kami",
+    "talaga", "pa", "din", "rin", "nga", "daw", "raw", "pala",
+    "kasi", "eh", "ba",
+})
+# English subjects/articles that signal standard verb/adjective usage.
+_ENG_BEFORE = frozenset({
+    "it", "this", "that", "he", "she", "they", "we", "i", "you",
+    "everything", "nothing", "something", "still", "always", "never",
+    "just", "really", "so", "the", "a", "an",
+})
+
+def _slang_context_confirmed(tokens: list[str], idx: int) -> bool:
+    """
+    For is_ambiguous seed words: return True only when surrounding tokens
+    indicate Filipino slang usage (Filipino particle before/after).
+    Defaults to False so ambiguous words are not over-classified as slang.
+    """
+    def _c(t: str) -> str:
+        import re as _re
+        return _re.sub(r"[^a-z]", "", t.lower())
+
+    prev  = _c(tokens[idx - 1]) if idx > 0 else ""
+    prev2 = _c(tokens[idx - 2]) if idx > 1 else ""
+    nxt   = _c(tokens[idx + 1]) if idx < len(tokens) - 1 else ""
+
+    if prev in _FIL_BEFORE or prev2 in _FIL_BEFORE:
+        return True   # "ang feels", "sobrang solid" → slang confirmed
+    if nxt in _FIL_AFTER:
+        return True   # "solid na", "feels ko" → slang confirmed
+    if prev in _ENG_BEFORE:
+        return False  # "it feels", "still feels" → standard English
+
+    return False      # no clear signal → conservative default
+
+
 @app.post("/analyze")
 def analyze(req: AnalyzeRequest, _ = Depends(rate_limit)):
     if not _detector or not _detector.model:
@@ -348,7 +393,7 @@ def analyze(req: AnalyzeRequest, _ = Depends(rate_limit)):
             i += 1
 
     # ── Pass 2: classify remaining single tokens ─────────────────────────────────
-    for token in final_tokens:
+    for tok_idx, token in enumerate(final_tokens):
         if " " in token:
             continue  # already handled as multi-word above
         clean_tok = token.strip(".,!?'\"")
@@ -358,6 +403,18 @@ def analyze(req: AnalyzeRequest, _ = Depends(rate_limit)):
         # Fetch neighbors once — reused by classify_word and response fields
         neighbors = wv.most_similar(clean_tok, topn=20) if clean_tok in wv else []
         classification, reason = _detector.classify_word(clean_tok, _neighbors=tuple(neighbors))
+
+        # Context gate for ambiguous seed words: require a Filipino-context
+        # signal before accepting a "slang" classification. Prevents common
+        # English words (solid, grabe, feels, etc.) from being flagged as slang
+        # when used in plain English sentences inside a Filipino text.
+        if classification == "slang":
+            canonical_key = resolve_canonical(clean_tok) or clean_tok
+            seed_meta = SEED_LEXICON.get(canonical_key) or SEED_LEXICON.get(clean_tok) or {}
+            if seed_meta.get("is_ambiguous"):
+                if not _slang_context_confirmed(final_tokens, tok_idx):
+                    classification = "standard"
+                    reason = "Ambiguous word — context suggests standard English usage here."
         z = _detector.get_burstiness(clean_tok)
 
         # Resolve alias → canonical so variants (char → charot, chariz → charot)
