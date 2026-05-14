@@ -593,10 +593,12 @@ def top_slang(n: int = 15, period: str = "overall"):
 
 @app.get("/corpus-stats")
 def corpus_stats():
-    counts, total = scan_corpus()
-    # Use KNOWN_SLANG directly — AMBIGUOUS_SLANG_SEEDS + is_standard_word filtered
-    # out most words (basic, extra, legit are standard English), yielding "—".
-    top = next((w for w, _ in counts.most_common(500) if w in KNOWN_SLANG), "—")
+    _, total = scan_corpus()
+    # Re-use get_top_slang (same function as /top-slang ranked list) so the
+    # top word here is always identical to rank #1 on the Top Slang page.
+    # Falls back to "—" when the model isn't loaded yet.
+    top_list = get_top_slang(_detector.model, 1) if (_detector and _detector.model) else []
+    top = top_list[0]["word"] if top_list else "—"
     # Derive slang_count from lexicon() so the number is always identical to
     # what the Dictionary page shows — no risk of the two endpoints drifting.
     lex = lexicon()
