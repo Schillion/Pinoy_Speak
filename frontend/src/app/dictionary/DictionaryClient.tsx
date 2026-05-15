@@ -184,6 +184,30 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
     sectionRefs.current[letter]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const exportCSV = useCallback(() => {
+    const rows: string[][] = [["word", "pos", "formation_type", "definition", "plain_english", "example", "origin"]];
+    const all = Object.values(grouped).flat().sort((a, b) => a.word.localeCompare(b.word));
+    for (const e of all) {
+      rows.push([
+        e.word,
+        e.pos ?? "",
+        e.formation_type ?? "",
+        e.definition ?? "",
+        e.plain ?? "",
+        e.example ?? "",
+        e.origin ?? "",
+      ]);
+    }
+    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pinoyspeak_dictionary_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [grouped]);
+
   return (
     <div>
       <AnimatePresence>
@@ -218,6 +242,20 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
 
         {/* Grow-the-dictionary actions */}
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={exportCSV}
+            title="Download the visible dictionary entries as a CSV file"
+            className="btn-ghost w-auto px-3 md:px-4 py-2 text-xs md:text-sm flex items-center gap-1.5 md:gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </button>
           <div className="relative">
           <button
             onClick={runImport}
