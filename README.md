@@ -16,45 +16,63 @@
 
 ## What is PinoySpeak?
 
-PinoySpeak is a full-stack web application that **autonomously discovers, classifies, and defines Filipino slang** from social media. It continuously scrapes Reddit communities, trains a FastText embedding model on the collected corpus, and uses heuristic + LLM pipelines to detect emerging slang in real time.
+PinoySpeak is a full-stack web application that **autonomously discovers, classifies, and defines Filipino slang** from social media. It continuously scrapes 15 Filipino Reddit communities and YouTube comments, trains a FastText embedding model on the collected corpus, and uses a multi-step NLP + LLM pipeline to detect emerging slang in real time.
 
-Unlike static slang dictionaries, PinoySpeak **learns on its own** — new slang terms are detected through temporal burstiness analysis and semantic shift detection, then verified and enriched with definitions via Google Gemini.
+Unlike static slang dictionaries, PinoySpeak **learns on its own** — new slang terms are detected through temporal burstiness analysis and semantic shift detection, then verified and enriched with definitions via LLM.
+
+**Live at [pinoyspeak.vercel.app](https://pinoyspeak.vercel.app)**
 
 ---
 
 ## Features
 
 ### 🔍 Real-Time Slang Analyzer
-Paste any Taglish sentence and instantly see each word classified as **standard**, **slang**, **profane**, or **unknown** — with explanations of *why* the system flagged it (e.g., "Novel word with high trend score Z=3.42").
+Paste any Taglish sentence and instantly see each word classified as **standard**, **slang**, **profane**, or **unknown** — with explanations of *why* the system flagged it. A context-window gate checks surrounding Filipino particles before labeling ambiguous words (e.g. *bet*, *basic*, *solid*) as slang.
 
 ### 📖 Living Dictionary
-A searchable, server-side-rendered dictionary of all known Filipino slang with:
-- Definitions, example sentences, and formation types (Binaliktad, Jejemon, abbreviation, etc.)
+A searchable, server-side-rendered dictionary of all corpus-attested Filipino slang (~79 active entries) with:
+- Definitions, example sentences, plain-English glosses, and formation types
 - Variant spelling resolution (`chariz` → `charot`, `sanaol` → `sana all`)
-- Fuzzy search for misspellings
+- CSV export of the full dictionary
+- "What counts as slang?" criteria guide built in
 
 ### 📊 Word Trend Dashboard
-Interactive Recharts-powered visualizations showing:
+Interactive Recharts visualizations showing:
 - Daily post volume across the scraped corpus
 - Language mix breakdown (Tagalog vs English vs code-switched)
-- Top trending slang with corpus frequency counts
+- Top trending slang with corpus frequency counts and time-series charts
 
-### 💬 Slang Tutor Chatbot
+### 💬 Kuya Slang AI Tutor (`/tutor`)
 An AI-powered conversational tutor that teaches Filipino slang through:
-- Natural dialogue with context-aware responses
+- Natural dialogue with context-aware responses grounded in the live lexicon
 - Built-in quiz games, flashcards, and word-matching challenges
-- Powered by Google Gemini (free tier) with a rule-based fallback
+- RAG-powered lookup so responses are always based on verified dictionary entries
+- Auto-learns new slang encountered in conversation
 
 ### 🌐 Concordance Search
-Search for any word across the entire scraped corpus and see it in context — the actual Reddit posts where it appeared, with dates and engagement metrics.
+Search for any word across the entire scraped corpus and see it in context — the actual posts where it appeared, with dates.
 
 ### 🔄 Autonomous Learning Pipeline
 A background daemon that runs continuously:
-1. **Scrapes** 40+ Filipino subreddits (new, hot, rising, top)
-2. **Deduplicates** and stores posts in SQLite
-3. **Retrains** the FastText model incrementally every 300 new posts
-4. **Detects** novel slang via burstiness Z-scores + semantic shift analysis
+1. **Scrapes** 15 Filipino Reddit communities every 10 minutes + YouTube comments hourly
+2. **Deduplicates** and stores posts in SQLite (175,000+ posts)
+3. **Retrains** the FastText model incrementally when corpus grows ≥ 200 KB
+4. **Detects** novel slang via burstiness Z-scores (novel: Z > 2.0, semantic shift: Z > 1.8)
 5. **Enriches** candidates with LLM-generated definitions and metadata
+
+---
+
+## What Makes a Word Count as Slang?
+
+A word must pass at least one of three criteria:
+
+| Criterion | Threshold | Example |
+|---|---|---|
+| **Lexical novelty** — absent from standard dictionaries and tokenizes into 2+ subwords | n/a | *shookt*, *petmalu*, *omsim* |
+| **Burstiness** — daily frequency spikes vs. historical average | Z > 2.0 | *awit*, *bet*, *slay* |
+| **Semantic shift** — known word used with a new meaning in Filipino context | Z > 1.8 | *ghost* (ignore), *solid* (reliable), *mood* (relatable) |
+
+**False positive guard:** Morphological prefix filter blocks conjugated Tagalog verbs (`naka-`, `napaka-`, `nag-`, `pinaka-`). A context-window gate prevents ambiguous English-borrowed words from being labeled slang in English sentences.
 
 ---
 
@@ -65,10 +83,12 @@ A background daemon that runs continuously:
 |---|---|
 | API Framework | FastAPI + Uvicorn |
 | NLP Model | FastText (Gensim) |
-| Language Processing | calamanCy (Filipino spaCy) |
+| Language Processing | calamanCy (Tagalog spaCy) + jcblaise/roberta-tagalog-base |
 | Database | SQLite |
-| LLM Integration | Google Gemini API |
-| Scraping | Reddit JSON API + ThreadPoolExecutor |
+| LLM — Enrichment pipeline | Google Gemini (primary) → Groq Llama 3.1 8B → Ollama (local) |
+| LLM — Tutor chatbot | Groq Llama 3.3 70B (primary) → Gemini 2.0 Flash |
+| Scraping | Reddit PRAW + YouTube Data API |
+| Vector search | Custom RAG store (lexicon embeddings) |
 
 ### Frontend (TypeScript)
 | Component | Technology |
@@ -86,7 +106,7 @@ A background daemon that runs continuously:
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- A [Google Gemini API key](https://aistudio.google.com/app/apikey) (free, optional — enables the AI tutor)
+- A [Groq API key](https://console.groq.com) or [Google Gemini API key](https://aistudio.google.com/app/apikey) (free, optional — enables the AI tutor and enrichment)
 
 ### 1. Clone the repository
 ```bash
@@ -148,8 +168,9 @@ Open [http://localhost:3000](http://localhost:3000) and start exploring Filipino
 │  │ Detector │  │ Service      │  │ Learner Daemon   │  │
 │  │          │  │              │  │                  │  │
 │  │ FastText │  │ Fuzzy Match  │  │ Reddit Scraper   │  │
-│  │ Burstiness│ │ Variant Res. │  │ Model Retrainer  │  │
-│  │ Sem.Shift│  │ Multi-word   │  │ LLM Enricher    │  │
+│  │ Burstiness│ │ Variant Res. │  │ YouTube Scraper  │  │
+│  │ Sem.Shift│  │ RAG Store    │  │ Model Retrainer  │  │
+│  │ Ctx.Gate │  │ Multi-word   │  │ LLM Enricher     │  │
 │  └────┬─────┘  └──────┬───────┘  └────────┬─────────┘  │
 │       │               │                   │             │
 │       └───────────────┼───────────────────┘             │
@@ -157,7 +178,7 @@ Open [http://localhost:3000](http://localhost:3000) and start exploring Filipino
 │              ┌─────────────────┐                        │
 │              │   SQLite DB     │                        │
 │              │   corpus.db     │                        │
-│              │   (32K+ posts)  │                        │
+│              │  (175K+ posts)  │                        │
 │              └─────────────────┘                        │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -166,9 +187,9 @@ Open [http://localhost:3000](http://localhost:3000) and start exploring Filipino
 
 ## Deployment
 
-PinoySpeak can be deployed for free using:
-- **Vercel** (frontend) — auto-detects Next.js, zero config
-- **Fly.io** (backend) — persistent volumes for SQLite + ML models
+PinoySpeak is deployed for free using:
+- **Vercel** (frontend) — auto-detects Next.js, zero config, auto-deploys on push to `main`
+- **Fly.io** (backend) — persistent volumes for SQLite + ML models, auto-deploys via GitHub Actions on backend file changes
 
 See the [Deployment Guide](DEPLOYMENT_GUIDE.md) for step-by-step instructions.
 
@@ -181,25 +202,30 @@ PinoySpeak/
 ├── api/
 │   ├── main.py              # FastAPI app, endpoints, background learner
 │   ├── corpus_utils.py      # SQLite corpus queries, top-slang detection
+│   ├── rag_store.py         # Vector index for lexicon semantic search
 │   └── online_slang_sources.py  # Web scraper for slang lists
 ├── frontend/
 │   └── src/
 │       ├── app/
 │       │   ├── page.tsx         # Dashboard (word trends, metrics)
-│       │   ├── dictionary/      # SSR dictionary page
-│       │   ├── chat/            # Slang tutor chatbot
+│       │   ├── dictionary/      # SSR dictionary page + CSV export
+│       │   ├── tutor/           # Kuya Slang AI tutor chatbot
 │       │   ├── translator/      # Sentence analyzer
 │       │   ├── concordance/     # Corpus search
-│       │   └── top-slang/       # Trending slang leaderboard
+│       │   ├── top-slang/       # Trending slang leaderboard
+│       │   └── about/           # About + how slang detection works
 │       └── components/          # Sidebar, cards, animations
-├── data_collection.py       # Reddit scraping engine
+├── data_collection.py       # Reddit scraping engine (15 subreddits)
+├── youtube_scraper.py       # YouTube comment scraping (hourly)
 ├── model_pipeline.py        # FastText training (full + incremental)
 ├── slang_detector.py        # Classification: burstiness + semantic shift
 ├── slang_enricher.py        # LLM-powered definition generation
 ├── dictionary_service.py    # Lexicon, variant resolution, fuzzy search
 ├── automate.py              # Continuous scrape → train loop
 └── data/
-    └── corpus.db            # SQLite database (generated at runtime)
+    ├── corpus.db            # SQLite database (generated at runtime)
+    ├── slang_seeds.json     # 102 manually curated seed entries
+    └── discovered_slang.json  # Autonomously discovered entries
 ```
 
 ---
