@@ -20,6 +20,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
   const [search,  setSearch]  = useState("");
   const [selected, setSelected] = useState<{ word: SlangWord; anchor: { x: number; y: number } | null } | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [showCriteria, setShowCriteria] = useState(false);
   const [sweeping,  setSweeping]  = useState(false);
   const [importing, setImporting] = useState(false);
   const [growMsg,     setGrowMsg]     = useState<string | null>(null);
@@ -220,6 +221,7 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
           />
         )}
         {showGuide && <FormationGuide onClose={() => setShowGuide(false)} />}
+        {showCriteria && <CriteriaGuide onClose={() => setShowCriteria(false)} />}
       </AnimatePresence>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -403,6 +405,13 @@ export default function DictionaryClient({ initialLexicon }: { initialLexicon: R
               {" "}of {Object.keys(lexicon).length} entries
               {q && <span className="ml-1 italic">match &ldquo;{search}&rdquo;</span>}
             </p>
+            <button
+              onClick={() => setShowCriteria(true)}
+              title="What makes a word count as slang?"
+              className="flex-shrink-0 w-6 h-6 rounded-full border border-purple-400/40
+                         text-purple-300/70 hover:text-purple-200 hover:border-purple-400/70
+                         text-[11px] font-bold transition-colors flex items-center justify-center"
+            >★</button>
             <button
               onClick={() => setShowGuide(true)}
               title="Formation types guide"
@@ -672,6 +681,95 @@ function FormationGuide({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           ))}
+          <div className="pb-2" />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function CriteriaGuide({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 340, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex flex-col w-full max-w-lg max-h-[88vh] overflow-hidden
+                   bg-gradient-to-br from-[#0a1424] to-[#070d1a]
+                   border border-white/[.08] shadow-[0_0_80px_-20px_rgba(168,85,247,0.4)]
+                   rounded-t-3xl sm:rounded-3xl"
+      >
+        <div className="sm:hidden flex justify-center pt-2 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
+        </div>
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+
+        <div className="flex items-center justify-between px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-white/[.06] flex-shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-white/90">What counts as slang?</h2>
+            <p className="text-xs text-white/45 mt-0.5">How the system decides if a word belongs here</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full border border-white/[.08] text-white/45
+                       hover:text-white/80 hover:border-white/20 transition-colors
+                       flex items-center justify-center text-lg leading-none"
+          >×</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 px-5 sm:px-7 py-5 space-y-5">
+          <p className="text-xs text-white/50 leading-relaxed">
+            A word must pass at least one of these three criteria. All three are checked automatically on every scrape cycle.
+          </p>
+
+          {[
+            {
+              num: "1",
+              color: "blue",
+              title: "Lexical novelty",
+              body: "The word is absent from standard Filipino and English dictionaries and gets broken into two or more pieces by the RoBERTa-Tagalog tokenizer — a signal it isn't standard vocabulary.",
+              example: "shookt, petmalu, omsim",
+            },
+            {
+              num: "2",
+              color: "purple",
+              title: "Burstiness  (Z-score > 2.0)",
+              body: "The word's daily usage is compared against its own historical average. A spike of more than 2 standard deviations flags it as trending — catching words that go viral rather than words that were always around.",
+              example: "awit, bet, slay",
+            },
+            {
+              num: "3",
+              color: "cyan",
+              title: "Semantic shift  (Z-score > 1.8)",
+              body: "For words already in standard dictionaries, the system checks whether their meaning in Filipino social media has drifted from the original definition.",
+              example: "ghost (ignore), solid (reliable), mood (relatable)",
+            },
+          ].map(({ num, color, title, body, example }) => (
+            <div key={num} className="flex gap-3">
+              <span className={`flex-shrink-0 w-7 h-7 rounded-lg
+                text-${color}-300 bg-${color}-500/[.15] border border-${color}-400/30
+                text-xs font-bold flex items-center justify-center`}>{num}</span>
+              <div>
+                <p className="text-sm font-medium text-white/85">{title}</p>
+                <p className="text-xs text-white/50 leading-relaxed mt-0.5">{body}</p>
+                <p className="text-[11px] text-white/30 mt-1 italic">e.g. {example}</p>
+              </div>
+            </div>
+          ))}
+
+          <div className="pt-3 border-t border-white/[.06]">
+            <p className="text-xs text-white/40 leading-relaxed">
+              <span className="text-white/60 font-medium">False positive guard</span> — Conjugated
+              Tagalog verbs (<em>naka-</em>, <em>napaka-</em>, <em>nag-</em>, <em>pinaka-</em>…) are
+              always blocked. Ambiguous words like <em>bet</em> or <em>basic</em> are only labeled
+              slang when Filipino particles appear nearby in the same sentence.
+            </p>
+          </div>
           <div className="pb-2" />
         </div>
       </motion.div>

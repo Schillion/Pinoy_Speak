@@ -115,6 +115,66 @@ export default function AboutPage() {
         </div>
       </motion.div>
 
+      {/* How a word qualifies as slang */}
+      <motion.div variants={fadeUp} className="card p-6 mb-6">
+        <p className="text-[11px] text-white/35 uppercase tracking-widest mb-3">
+          What makes a word count as slang?
+        </p>
+        <p className="text-sm text-white/55 leading-relaxed mb-4">
+          A word must pass at least one of three criteria before it enters the dictionary.
+          All three are checked automatically on every scrape cycle.
+        </p>
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-blue-500/[.15] border border-blue-400/30
+                             text-blue-300 text-xs font-bold flex items-center justify-center">1</span>
+            <div>
+              <p className="text-sm font-medium text-white/85">Lexical novelty</p>
+              <p className="text-xs text-white/50 leading-relaxed mt-0.5">
+                The word is absent from standard Filipino and English dictionaries and gets broken into
+                two or more pieces by the RoBERTa-Tagalog tokenizer — a signal that it isn&apos;t
+                standard vocabulary. Words like <em>shookt</em>, <em>petmalu</em>, or <em>omsim</em>
+                pass this test easily.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-purple-500/[.15] border border-purple-400/30
+                             text-purple-300 text-xs font-bold flex items-center justify-center">2</span>
+            <div>
+              <p className="text-sm font-medium text-white/85">Burstiness (Z-score &gt; 2.0)</p>
+              <p className="text-xs text-white/50 leading-relaxed mt-0.5">
+                The word&apos;s daily usage frequency is compared against its own historical average.
+                If it spikes more than 2 standard deviations above normal, it&apos;s flagged as trending.
+                This catches words that go viral rather than words that were always around.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-cyan-500/[.15] border border-cyan-400/30
+                             text-cyan-300 text-xs font-bold flex items-center justify-center">3</span>
+            <div>
+              <p className="text-sm font-medium text-white/85">Semantic shift (Z-score &gt; 1.8)</p>
+              <p className="text-xs text-white/50 leading-relaxed mt-0.5">
+                For words that already exist in standard dictionaries, the system checks whether their
+                usage context in Filipino social media has drifted from their original meaning.
+                <em> Bet</em> (wagering → agreement), <em>ghost</em> (apparition → ignoring someone),
+                and <em>solid</em> (physical state → reliable/great) are examples of this shift.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-white/[.06]">
+          <p className="text-xs text-white/40 leading-relaxed">
+            <span className="text-white/60 font-medium">False positive guard</span> — A morphological
+            filter blocks conjugated Tagalog verbs (words starting with <em>naka-</em>, <em>napaka-</em>,
+            <em>nag-</em>, <em>pinaka-</em>, etc.) from ever being flagged. A context-window check
+            handles ambiguous words like <em>bet</em> or <em>basic</em> that are only slang when
+            surrounded by Filipino particles — in English sentences they are left as-is.
+          </p>
+        </div>
+      </motion.div>
+
       {/* Data & Privacy */}
       <motion.div variants={fadeUp} className="card p-6 mb-6">
         <p className="text-[11px] text-white/35 uppercase tracking-widest mb-3">Data &amp; Privacy</p>
