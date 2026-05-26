@@ -1,0 +1,103 @@
+\section{SUMMARY AND CONCLUSION}
+
+\subsection{Summary}
+
+This study developed and evaluated \textit{Pinoy Speak}, a
+deployed full-stack system for tracking, organizing, and
+explaining informal Filipino and Taglish slang. The system
+addresses the limitations of static dictionaries by
+continuously collecting public online text, identifying
+candidate slang terms, enriching verified entries, and
+presenting them through user-facing learning tools.
+
+The current implementation archives 175,481 records from
+Reddit, YouTube comments, and user chat interactions. It
+maintains approximately 104 verified slang entries composed
+of seed entries and dynamically discovered terms. The system
+uses a multi-stage NLP pipeline that combines calamanCy
+tokenization, dictionary gating, subword novelty signals,
+FastText-based similarity support, temporal burstiness
+analysis, morphological filtering, and context-window
+disambiguation. These components allow the system to detect
+both novel out-of-vocabulary slang and known words that may
+be undergoing semantic shift.
+
+\subsection{Conclusion}
+
+The evaluation shows that the system is promising but still
+requires iterative human validation. The 79-entry lexicon
+validation produced strong ratings for definition correctness
+(4.83/5) and example naturalness (4.75/5). Most item-level
+judgments were marked correct or acceptable, but validators
+also identified entries that need revision, especially cases
+where the word may be ordinary Filipino vocabulary, borrowed
+English, or a context-dependent expression rather than clear
+slang. This confirms that human review remains necessary for
+maintaining a reliable living dictionary.
+
+The 36-response consented beta usability evaluation showed
+positive user acceptance. The Dictionary received the highest
+module usability rating at 9.36 out of 10, followed by the
+Tutor at 9.33, Navigation Flow at 9.14, Analyzer or Translator
+at 9.00, Top Slang at 8.85, and Dashboard or Word Popularity
+at 8.58. In addition, 86.11\% of respondents reported
+learning at least one new slang word or expression from the
+system.
+
+Overall, the study shows that informal Filipino and Taglish
+slang can be modeled as dynamic linguistic data rather than
+treated merely as noise. By integrating corpus-based trend
+analysis, contextual disambiguation, LLM-assisted enrichment,
+human lexicon validation, and an educational web interface,
+\textit{Pinoy Speak} provides an application-oriented
+contribution to Filipino NLP and digital language learning.
+
+\subsection{Recommendations}
+
+Although the implemented system achieved its main objectives,
+several improvements are recommended for future work.
+
+First, the corpus should be expanded to include more regional
+Filipino languages, dialectal varieties, and platform sources.
+The current corpus is useful for detecting slang from selected
+high-activity online communities, but it does not represent
+all Filipino speakers or all regional forms of informal
+language.
+
+Second, lexicon validation should be expanded. The current
+validation provided three ratings per term, which is useful
+for initial checking, but future versions should include more
+annotators and clearer annotation guidelines. Priority should
+be given to entries flagged by validators, including terms
+with unclear slang status, incorrect definitions, weak
+examples, or questionable formation labels.
+
+Third, the system should improve its handling of ambiguous
+and borrowed words. Validator comments showed that terms such
+as \textit{basic}, \textit{dead}, \textit{legit},
+\textit{savage}, \textit{shook}, and \textit{shookt} require
+stronger explanation of semantic shift, borrowing, and local
+usage.
+
+Fourth, the user interface should refine chart interactions,
+dictionary navigation, and tutor activities. Usability
+feedback suggested clearer graph controls, better loading
+indicators, more natural tutor responses, and separate quiz
+or flashcard features.
+
+Finally, future evaluation should include more formal
+computational metrics such as precision, recall,
+false-positive rate, false-negative rate, and
+inter-annotator agreement. These measures would strengthen
+the evidence for system accuracy beyond usability ratings and
+initial human validation.
+
+\subsection{Final Remarks}
+
+\textit{Pinoy Speak} demonstrates that Filipino internet slang
+can be documented through a combination of computational
+detection, human validation, and interactive presentation.
+The system is not intended to replace expert linguistic
+judgment. Rather, it serves as a practical tool for tracking
+emerging expressions, helping users understand context, and
+supporting future work in low-resource Filipino NLP.

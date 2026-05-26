@@ -1,0 +1,202 @@
+% ============================================================
+%  Pinoy Speak — UPLB ICS Special Problem Manuscript
+%  Document class: icsthesis (UPLB ICS official template)
+%  To compile: pdflatex > bibtex > pdflatex > pdflatex
+% ============================================================
+
+\documentclass{icsthesis}
+
+% --- Additional packages needed for this manuscript ---
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ============================================================
+%  DOCUMENT METADATA — fill in or confirm with adviser
+% ============================================================
+\renewcommand{\TITLE}{PINOY SPEAK: A TREND ANALYSIS AND CONTEXTUAL LEXICON SYSTEM FOR INFORMAL FILIPINO TEXT}
+\renewcommand{\AUTHOR}{CARL TIMOTHY E. CLEMENTE}
+\renewcommand{\DEGREE}{BACHELOR OF SCIENCE}
+\renewcommand{\MAJOR}{Computer Science}
+\renewcommand{\MONTH}{MAY}       % TODO: confirm month of signing/submission
+\renewcommand{\YEAR}{2026}       % TODO: confirm year
+
+% ============================================================
+\begin{document}
+
+  % ----------------------------------------------------------
+  %  FRONT MATTER
+  % ----------------------------------------------------------
+  \begin{frontmatter}
+
+    % Title page (auto-generated from metadata above)
+    \maketitle
+
+    % ----------------------------------------------------------
+    %  APPROVAL / SIGNATURE PAGE
+    %  TODO: Replace all placeholder names and titles below
+    %        with the confirmed signatories from your adviser.
+    %  NOTE: If there is a GitHub/repository access statement
+    %        required on this page, add it before \addsignature.
+    % ----------------------------------------------------------
+    \begin{approvalpage}
+      The special problem paper hereto attached entitled \TITLE,
+      prepared and submitted by \AUTHOR, in partial fulfillment
+      of the requirements for the degree of \DEGREE\ (\MAJOR)
+      is hereby accepted.
+
+      % TODO: Add panel/committee members if required.
+      %       Remove or adjust the multicols block as needed.
+      \begin{multicols}{2}
+        \centering
+        \addsignature{TODO: PANEL MEMBER NAME}{Member, Guidance Committee}
+        \columnbreak
+        \addsignature{TODO: PANEL MEMBER NAME}{Member, Guidance Committee}
+      \end{multicols}
+
+      % TODO: Replace with your adviser's full name and title.
+      \addsignature{CONCEPCION L. KHAN}{Adviser, Guidance Committee}
+
+      Accepted in partial fulfillment of the requirements for
+      the degree of \DEGREE\ (\MAJOR).
+
+      % TODO: Replace with ICS Director's full name and title.
+      \addsignature{TODO: DIRECTOR NAME}{Director, Institute of Computer Science\\University of the Philippines Los Ba\~{n}os}
+
+      % TODO: Add Dean signature if required by your department.
+      % \addsignature{TODO: DEAN NAME}{Dean, College of Arts and Sciences\\University of the Philippines Los Ba\~{n}os}
+
+      % ----------------------------------------------------------
+      %  REPOSITORY / GITHUB ACCESS STATEMENT (placeholder)
+      %  TODO: Ask your adviser whether a formal access statement
+      %        is needed here and what the exact wording should be.
+      %  Sample wording (modify as directed):
+      %  "The source code and supporting materials for this Special
+      %   Problem are available at:
+      %   https://github.com/Schillion/Pinoy\_Speak"
+      % ----------------------------------------------------------
+
+    \end{approvalpage}
+
+    % ----------------------------------------------------------
+    %  BIOGRAPHICAL SKETCH
+    %  TODO: Replace the placeholder paragraph with your actual
+    %        biographical information. Must not exceed one page.
+    % ----------------------------------------------------------
+    \begin{biosketch}
+      % TODO: Write your biographical sketch here.
+      % Example structure:
+      %
+      % CARL TIMOTHY E. CLEMENTE was born on [DATE] in [PLACE].
+      % He completed his primary education at [SCHOOL] in [YEAR]
+      % and his secondary education at [SCHOOL] in [YEAR].
+      % He is currently enrolled in the Bachelor of Science in
+      % Computer Science program at the University of the
+      % Philippines Los Ba\~{n}os, where he expects to graduate
+      % in [YEAR].
+      %
+      % [Add relevant academic achievements, awards, or
+      %  extracurricular activities as appropriate.]
+
+      TODO: Insert biographical sketch here. Must not exceed one page.
+
+      \addauthorsignaturefield
+    \end{biosketch}
+
+    % ----------------------------------------------------------
+    %  ACKNOWLEDGEMENT
+    %  TODO: Write your acknowledgements. Must not exceed one page.
+    % ----------------------------------------------------------
+    \begin{acknowledgement}
+      % TODO: Insert acknowledgement text here.
+      % Typical sections to include:
+      %   - Adviser and guidance committee
+      %   - Validators and beta testers
+      %   - Family and friends
+      %   - Any funding or institutional support
+
+      TODO: Insert acknowledgement here. Must not exceed one page.
+    \end{acknowledgement}
+
+    % Auto-generated table of contents
+    \maketableofcontents
+
+    % Auto-generated list of tables
+    \makelistoftables
+
+    % Auto-generated list of figures
+    \makelistoffigures
+
+    % ----------------------------------------------------------
+    %  ABSTRACT
+    %  Format: Author, Institution, Month Year. Title.
+    %          Major Professor: Name.
+    %          [Body of abstract — must not exceed one page.]
+    % ----------------------------------------------------------
+    \begin{abstractwithpageno}
+      \\
+      \textbf{\AUTHOR}, University of the Philippines Los Ba\~{n}os,
+      \MONTH\ \YEAR. \textbf{\TITLE}\\
+      % TODO: Confirm adviser name and title for the abstract header.
+      Major Professor: CONCEPCION L. KHAN\\
+
+      Informal Filipino and Taglish evolve rapidly in online
+      spaces, making them difficult to process using static
+      dictionaries and conventional Natural Language Processing
+      (NLP) resources. This study presents \textit{Pinoy Speak},
+      a deployed full-stack system for detecting, organizing, and
+      explaining emerging Filipino internet slang. The system
+      collects public text from selected Filipino Reddit
+      communities, YouTube comments, and user chat interactions.
+      As of the current implementation, it has archived 175,481
+      records and maintains approximately 104 verified slang
+      entries. Candidate terms are processed through a pipeline
+      that combines calamanCy tokenization, subword novelty
+      signals, FastText nearest-neighbor evidence, temporal
+      burstiness analysis, morphological filtering, and
+      context-window disambiguation for ambiguous slang words.
+      Verified candidates are enriched through a separate LLM
+      pipeline using Google Gemini, Groq Llama, and Ollama, while
+      the user-facing ``Kuya Slang'' tutor uses
+      retrieval-augmented access to the live lexicon. Evaluation
+      consisted of a 79-entry lexicon validation with three
+      ratings per entry and a 36-response consented beta
+      usability survey. Lexicon validation produced high
+      definition correctness ratings (mean = 4.83/5) and example
+      naturalness ratings (mean = 4.75/5), while beta usability
+      results showed strong user acceptance across the dictionary,
+      tutor, analyzer, navigation, and trend modules.
+
+      \vspace{1em}
+      \noindent\textit{Keywords:} Informal Filipino, Taglish,
+      slang detection, lexical trends, natural language
+      processing, FastText, calamanCy, retrieval-augmented
+      generation.
+
+    \end{abstractwithpageno}
+
+  \end{frontmatter}
+
+  % ----------------------------------------------------------
+  %  MAIN BODY
+  % ----------------------------------------------------------
+  \begin{mainmatter}
+
+    \input{sections/1_introduction}
+    \input{sections/2_literature_review}
+    \input{sections/3_methodology}
+    \input{sections/4_results}
+    \input{sections/5_conclusion}
+
+    % Bibliography — parameter is the .bib filename without extension
+    \makereferences{references}
+
+  \end{mainmatter}
+
+\end{document}
