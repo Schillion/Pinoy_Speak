@@ -2,140 +2,46 @@
 
 \subsection{Code-Switching and Taglish}
 
-Code-switching is a common feature of multilingual
-communities. \citeA{b2} describes code-switching as a systematic linguistic
-practice rather than a random mixture of languages. In the Philippine setting, Tagalog-English
-code-switching, commonly referred to as Taglish, has been
-described as a meaningful mode of discourse that reflects
-social context, identity, and communicative purpose
-\cite{b1,b3}.
+Code-switching is a common feature of multilingual communities. \citeA{b2} describes code-switching as a systematic linguistic practice rather than a random mixture of languages. In the Philippine setting, Tagalog-English code-switching, commonly referred to as Taglish, has been described as a meaningful mode of discourse that reflects social context, identity, and communicative purpose \cite{b1,b3}.
 
-For NLP systems, Taglish is difficult because it combines
-tokens, grammatical structures, and discourse cues from more
-than one language. A sentence may contain English content
-words, Filipino function words, localized slang, and
-non-standard spelling in a single utterance. This makes it
-challenging for tools trained only on formal Filipino or formal
-English to correctly interpret meaning.
+For NLP systems, Taglish is difficult because it combines tokens, grammatical structures, and discourse cues from more than one language. A sentence may contain English content words, Filipino function words, localized slang, and non-standard spelling in a single utterance. This makes it challenging for tools trained only on formal Filipino or formal English to correctly interpret meaning.
 
 \subsection{Informal Language and Internet Slang}
 
-Internet communication encourages rapid lexical innovation.
-\citeA{b4} notes that digital environments create new forms of
-written expression because users adapt language to speed,
-identity, humor, and platform conventions. In Filipino
-online spaces, these conditions produce expressions that may be
-short-lived, community-specific, or highly dependent on
-current events.
+Internet communication encourages rapid lexical innovation. \citeA{b4} notes that digital environments create new forms of written expression because users adapt language to speed, identity, humor, and platform conventions. In Filipino online spaces, these conditions produce expressions that may be short-lived, community-specific, or highly dependent on current events.
 
-Slang is especially difficult to model because its meaning is
-not always recoverable from the word form alone. Some terms are
-structurally novel, while others are existing words with
-shifted meanings. For instance, an English word may be borrowed
-into Filipino online discourse and acquire a new pragmatic
-meaning. Therefore, detecting slang requires more than checking
-whether a token appears in a dictionary.
+Slang is especially difficult to model because its meaning is not always recoverable from the word form alone. Some terms are structurally novel, while others are existing words with shifted meanings. For instance, an English word may be borrowed into Filipino online discourse and acquire a new pragmatic meaning. Therefore, detecting slang requires more than checking whether a token appears in a dictionary.
 
 \subsection{Low-Resource Filipino NLP}
 
-Filipino NLP remains a relatively low-resource area compared
-with English and other widely studied languages. The
-availability of tools such as calamanCy provides an important
-foundation for Tagalog processing because it offers
-spaCy-based pipelines for tokenization and other NLP tasks
-\cite{b6}. However, informal Filipino and Taglish still pose
-additional challenges because social media text often contains
-code-switching, creative spelling, abbreviations, and emerging
-vocabulary.
+Filipino NLP remains a relatively low-resource area compared with English and other widely studied languages. The availability of tools such as calamanCy provides an important foundation for Tagalog processing because it offers spaCy-based pipelines for tokenization and other NLP tasks \cite{b6}. However, informal Filipino and Taglish still pose additional challenges because social media text often contains code-switching, creative spelling, abbreviations, and emerging vocabulary.
 
-For systems such as \textit{Pinoy Speak}, low-resource NLP
-tools must be combined with domain-specific heuristics and
-corpus-based analysis. This is necessary because a general
-Filipino NLP pipeline may identify tokens but may not
-automatically determine whether a term is slang, standard
-vocabulary, profanity, a named entity, or a context-dependent
-semantic shift.
+For systems such as Pinoy Speak, low-resource NLP tools must be combined with domain-specific heuristics and corpus-based analysis. This is necessary because a general Filipino NLP pipeline may identify tokens but may not automatically determine whether a term is slang, standard vocabulary, profanity, a named entity, or a context-dependent semantic shift.
 
 \subsection{Human Annotation and Validation in Filipino NLP}
 
-Human judgment remains important in Filipino NLP tasks that
-involve context-sensitive meaning. \citeA{b12} developed a Filipino metaphor identification study
-and used manual data annotation by the researcher and four
-native Filipino annotators. Their annotation team included
-students with communication and language-related backgrounds,
-and their process involved checking and normalizing Filipino
-text before model training. This demonstrates that
-computational processing alone may be insufficient when the
-target phenomenon depends on context, figurative use, or local
-linguistic knowledge.
+Human judgment remains important in Filipino NLP tasks that involve context-sensitive meaning. \citeA{b12} developed a Filipino metaphor identification study and used manual data annotation by the researcher and four native Filipino annotators. Their annotation team included students with communication and language-related backgrounds, and their process involved checking and normalizing Filipino text before model training. This demonstrates that computational processing alone may be insufficient when the target phenomenon depends on context, figurative use, or local linguistic knowledge.
 
-This is relevant to the present study because Filipino internet
-slang is also context-sensitive. A term may be ordinary
-vocabulary in one sentence but slang in another. Some words
-also require cultural familiarity to determine whether the
-definition, usage example, and formation type are acceptable.
-Therefore, this study uses Filipino or Taglish-speaking
-validators to assess the generated lexicon entries rather than
-relying only on automatic detection.
+This is relevant to the present study because Filipino internet slang is also context-sensitive. A term may be ordinary vocabulary in one sentence but slang in another. Some words also require cultural familiarity to determine whether the definition, usage example, and formation type are acceptable. Therefore, this study uses Filipino or Taglish-speaking validators to assess the generated lexicon entries rather than relying only on automatic detection.
 
 \subsection{Subword-Aware Embeddings and OOV Handling}
 
-Subword-aware embeddings are useful for handling rare,
-misspelled, and morphologically varied words. \citeA{b5} introduced FastText word representations that model
-words as bags of character n-grams.
-This allows a system to generate useful representations even
-for words that are rare or unseen during training.
+Subword-aware embeddings are useful for handling rare, misspelled, and morphologically varied words. \citeA{b5} introduced FastText word representations that model words as bags of character n-grams. This allows a system to generate useful representations even for words that are rare or unseen during training.
 
-This property is relevant to informal Filipino text because
-slang often appears in creative or non-standard forms.
-Character n-gram representations can provide nearest-neighbor
-evidence for candidate terms, helping the system determine
-whether a word resembles known slang, standard Filipino
-morphology, or unrelated noise.
+This property is relevant to informal Filipino text because slang often appears in creative or non-standard forms. Character n-gram representations can provide nearest-neighbor evidence for candidate terms, helping the system determine whether a word resembles known slang, standard Filipino morphology, or unrelated noise.
 
 \subsection{Semantic Shift and Diachronic Language Change}
 
-Semantic shift refers to changes in word meaning over time or
-across contexts. \citeA{b7} showed that diachronic word embeddings can reveal
-statistical patterns of semantic change. \citeA{b8} further
-surveyed methods for tracking semantic shifts using word
-embeddings, while \citeA{b9} proposed dynamic word embeddings
-for modeling language change through time.
+Semantic shift refers to changes in word meaning over time or across contexts. \citeA{b7} showed that diachronic word embeddings can reveal statistical patterns of semantic change. \citeA{b8} further surveyed methods for tracking semantic shifts using word embeddings, while \citeA{b9} proposed dynamic word embeddings for modeling language change through time.
 
-These studies support the idea that language change can be
-observed computationally through distributional patterns. For
-Filipino slang detection, this is important because some terms
-are not new words but old words used in new ways. A
-trend-analysis system must therefore consider both novel
-out-of-vocabulary words and known words that may be undergoing
-contextual or semantic change.
+These studies support the idea that language change can be observed computationally through distributional patterns. For Filipino slang detection, this is important because some terms are not new words but old words used in new ways. A trend-analysis system must therefore consider both novel out-of-vocabulary words and known words that may be undergoing contextual or semantic change.
 
 \subsection{Retrieval-Augmented Generation}
 
-Large Language Models can generate fluent explanations, but
-they may also hallucinate or provide unsupported definitions
-when asked about specialized or newly emerging terms.
-Retrieval-Augmented Generation (RAG) addresses this limitation
-by combining generation with retrieval from an external
-knowledge source \cite{b10}. Instead of relying only on model
-memory, a RAG system retrieves relevant documents or entries
-and uses them as context for the generated response.
+Large Language Models can generate fluent explanations, but they may also hallucinate or provide unsupported definitions when asked about specialized or newly emerging terms. Retrieval-Augmented Generation addresses this limitation by combining generation with retrieval from an external knowledge source \cite{b10}. Instead of relying only on model memory, a RAG system retrieves relevant documents or entries and uses them as context for the generated response.
 
-This is useful for a slang tutor because the chatbot can
-ground its explanations in the live lexicon. In \textit{Pinoy
-Speak}, the tutor module retrieves relevant dictionary entries
-before producing responses, reducing the risk of inventing
-unsupported slang meanings.
+This is useful for a slang tutor because the chatbot can ground its explanations in the live lexicon. In Pinoy Speak, the tutor module retrieves relevant dictionary entries before producing responses, reducing the risk of inventing unsupported slang meanings.
 
 \subsection{Usability Evaluation}
 
-System usability is an important part of evaluating applied
-software systems. Brooke's System Usability Scale (SUS)
-provides a widely used framework for measuring perceived
-usability through user responses \cite{b11}. Although this
-study does not implement the full SUS scoring procedure, it
-follows the same principle of collecting user ratings on
-navigation, clarity, usefulness, and confidence after system
-use. This supports the evaluation of \textit{Pinoy Speak} not
-only as an NLP pipeline but also as a usable educational web
-application.
+System usability is an important part of evaluating applied software systems. Brooke's System Usability Scale provides a widely used framework for measuring perceived usability through user responses \cite{b11}. Although this study does not implement the full SUS scoring procedure, it follows the same principle of collecting user ratings on navigation, clarity, usefulness, and confidence after system use. This supports the evaluation of Pinoy Speak not only as an NLP pipeline but also as a usable educational web application.

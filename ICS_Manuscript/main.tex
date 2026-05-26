@@ -1,12 +1,7 @@
-% ============================================================
-%  Pinoy Speak — UPLB ICS Special Problem Manuscript
-%  Document class: icsthesis (UPLB ICS official template)
-%  To compile: pdflatex > bibtex > pdflatex > pdflatex
-% ============================================================
-
 \documentclass{icsthesis}
 
-% --- Additional packages needed for this manuscript ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -16,166 +11,273 @@
 \usepackage{float}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{tabularx}
+
+% Prevent blank pages caused by two-sided clearing.
+\let\cleardoublepage\clearpage
+
+% Keep page numbers visible.
+\pagestyle{plain}
+
+% Remove the class setting that hides page numbers on section-opening pages.
+\titleformat{\section}
+  {\filcenter\bfseries}
+  {}
+  {0pt}
+  {}
+
+\titlespacing{\section}{0pt}{4ex}{4ex}
+
+% --------------------------------------------------
+% Custom TOC/List commands.
+% These avoid the blank roman-numbered page before
+% TABLE OF CONTENTS.
+% --------------------------------------------------
+\makeatletter
+
+\renewcommand{\maketableofcontents}{
+    \thispagestyle{plain}
+    \addtocounter{pagecounter}{1}
+    \setcounter{page}{\value{pagecounter}}
+    \addcontentsline{toc}{chapter}{TABLE OF CONTENTS}
+    \begin{center}
+        \bfseries TABLE OF CONTENTS
+    \end{center}
+    \vspace{2ex}
+    % PAGE header is injected into the .toc file by icsthesis.cls at load time.
+    % Do NOT add it again here — that would produce two PAGE headers.
+    \begingroup
+    \singlespacing
+    \@starttoc{toc}
+    \endgroup
+    \doublespacing
+    \clearpage
+}
+
+\renewcommand{\makelistoftables}{
+    \thispagestyle{plain}
+    \addtocounter{pagecounter}{1}
+    \setcounter{page}{\value{pagecounter}}
+    \addcontentsline{toc}{chapter}{LIST OF TABLES}
+    \begin{center}
+        \bfseries LIST OF TABLES
+    \end{center}
+    \vspace{2ex}
+    \noindent\textbf{\underline{TABLE}}\hfill\textbf{\underline{PAGE}}\par
+    \vspace{1ex}
+    \begingroup
+    \singlespacing
+    \@starttoc{lot}
+    \endgroup
+    \doublespacing
+    \clearpage
+}
+
+\renewcommand{\makelistoffigures}{
+    \thispagestyle{plain}
+    \addtocounter{pagecounter}{1}
+    \setcounter{page}{\value{pagecounter}}
+    \addcontentsline{toc}{chapter}{LIST OF FIGURES}
+    \begin{center}
+        \bfseries LIST OF FIGURES
+    \end{center}
+    \vspace{2ex}
+    \noindent\textbf{\underline{FIGURE}}\hfill\textbf{\underline{PAGE}}\par
+    \vspace{1ex}
+    \begingroup
+    \singlespacing
+    \@starttoc{lof}
+    \endgroup
+    \doublespacing
+    \clearpage
+}
+
+\makeatother
 
 \renewcommand{\TITLE}{PINOY SPEAK: A TREND ANALYSIS AND CONTEXTUAL LEXICON SYSTEM FOR INFORMAL FILIPINO TEXT}
+
 \renewcommand{\AUTHOR}{CARL TIMOTHY E. CLEMENTE}
+
 \renewcommand{\DEGREE}{BACHELOR OF SCIENCE}
+
 \renewcommand{\MAJOR}{Computer Science}
+
 \renewcommand{\MONTH}{MAY}
+
 \renewcommand{\YEAR}{2026}
 
-% ============================================================
 \begin{document}
 
-  \begin{frontmatter}
+\pagestyle{plain}
 
-    \maketitle
+\begin{frontmatter}
+
+% ==================================================
+% TITLE PAGE
+% ==================================================
+
+\maketitle
+
+% ==================================================
+% APPROVAL PAGE
+% ==================================================
 
 \begin{approvalpage}
-      The Special Problem manuscript hereto attached entitled
-      \TITLE, prepared and submitted by \AUTHOR, in partial
-      fulfillment of the requirements for the degree of
-      \DEGREE\ (\MAJOR), is hereby accepted.
 
-      \begin{multicols}{2}
-        \centering
-        \addsignature{ARIAN J. JACILDO}{Member, Guidance Committee}
-        \columnbreak
-        \addsignature{MYLAH RYSTIE U. ANACLETO}{Member, Guidance Committee}
-      \end{multicols}
+The Special Problem manuscript hereto attached entitled \TITLE, prepared and submitted by \AUTHOR, in partial fulfillment of the requirements for the degree of \DEGREE\ (\MAJOR), is hereby accepted.
 
-      \addsignature{CONCEPCION L. KHAN}{Adviser, Guidance Committee}
+\vspace{1.25em}
 
-      Accepted in partial fulfillment of the requirements for
-      the degree of \DEGREE\ (\MAJOR).
+\begin{multicols}{2}
 
-      \addsignature{RACHEL EDITA O. ROXAS}{Director, Institute of Computer Science\\University of the Philippines Los Ba\~{n}os}
+\centering
 
-      \vspace{1em}
-      {\small The source code, manuscript-related materials,
-      poster, video, and presentation files for this Special
-      Problem are available through the project repository:
-      \url{https://github.com/Schillion/Pinoy\_Speak}}
+\addsignature{ARIAN J. JACILDO}{Member, Guidance Committee}
 
-    \end{approvalpage}
+\columnbreak
 
-    \begin{biosketch}
-      CARL TIMOTHY E. CLEMENTE is an undergraduate student taking
-      Bachelor of Science in Computer Science at the Institute of
-      Computer Science, University of the Philippines Los
-      Ba\~{n}os.
+\addsignature{MYLAH RYSTIE U. ANACLETO}{Member, Guidance Committee}
 
-      His academic interests include natural language processing,
-      web systems development, machine learning, and Filipino
-      language technologies. His Special Problem, entitled
-      \textit{Pinoy Speak: A Trend Analysis and Contextual Lexicon
-      System for Informal Filipino Text}, focuses on the
-      development of a dynamic lexicon and trend-analysis system
-      for informal Filipino and Taglish slang.
+\end{multicols}
 
-      Through this project, he worked on full-stack web
-      development, public corpus collection, slang detection,
-      contextual analysis, lexicon validation, usability
-      evaluation, and the deployment of a Filipino NLP learning
-      platform.
+\vspace{1.25em}
 
-      Beyond academics, he is a member of Cornerstone Baptist
-      Church Quezon City, where he serves in the choir and
-      instrumental music ministry. His faith in God continues to
-      guide, strengthen, and sustain him throughout his academic
-      journey and personal life.
+\addsignature{CONCEPCION L. KHAN}{Adviser, Guidance Committee}
 
-      \addauthorsignaturefield
-    \end{biosketch}
+\vspace{1.25em}
 
-    \begin{acknowledgement}
-      First and foremost, the author gives all glory, honor, and
-      thanksgiving to God for His unending grace, wisdom,
-      strength, provision, and faithfulness throughout the
-      completion of this Special Problem.
+Accepted in partial fulfillment of the requirements for the degree of \DEGREE\ (\MAJOR).
 
-      The author expresses his deepest gratitude to his family
-      for their unconditional love, prayers, sacrifices,
-      encouragement, and unwavering support throughout his
-      academic journey.
+\vspace{1.25em}
 
-      The author also sincerely thanks his church family at
-      Cornerstone Baptist Church Quezon City for their prayers,
-      spiritual guidance, encouragement, and support during
-      difficult and challenging times.
+\addsignature{RACHEL EDITA O. ROXAS}{Director, Institute of Computer Science\\University of the Philippines Los Ba{\~n}os}
 
-      Special thanks are extended to his friends, classmates,
-      and peers for their companionship, encouragement,
-      assistance, and shared experiences throughout the
-      development of this study.
+\vspace{0.75em}
 
-      The author is especially grateful to Prof. Concepcion L.
-      Khan for her guidance, patience, constructive comments, and
-      continuous support in the completion of this work.
-      Appreciation is also extended to the members of the
-      guidance committee, the Institute of Computer Science, the
-      validators, beta testers, respondents, and everyone who
-      contributed directly or indirectly to the completion of
-      this study.
-    \end{acknowledgement}
+{\small
+The source code, manuscript-related materials, poster, video, and presentation files for this Special Problem are available through the project repository: \url{https://github.com/Schillion/Pinoy_Speak}
+}
 
-    \maketableofcontents
-    \makelistoftables
-    \makelistoffigures
+\end{approvalpage}
 
-    \begin{abstractwithpageno}
-      \\
-      \textbf{\AUTHOR}, University of the Philippines Los Ba\~{n}os,
-      \MONTH\ \YEAR. \textbf{\TITLE}\\
-      Adviser: CONCEPCION L. KHAN\\
+% ==================================================
+% BIOGRAPHICAL SKETCH
+% ==================================================
 
-      Informal Filipino and Taglish evolve rapidly in online
-      spaces, making them difficult to process using static
-      dictionaries and conventional Natural Language Processing
-      (NLP) resources. This study presents \textit{Pinoy Speak},
-      a deployed full-stack system for detecting, organizing, and
-      explaining emerging Filipino internet slang. The system
-      collects public text from selected Filipino Reddit
-      communities, YouTube comments, and user chat interactions.
-      As of the current implementation, it has archived 175,481
-      records and maintains approximately 104 verified slang
-      entries. Candidate terms are processed through a pipeline
-      that combines calamanCy tokenization, subword novelty
-      signals, FastText nearest-neighbor evidence, temporal
-      burstiness analysis, morphological filtering, and
-      context-window disambiguation for ambiguous slang words.
-      Verified candidates are enriched through a separate LLM
-      pipeline using Google Gemini, Groq Llama, and Ollama, while
-      the user-facing ``Kuya Slang'' tutor uses
-      retrieval-augmented access to the live lexicon. Evaluation
-      consisted of a 79-entry lexicon validation with three
-      ratings per entry and a 36-response consented beta
-      usability survey. Lexicon validation produced high
-      definition correctness ratings (mean = 4.83/5) and example
-      naturalness ratings (mean = 4.75/5), while beta usability
-      results showed strong user acceptance across the dictionary,
-      tutor, analyzer, navigation, and trend modules.
+\begin{biosketch}
 
-      \vspace{1em}
-      \noindent\textit{Keywords:} Informal Filipino, Taglish,
-      slang detection, lexical trends, natural language
-      processing, FastText, calamanCy, retrieval-augmented
-      generation.
+CARL TIMOTHY E. CLEMENTE is an undergraduate student taking Bachelor of Science in Computer Science at the Institute of Computer Science, University of the Philippines Los Ba{\~n}os.
 
-    \end{abstractwithpageno}
+His academic interests include natural language processing, web systems development, machine learning, and Filipino language technologies. His Special Problem, entitled \textit{Pinoy Speak: A Trend Analysis and Contextual Lexicon System for Informal Filipino Text}, focuses on the development of a dynamic lexicon and trend-analysis system for informal Filipino and Taglish slang.
 
-  \end{frontmatter}
+Through this project, he worked on full-stack web development, public corpus collection, slang detection, contextual analysis, lexicon validation, usability evaluation, and the deployment of a Filipino NLP learning platform.
 
-  \begin{mainmatter}
+Beyond academics, he is a member of Cornerstone Baptist Church Quezon City, where he serves in the choir and instrumental music ministry. His faith in God continues to guide, strengthen, and sustain him throughout his academic journey and personal life.
 
-    \input{sections/1_introduction}
-    \input{sections/2_literature_review}
-    \input{sections/3_methodology}
-    \input{sections/4_results}
-    \input{sections/5_conclusion}
+\addauthorsignaturefield
 
-    \makereferences{references}
+\end{biosketch}
 
-  \end{mainmatter}
+% ==================================================
+% ACKNOWLEDGEMENT
+% ==================================================
+
+\begin{acknowledgement}
+
+First and foremost, the author gives all glory, honor, and thanksgiving to God for His unending grace, wisdom, strength, provision, and faithfulness throughout the completion of this Special Problem.
+
+The author expresses his deepest gratitude to his family for their unconditional love, prayers, sacrifices, encouragement, and unwavering support throughout his academic journey.
+
+The author also sincerely thanks his church family at Cornerstone Baptist Church Quezon City for their prayers, spiritual guidance, encouragement, and support during difficult and challenging times.
+
+Special thanks are extended to his friends, classmates, and peers for their companionship, encouragement, assistance, and shared experiences throughout the development of this study.
+
+The author is especially grateful to Prof. Concepcion L. Khan for her guidance, patience, constructive comments, and continuous support in the completion of this work. Appreciation is also extended to the members of the guidance committee, the Institute of Computer Science, the validators, beta testers, respondents, and everyone who contributed directly or indirectly to the completion of this study.
+
+\end{acknowledgement}
+
+% ==================================================
+% ABSTRACT
+% ==================================================
+% Manual abstract page.
+% Do NOT use abstractwithpageno because it creates
+% the extra blank roman-numbered page.
+
+\clearpage
+\addtocounter{pagecounter}{1}
+\setcounter{page}{\value{pagecounter}}
+\thispagestyle{plain}
+\addcontentsline{toc}{chapter}{ABSTRACT}
+
+\begin{center}
+    \bfseries ABSTRACT
+\end{center}
+
+\vspace{1em}
+
+\noindent
+\textbf{\AUTHOR}, University of the Philippines Los Ba{\~n}os, \MONTH\ \YEAR. \textbf{\TITLE}
+
+\vspace{1em}
+
+\noindent
+Adviser: CONCEPCION L. KHAN
+
+\vspace{1em}
+
+Informal Filipino and Taglish evolve rapidly in online spaces, making them difficult to process using static dictionaries and conventional Natural Language Processing resources. This study presents \textit{Pinoy Speak}, a deployed full-stack system for detecting, organizing, and explaining emerging Filipino internet slang.
+
+The system collects public text from selected Filipino Reddit communities, YouTube comments, and user chat interactions. As of the current implementation, it has archived 175,481 records and maintains approximately 104 verified slang entries.
+
+Candidate terms are processed through a pipeline that combines calamanCy tokenization, subword novelty signals, FastText nearest-neighbor evidence, temporal burstiness analysis, morphological filtering, and context-window disambiguation for ambiguous slang words.
+
+Verified candidates are enriched through a separate large language model pipeline, while the user-facing Kuya Slang tutor uses retrieval-augmented access to the live lexicon.
+
+Evaluation consisted of a 79-entry lexicon validation with three ratings per entry and a 36-response consented beta usability survey. Lexicon validation produced high definition correctness ratings with a mean of 4.83 out of 5 and example naturalness ratings with a mean of 4.75 out of 5. Beta usability results also showed strong user acceptance across the dictionary, tutor, analyzer, navigation, and trend modules.
+
+\vspace{1em}
+
+\noindent
+\textit{Keywords:} Informal Filipino, Taglish, slang detection, lexical trends, natural language processing, FastText, calamanCy, retrieval-augmented generation.
+
+\clearpage
+
+% ==================================================
+% TABLES OF CONTENTS
+% ==================================================
+
+\maketableofcontents
+
+\makelistoftables
+
+\makelistoffigures
+
+\end{frontmatter}
+
+% ==================================================
+% MAIN MATTER
+% ==================================================
+
+\begin{mainmatter}
+
+\pagestyle{plain}
+
+\input{sections/1_introduction}
+
+\input{sections/2_literature_review}
+
+\input{sections/3_methodology}
+
+\input{sections/4_results}
+
+\input{sections/5_conclusion}
+
+\makereferences{references}
+
+\end{mainmatter}
 
 \end{document}

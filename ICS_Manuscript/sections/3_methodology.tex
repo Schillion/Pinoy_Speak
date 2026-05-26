@@ -2,127 +2,70 @@
 
 \subsection{System Architecture}
 
-The system implements a full-stack modular architecture for
-continuous informal text collection, slang detection, lexicon
-enrichment, and user interaction. The backend is built with
-\textbf{FastAPI} and deployed on Fly.io. It manages corpus
-collection, token processing, slang classification, lexicon
-storage, LLM enrichment, and chatbot endpoints. The frontend
-is built using \textbf{Next.js 14 App Router} and deployed on
-Vercel. It provides the dashboard, dictionary, tutor,
-translator, concordance, and other user-facing modules. The
-overall workflow is shown in Fig. \ref{fig:architecture}.
+The system implements a full-stack modular architecture for continuous informal text collection, slang detection, lexicon enrichment, and user interaction. The backend is built with FastAPI and deployed on Fly.io. It manages corpus collection, token processing, slang classification, lexicon storage, LLM enrichment, and chatbot endpoints. The frontend is built using Next.js 14 App Router and deployed on Vercel. It provides the dashboard, dictionary, tutor, translator, concordance, and other user-facing modules. The overall workflow is shown in Figure \ref{fig:architecture}.
 
-\begin{figure}[htbp]
-\begin{center}
-\vspace{4ex}
-\resizebox{0.85\textwidth}{!}{
-    \begin{tikzpicture}[
-        node distance=0.45cm,
-        process/.style={
-            rectangle,
-            minimum width=1.75cm,
-            minimum height=0.55cm,
-            text centered,
-            draw=black,
-            fill=white,
-            text width=1.65cm,
-            font=\scriptsize
-        },
-        arrow/.style={thick,->,>=stealth}
-    ]
-        \node (p1) [process] {1. Ingest\\Reddit/YouTube/Chat};
-        \node (p2) [process, right=of p1] {2. Preprocess\\Morphological Filter};
-        \node (p3) [process, right=of p2] {3. Detect\\Bursts/Shifts};
-        \node (p4) [process, right=of p3] {4. LLM\\Enrichment};
-        \node (p5) [process, below=0.65cm of p3] {5. Interface\\Tutor Module};
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.45cm,
+    process/.style={
+        rectangle,
+        minimum width=6.2cm,
+        minimum height=0.85cm,
+        text centered,
+        draw=black,
+        fill=white,
+        text width=5.8cm,
+        font=\small
+    },
+    arrow/.style={thick,->,>=stealth}
+]
+    \node (p1) [process] {\textbf{1. Ingest}\\Reddit, YouTube, and chat text};
+    \node (p2) [process, below=of p1] {\textbf{2. Preprocess}\\Tokenization, normalization, and morphological filtering};
+    \node (p3) [process, below=of p2] {\textbf{3. Detect}\\Burstiness, novelty, and semantic-shift indicators};
+    \node (p4) [process, below=of p3] {\textbf{4. Enrich}\\LLM-assisted definitions, examples, origins, and formation types};
+    \node (p5) [process, below=of p4] {\textbf{5. Present}\\Dashboard, dictionary, analyzer, tutor, top slang, and concordance};
 
-        \draw [arrow] (p1) -- (p2);
-        \draw [arrow] (p2) -- (p3);
-        \draw [arrow] (p3) -- (p4);
-        \draw [arrow] (p4.south) |- (p5.east);
-    \end{tikzpicture}
-}
-\vspace{4ex}
+    \draw [arrow] (p1) -- (p2);
+    \draw [arrow] (p2) -- (p3);
+    \draw [arrow] (p3) -- (p4);
+    \draw [arrow] (p4) -- (p5);
+\end{tikzpicture}
 \caption{Operational architecture of Pinoy Speak.}
 \label{fig:architecture}
-\end{center}
 \end{figure}
 
 \subsection{Implementation Environment}
 
-The backend uses Python-based NLP and data-processing
-components. The system uses calamanCy for Tagalog tokenization
-and NLP preprocessing \cite{b6}, the
-\textit{jcblaise/roberta-tagalog-base} tokenizer as a subword
-novelty signal, and FastText through \textit{gensim} for word
-embedding and nearest-neighbor lookup. FastText was selected
-because character n-gram representations are suitable for
-rare, misspelled, and morphologically variable words
-\cite{b5}. Corpus records are stored in SQLite, while the
-verified lexicon is maintained through JSON data files and
-loaded into the web application.
+The backend uses Python-based NLP and data-processing components. The system uses calamanCy for Tagalog tokenization and NLP preprocessing \cite{b6}, the \textit{jcblaise/roberta-tagalog-base} tokenizer as a subword novelty signal, and FastText through \textit{gensim} for word embedding and nearest-neighbor lookup. FastText was selected because character n-gram representations are suitable for rare, misspelled, and morphologically variable words \cite{b5}. Corpus records are stored in SQLite, while the verified lexicon is maintained through JSON data files and loaded into the web application.
 
 \subsection{Data Collection}
 
-The system collects public text from Reddit posts and comments,
-YouTube comments, and logged user chat interactions. As of the
-current implementation, the corpus contains 175,481 archived
-records: 163,372 from Reddit, 12,075 from YouTube comments,
-and 34 from chat interactions.
+The system collects public text from Reddit posts and comments, YouTube comments, and logged user chat interactions. As of the current implementation, the corpus contains 175,481 archived records: 163,372 from Reddit, 12,075 from YouTube comments, and 34 from chat interactions.
 
-Reddit collection runs every 10 minutes and targets 15
-communities selected for high Taglish and slang density:
-\textit{peyups}, \textit{ADMU}, \textit{dlsu},
-\textit{Tomasino}, \textit{RateUPProfs}, \textit{studentsph},
-\textit{CasualPH}, \textit{OffMyChestPH},
-\textit{mobilelegendsPINAS}, \textit{phgaming}, \textit{OPM},
-\textit{PinoyProgrammer}, \textit{ChikaPH},
-\textit{TiktokPH}, and \textit{BPOinPH}. These sources
-represent university life, gaming, entertainment,
-programming, workplace experiences, and youth-oriented online
-discourse. YouTube comments are collected hourly from selected
-Filipino channels through a scraper module.
+Reddit collection runs every 10 minutes and targets 15 communities selected for high Taglish and slang density: \textit{peyups}, \textit{ADMU}, \textit{dlsu}, \textit{Tomasino}, \textit{RateUPProfs}, \textit{studentsph}, \textit{CasualPH}, \textit{OffMyChestPH}, \textit{mobilelegendsPINAS}, \textit{phgaming}, \textit{OPM}, \textit{PinoyProgrammer}, \textit{ChikaPH}, \textit{TiktokPH}, and \textit{BPOinPH}. These sources represent university life, gaming, entertainment, programming, workplace experiences, and youth-oriented online discourse. YouTube comments are collected hourly from selected Filipino channels through a scraper module.
 
 \subsection{Preprocessing and Morphological Filtering}
 
-Informal Filipino text requires preprocessing because it
-contains code-switching, non-standard spelling, punctuation
-variation, and highly productive Filipino morphology. The
-preprocessing stage applies the following steps:
+Informal Filipino text requires preprocessing because it contains code-switching, non-standard spelling, punctuation variation, and highly productive Filipino morphology. The preprocessing stage applies the following steps:
 
 \begin{enumerate}
-    \item \textbf{Tokenization:} Input text is tokenized using
-          calamanCy and normalized for further analysis.
-    \item \textbf{Dictionary Gating:} Tokens are checked
-          against standard English and Filipino wordlists.
-          Unknown words are treated as possible novel slang
-          candidates, while known words are monitored for
-          possible semantic shift.
-    \item \textbf{Morphological Prefix Filtering:} Common
-          Filipino affixes and prefix patterns, such as
-          \textit{naka-}, \textit{napaka-}, \textit{nag-},
-          and \textit{pinaka-}, are filtered to reduce false
-          positives caused by ordinary Tagalog conjugation.
+    \item \textbf{Tokenization:} Input text is tokenized using calamanCy and normalized for further analysis.
+    \item \textbf{Dictionary Gating:} Tokens are checked against standard English and Filipino wordlists. Unknown words are treated as possible novel slang candidates, while known words are monitored for possible semantic shift.
+    \item \textbf{Morphological Prefix Filtering:} Common Filipino affixes and prefix patterns, such as \textit{naka-}, \textit{napaka-}, \textit{nag-}, and \textit{pinaka-}, are filtered to reduce false positives caused by ordinary Tagalog conjugation.
 \end{enumerate}
 
-This filtering step was added because early candidate lists
-contained many standard Tagalog inflected forms that were
-novel only to the tokenizer but not actually slang.
+This filtering step was added because early candidate lists contained many standard Tagalog inflected forms that were novel only to the tokenizer but not actually slang.
 
 \subsection{Slang Detection Pipeline}
 
-The detection pipeline identifies two main candidate types:
-novel out-of-vocabulary terms and known words that may be
-undergoing semantic shift. The simplified procedure is shown
-in Algorithm \ref{alg:detection}.
+The detection pipeline identifies two main candidate types: novel out-of-vocabulary terms and known words that may be undergoing semantic shift. The simplified procedure is shown in Algorithm \ref{alg:detection}.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[H]
 \caption{Slang Candidate Detection Pipeline}
 \label{alg:detection}
 \begin{algorithmic}[1]
-\Require Corpus $C$, dictionaries $D_{eng}, D_{fil}$,
-         tokenizer $T_{sub}$
+\Require Corpus $C$, dictionaries $D_{eng}, D_{fil}$, tokenizer $T_{sub}$
 \Require Thresholds $\tau_{novel}=2.0$, $\tau_{shift}=1.8$
 \State $Posts \gets \text{FetchPublicText}(C)$
 \State $Tokens \gets \text{TokenizeAndNormalize}(Posts)$
@@ -134,16 +77,13 @@ in Algorithm \ref{alg:detection}.
     \State $Z(t) \gets \text{CalculateDailyZScore}(t)$
     \If{$t \in D_{eng} \cup D_{fil}$}
         \If{$Z(t) > \tau_{shift}$}
-            \State $Candidates.\text{add}(\langle t,
-                   \text{semantic\_shift} \rangle)$
+            \State $Candidates.\text{add}(\langle t,\text{semantic\_shift} \rangle)$
         \EndIf
     \Else
         \State $subwords \gets T_{sub}(t)$
-        \If{$|subwords| \geq 2$ \textbf{and}
-            $Z(t) > \tau_{novel}$}
+        \If{$|subwords| \geq 2$ \textbf{and} $Z(t) > \tau_{novel}$}
             \State $type \gets \text{ClassifyFormation}(t)$
-            \State $Candidates.\text{add}(\langle t, type
-                   \rangle)$
+            \State $Candidates.\text{add}(\langle t,type \rangle)$
         \EndIf
     \EndIf
 \EndFor
@@ -153,193 +93,66 @@ in Algorithm \ref{alg:detection}.
 
 \subsubsection{Subword Novelty Signal}
 
-The system uses a Tagalog RoBERTa tokenizer as a heuristic
-signal for lexical novelty. If a token is broken into multiple
-subword units, it is more likely to be unfamiliar or
-non-standard. This does not automatically classify a word as
-slang, but it helps prioritize tokens for further checking.
+The system uses a Tagalog RoBERTa tokenizer as a heuristic signal for lexical novelty. If a token is broken into multiple subword units, it is more likely to be unfamiliar or non-standard. This does not automatically classify a word as slang, but it helps prioritize tokens for further checking.
 
 \subsubsection{Burstiness and Trend Analysis}
 
-To detect sudden increases in usage, the system computes a
-standardized daily frequency score. For a token $t$, the
-burstiness score is defined as:
+To detect sudden increases in usage, the system computes a standardized daily frequency score. For a token $t$, the burstiness score is defined as:
 
 \begin{equation}
 Z(t) = \frac{f_{t,daily} - \mu_{t,hist}}{\sigma_{t,hist} + \epsilon}
 \end{equation}
 
-\noindent where $f_{t,daily}$ is the token frequency in the
-current daily window, $\mu_{t,hist}$ is the historical mean
-frequency, $\sigma_{t,hist}$ is the historical standard
-deviation, and $\epsilon$ prevents division by zero. The
-implementation uses two thresholds: novel OOV terms are
-flagged when $Z(t) > 2.0$, while known words monitored for
-semantic shift are flagged when $Z(t) > 1.8$. This distinction
-prevents the system from applying the same confidence
-requirement to all word types.
+\noindent where $f_{t,daily}$ is the token frequency in the current daily window, $\mu_{t,hist}$ is the historical mean frequency, $\sigma_{t,hist}$ is the historical standard deviation, and $\epsilon$ prevents division by zero. The implementation uses two thresholds: novel OOV terms are flagged when $Z(t) > 2.0$, while known words monitored for semantic shift are flagged when $Z(t) > 1.8$. This distinction prevents the system from applying the same confidence requirement to all word types.
 
 \subsubsection{Formation Type Classification}
 
-Candidates that pass the novelty and burstiness checks are
-categorized according to structural formation. The classifier
-identifies types such as \textit{binaliktad} or syllable
-reversal, \textit{jejemon} or alphanumeric spelling,
-number-syllable forms, semantic shifts, and unknown
-formations.
+Candidates that pass the novelty and burstiness checks are categorized according to structural formation. The classifier identifies types such as \textit{binaliktad} or syllable reversal, \textit{jejemon} or alphanumeric spelling, number-syllable forms, semantic shifts, and unknown formations.
 
 \subsection{Context-Window Gate and Classification Precedence}
 
-Some seed entries are marked with an \texttt{is\_ambiguous}
-flag because they may occur either as ordinary English or
-Filipino words or as slang. Examples include \textit{bet},
-\textit{solid}, \textit{ghost}, \textit{slay}, \textit{sus},
-\textit{chika}, and \textit{tropa}. To reduce false positives,
-the analysis endpoint checks surrounding tokens for Filipino
-grammatical particles and intensifiers such as \textit{ang},
-\textit{ng}, \textit{sa}, \textit{naman}, \textit{kasi},
-\textit{talaga}, \textit{sobrang}, and \textit{grabe}. For
-example, \textit{bet} in ``I bet'' is not confirmed as slang,
-while \textit{bet} in a Filipino-context sentence may be
-accepted.
+Some seed entries are marked with an \texttt{is\_ambiguous} flag because they may occur either as ordinary English or Filipino words or as slang. Examples include \textit{bet}, \textit{solid}, \textit{ghost}, \textit{slay}, \textit{sus}, \textit{chika}, and \textit{tropa}. To reduce false positives, the analysis endpoint checks surrounding tokens for Filipino grammatical particles and intensifiers such as \textit{ang}, \textit{ng}, \textit{sa}, \textit{naman}, \textit{kasi}, \textit{talaga}, \textit{sobrang}, and \textit{grabe}. For example, \textit{bet} in ``I bet'' is not confirmed as slang, while \textit{bet} in a Filipino-context sentence may be accepted.
 
-The classifier also applies slang-before-profanity
-precedence. The slang lexicon is checked before the profanity
-list so that culturally meaningful words that appear in both
-resources can still be represented with context rather than
-being automatically suppressed.
+The classifier also applies slang-before-profanity precedence. The slang lexicon is checked before the profanity list so that culturally meaningful words that appear in both resources can still be represented with context rather than being automatically suppressed.
 
 \subsection{LLM-Based Slang Enrichment}
 
-Verified candidates are passed to a separate enrichment
-pipeline. This pipeline uses Google Gemini as the primary
-provider, Groq Llama 3.1 8B as fallback, and a local Ollama
-model as a last-resort provider. The enrichment process
-generates a structured dictionary entry containing a
-definition, plain-language explanation, part of speech,
-possible origin, example usage, and formation type. Accepted
-entries are stored in \texttt{discovered\_slang.json} and
-merged with the seed lexicon.
+Verified candidates are passed to a separate enrichment pipeline. This pipeline uses Google Gemini as the primary provider, Groq Llama 3.1 8B as fallback, and a local Ollama model as a last-resort provider. The enrichment process generates a structured dictionary entry containing a definition, plain-language explanation, part of speech, possible origin, example usage, and formation type. Accepted entries are stored in \texttt{discovered\_slang.json} and merged with the seed lexicon.
 
 \subsection{Chatbot LLM and Retrieval-Augmented Lexicon Access}
 
-The user-facing ``Kuya Slang'' tutor is separate from the
-enrichment pipeline. It is accessed through the frontend
-\texttt{/tutor} route. The chatbot uses Groq Llama 3.3 70B as
-the primary model with Gemini 2.0 Flash as fallback. To
-reduce hallucination, the backend builds a vector index from
-the live lexicon at startup through \texttt{rag\_store.py}.
-When the user asks an open-ended question, the tutor retrieves
-the nearest dictionary entries and uses them as grounding
-context. This follows the principle of retrieval-augmented
-generation, where external knowledge is retrieved before
-producing a response \cite{b10}.
+The user-facing ``Kuya Slang'' tutor is separate from the enrichment pipeline. It is accessed through the frontend \texttt{/tutor} route. The chatbot uses Groq Llama 3.3 70B as the primary model with Gemini 2.0 Flash as fallback. To reduce hallucination, the backend builds a vector index from the live lexicon at startup through \texttt{rag\_store.py}. When the user asks an open-ended question, the tutor retrieves the nearest dictionary entries and uses them as grounding context. This follows the principle of retrieval-augmented generation, where external knowledge is retrieved before producing a response \cite{b10}.
 
 \subsection{User-Facing Features}
 
 The deployed frontend contains the following routes:
 
 \begin{itemize}
-    \item \texttt{/} --- live statistics dashboard with corpus
-          metrics and trend charts;
-    \item \texttt{/dictionary} --- searchable and filterable
-          slang lexicon;
+    \item \texttt{/} --- live statistics dashboard with corpus metrics and trend charts;
+    \item \texttt{/dictionary} --- searchable and filterable slang lexicon;
     \item \texttt{/tutor} --- Kuya Slang tutoring chatbot;
-    \item \texttt{/translator} --- Taglish-to-English sentence
-          translator;
+    \item \texttt{/translator} --- Taglish-to-English sentence translator;
     \item \texttt{/top-slang} --- top slang leaderboard;
-    \item \texttt{/concordance} --- in-context corpus search;
-          and
-    \item \texttt{/about} --- creator and project information
-          page.
+    \item \texttt{/concordance} --- in-context corpus search; and
+    \item \texttt{/about} --- creator and project information page.
 \end{itemize}
 
-The backend also includes administrative endpoints for lexicon
-growth. The \texttt{/sweep-corpus} endpoint scans existing
-corpus records for high-frequency OOV tokens and sends them
-through the detection pipeline. The
-\texttt{/import-online-slang} endpoint imports slang
-candidates from external Filipino slang sources and Reddit
-search results, then verifies and enriches accepted entries.
+The backend also includes administrative endpoints for lexicon growth. The \texttt{/sweep-corpus} endpoint scans existing corpus records for high-frequency OOV tokens and sends them through the detection pipeline. The \texttt{/import-online-slang} endpoint imports slang candidates from external Filipino slang sources and Reddit search results, then verifies and enriches accepted entries.
 
 \subsection{Ethical Considerations}
 
-The study uses only publicly accessible text sources and
-excludes private groups, private videos, private messages,
-images, and audio. Usernames and identifying metadata are not
-used in the displayed dictionary entries. Example sentences
-may be paraphrased to reduce the possibility of tracing text
-back to individual users. The frontend also includes a
-toggleable profanity filter to support safer browsing of
-sensitive lexical content.
+The study uses only publicly accessible text sources and excludes private groups, private videos, private messages, images, and audio. Usernames and identifying metadata are not used in the displayed dictionary entries. Example sentences may be paraphrased to reduce the possibility of tracing text back to individual users. The frontend also includes a toggleable profanity filter to support safer browsing of sensitive lexical content.
 
 \subsection{Evaluation Procedure}
 
-The deployed application was evaluated using two complementary
-instruments: a lexicon validation form and a web application
-usability and bug tracking form. The evaluation was designed
-as a beta evaluation of the implemented \textit{Pinoy Speak}
-web application, where selected users and validators interacted
-with the deployed system and provided feedback on both lexicon
-quality and application usability.
+The deployed application was evaluated using two complementary instruments: a lexicon validation form and a web application usability and bug tracking form. The evaluation was designed as a beta evaluation of the implemented Pinoy Speak web application, where selected users and validators interacted with the deployed system and provided feedback on both lexicon quality and application usability.
 
-The use of human validators was adapted from prior Filipino NLP
-work that employed native Filipino annotators for manual
-language annotation. \citeA{b12} used the researcher and four native Filipino
-annotators to manually annotate Filipino text, showing that
-human judgment remains necessary for Filipino NLP tasks
-involving context-sensitive meaning. In the present study, validators were not used to
-train a classification model but to evaluate the quality of
-the generated slang lexicon.
+The use of human validators was adapted from prior Filipino NLP work that employed native Filipino annotators for manual language annotation. \citeA{b12} used the researcher and four native Filipino annotators to manually annotate Filipino text, showing that human judgment remains necessary for Filipino NLP tasks involving context-sensitive meaning. In the present study, validators were not used to train a classification model but to evaluate the quality of the generated slang lexicon.
 
-For lexicon validation, 79 dictionary entries were divided into
-three form parts to reduce annotator fatigue. Each lexical item
-was evaluated by three Filipino or Taglish-speaking validators.
-Across the three form parts, four unique validators
-participated, but every lexical item received three item-level
-judgments. For each word, validators assessed whether the term
-is actually used as Filipino or Taglish slang, whether the
-system definition is correct, whether the example sentence
-sounds natural, whether the assigned formation type is
-acceptable, and whether the final entry is acceptable, needs
-minor revision, or should be treated as an incorrect or
-false-positive entry. Definition correctness and example
-naturalness were rated on a five-point scale. Final judgments
-and written comments were used to identify entries requiring
-dictionary revision.
+For lexicon validation, 79 dictionary entries were divided into three form parts to reduce annotator fatigue. Each lexical item was evaluated by three Filipino or Taglish-speaking validators. Across the three form parts, four unique validators participated, but every lexical item received three item-level judgments. For each word, validators assessed whether the term is actually used as Filipino or Taglish slang, whether the system definition is correct, whether the example sentence sounds natural, whether the assigned formation type is acceptable, and whether the final entry is acceptable, needs minor revision, or should be treated as an incorrect or false-positive entry. Definition correctness and example naturalness were rated on a five-point scale. Final judgments and written comments were used to identify entries requiring dictionary revision.
 
-For usability evaluation, a separate beta testing survey asked
-respondents to test the deployed web application and evaluate
-six modules: live dashboard or word popularity, navigation
-flow, top slang or usage frequency, dictionary or word cards,
-analyzer or translator, and tutor or chatbot. The form
-collected module-level usability ratings, five-point ratings
-for interface aesthetics, loading speed, device compatibility,
-clarity of instructions, and data accuracy, as well as bug
-occurrence and severity reports. The usability dataset
-contained 39 submitted responses. After excluding two
-non-consenting responses and one blank-consent response, 36
-consented responses were retained for analysis.
+For usability evaluation, a separate beta testing survey asked respondents to test the deployed web application and evaluate six modules: live dashboard or word popularity, navigation flow, top slang or usage frequency, dictionary or word cards, analyzer or translator, and tutor or chatbot. The form collected module-level usability ratings, five-point ratings for interface aesthetics, loading speed, device compatibility, clarity of instructions, and data accuracy, as well as bug occurrence and severity reports. The usability dataset contained 39 submitted responses. After excluding two non-consenting responses and one blank-consent response, 36 consented responses were retained for analysis.
 
-To make the beta evaluation more concrete, the survey included
-task-based testing examples that required users to interact
-with the system as actual end users. One beta testing example
-asked the user to open the Analyzer or Translator module and
-enter a Taglish sentence containing informal expressions, such
-as ``Bet ko itong outfit mo, sobrang solid.'' The expected
-behavior was for the system to recognize context-dependent
-slang terms such as \textit{bet} and \textit{solid}, explain
-their informal meaning, and avoid treating them only as
-ordinary English words. Another beta testing task asked users
-to check the Dictionary module by searching for selected slang
-entries and reviewing whether the displayed definition, example
-sentence, and formation type were understandable. Users were
-also asked to test the Tutor or Chatbot module by asking a
-slang-related question and evaluating whether the answer was
-clear, helpful, and consistent with the lexicon.
+To make the beta evaluation more concrete, the survey included task-based testing examples that required users to interact with the system as actual end users. One beta testing example asked the user to open the Analyzer or Translator module and enter a Taglish sentence containing informal expressions, such as ``Bet ko itong outfit mo, sobrang solid.'' The expected behavior was for the system to recognize context-dependent slang terms such as \textit{bet} and \textit{solid}, explain their informal meaning, and avoid treating them only as ordinary English words. Another beta testing task asked users to check the Dictionary module by searching for selected slang entries and reviewing whether the displayed definition, example sentence, and formation type were understandable. Users were also asked to test the Tutor or Chatbot module by asking a slang-related question and evaluating whether the answer was clear, helpful, and consistent with the lexicon.
 
-Quantitative responses were summarized using means and
-percentages, while open-ended responses were grouped into
-recurring themes such as vocabulary expansion, accuracy
-improvement, better examples, pronunciation support, regional
-coverage, and interface refinements.
+Quantitative responses were summarized using means and percentages, while open-ended responses were grouped into recurring themes such as vocabulary expansion, accuracy improvement, better examples, pronunciation support, regional coverage, and interface refinements.
