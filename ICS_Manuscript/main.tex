@@ -17,42 +17,26 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
-% ============================================================
-%  DOCUMENT METADATA — fill in or confirm with adviser
-% ============================================================
 \renewcommand{\TITLE}{PINOY SPEAK: A TREND ANALYSIS AND CONTEXTUAL LEXICON SYSTEM FOR INFORMAL FILIPINO TEXT}
 \renewcommand{\AUTHOR}{CARL TIMOTHY E. CLEMENTE}
 \renewcommand{\DEGREE}{BACHELOR OF SCIENCE}
 \renewcommand{\MAJOR}{Computer Science}
-\renewcommand{\MONTH}{MAY}       % TODO: confirm month of signing/submission
-\renewcommand{\YEAR}{2026}       % TODO: confirm year
+\renewcommand{\MONTH}{MAY}
+\renewcommand{\YEAR}{2026}
 
 % ============================================================
 \begin{document}
 
-  % ----------------------------------------------------------
-  %  FRONT MATTER
-  % ----------------------------------------------------------
   \begin{frontmatter}
 
-    % Title page (auto-generated from metadata above)
     \maketitle
 
-    % ----------------------------------------------------------
-    %  APPROVAL / SIGNATURE PAGE
-    %  TODO: Replace all placeholder names and titles below
-    %        with the confirmed signatories from your adviser.
-    %  NOTE: If there is a GitHub/repository access statement
-    %        required on this page, add it before \addsignature.
-    % ----------------------------------------------------------
-    \begin{approvalpage}
-      The Special Problem paper hereto attached entitled \TITLE,
-      prepared and submitted by \AUTHOR, in partial fulfillment
-      of the requirements for the degree of \DEGREE\ (\MAJOR)
-      is hereby accepted.
+\begin{approvalpage}
+      The Special Problem manuscript hereto attached entitled
+      \TITLE, prepared and submitted by \AUTHOR, in partial
+      fulfillment of the requirements for the degree of
+      \DEGREE\ (\MAJOR), is hereby accepted.
 
-      % TODO: Add panel/committee members if required.
-      %       Remove or adjust the multicols block as needed.
       \begin{multicols}{2}
         \centering
         \addsignature{ARIAN J. JACILDO}{Member, Guidance Committee}
@@ -67,82 +51,83 @@
 
       \addsignature{RACHEL EDITA O. ROXAS}{Director, Institute of Computer Science\\University of the Philippines Los Ba\~{n}os}
 
-      % TODO: Add Dean signature if required by your department.
-      % \addsignature{TODO: DEAN NAME}{Dean, College of Arts and Sciences\\University of the Philippines Los Ba\~{n}os}
-
-      % ----------------------------------------------------------
-      %  REPOSITORY / GITHUB ACCESS STATEMENT (placeholder)
-      %  TODO: Ask your adviser whether a formal access statement
-      %        is needed here and what the exact wording should be.
-      %  Sample wording (modify as directed):
-      %  "The source code and supporting materials for this Special
-      %   Problem are available at:
-      %   https://github.com/Schillion/Pinoy\_Speak"
-      % ----------------------------------------------------------
+      \vspace{1em}
+      {\small The source code, manuscript-related materials,
+      poster, video, and presentation files for this Special
+      Problem are available through the project repository:
+      \url{https://github.com/Schillion/Pinoy\_Speak}}
 
     \end{approvalpage}
 
-    % ----------------------------------------------------------
-    %  BIOGRAPHICAL SKETCH
-    %  TODO: Replace the placeholder paragraph with your actual
-    %        biographical information. Must not exceed one page.
-    % ----------------------------------------------------------
     \begin{biosketch}
-      % TODO: Write your biographical sketch here.
-      % Example structure:
-      %
-      % CARL TIMOTHY E. CLEMENTE was born on [DATE] in [PLACE].
-      % He completed his primary education at [SCHOOL] in [YEAR]
-      % and his secondary education at [SCHOOL] in [YEAR].
-      % He is currently enrolled in the Bachelor of Science in
-      % Computer Science program at the University of the
-      % Philippines Los Ba\~{n}os, where he expects to graduate
-      % in [YEAR].
-      %
-      % [Add relevant academic achievements, awards, or
-      %  extracurricular activities as appropriate.]
+      CARL TIMOTHY E. CLEMENTE is an undergraduate student taking
+      Bachelor of Science in Computer Science at the Institute of
+      Computer Science, University of the Philippines Los
+      Ba\~{n}os.
 
-      TODO: Insert biographical sketch here. Must not exceed one page.
+      His academic interests include natural language processing,
+      web systems development, machine learning, and Filipino
+      language technologies. His Special Problem, entitled
+      \textit{Pinoy Speak: A Trend Analysis and Contextual Lexicon
+      System for Informal Filipino Text}, focuses on the
+      development of a dynamic lexicon and trend-analysis system
+      for informal Filipino and Taglish slang.
+
+      Through this project, he worked on full-stack web
+      development, public corpus collection, slang detection,
+      contextual analysis, lexicon validation, usability
+      evaluation, and the deployment of a Filipino NLP learning
+      platform.
+
+      Beyond academics, he is a member of Cornerstone Baptist
+      Church Quezon City, where he serves in the choir and
+      instrumental music ministry. His faith in God continues to
+      guide, strengthen, and sustain him throughout his academic
+      journey and personal life.
 
       \addauthorsignaturefield
     \end{biosketch}
 
-    % ----------------------------------------------------------
-    %  ACKNOWLEDGEMENT
-    %  TODO: Write your acknowledgements. Must not exceed one page.
-    % ----------------------------------------------------------
     \begin{acknowledgement}
-      % TODO: Insert acknowledgement text here.
-      % Typical sections to include:
-      %   - Adviser and guidance committee
-      %   - Validators and beta testers
-      %   - Family and friends
-      %   - Any funding or institutional support
+      First and foremost, the author gives all glory, honor, and
+      thanksgiving to God for His unending grace, wisdom,
+      strength, provision, and faithfulness throughout the
+      completion of this Special Problem.
 
-      TODO: Insert acknowledgement here. Must not exceed one page.
+      The author expresses his deepest gratitude to his family
+      for their unconditional love, prayers, sacrifices,
+      encouragement, and unwavering support throughout his
+      academic journey.
+
+      The author also sincerely thanks his church family at
+      Cornerstone Baptist Church Quezon City for their prayers,
+      spiritual guidance, encouragement, and support during
+      difficult and challenging times.
+
+      Special thanks are extended to his friends, classmates,
+      and peers for their companionship, encouragement,
+      assistance, and shared experiences throughout the
+      development of this study.
+
+      The author is especially grateful to Prof. Concepcion L.
+      Khan for her guidance, patience, constructive comments, and
+      continuous support in the completion of this work.
+      Appreciation is also extended to the members of the
+      guidance committee, the Institute of Computer Science, the
+      validators, beta testers, respondents, and everyone who
+      contributed directly or indirectly to the completion of
+      this study.
     \end{acknowledgement}
 
-    % Auto-generated table of contents
     \maketableofcontents
-
-    % Auto-generated list of tables
     \makelistoftables
-
-    % Auto-generated list of figures
     \makelistoffigures
 
-    % ----------------------------------------------------------
-    %  ABSTRACT
-    %  Format: Author, Institution, Month Year. Title.
-    %          Major Professor: Name.
-    %          [Body of abstract — must not exceed one page.]
-    % ----------------------------------------------------------
     \begin{abstractwithpageno}
       \\
       \textbf{\AUTHOR}, University of the Philippines Los Ba\~{n}os,
       \MONTH\ \YEAR. \textbf{\TITLE}\\
-      % TODO: Confirm adviser name and title for the abstract header.
-      Major Professor: CONCEPCION L. KHAN\\
+      Adviser: CONCEPCION L. KHAN\\
 
       Informal Filipino and Taglish evolve rapidly in online
       spaces, making them difficult to process using static
@@ -181,9 +166,6 @@
 
   \end{frontmatter}
 
-  % ----------------------------------------------------------
-  %  MAIN BODY
-  % ----------------------------------------------------------
   \begin{mainmatter}
 
     \input{sections/1_introduction}
@@ -192,7 +174,6 @@
     \input{sections/4_results}
     \input{sections/5_conclusion}
 
-    % Bibliography — parameter is the .bib filename without extension
     \makereferences{references}
 
   \end{mainmatter}
