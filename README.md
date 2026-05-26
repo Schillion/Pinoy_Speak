@@ -230,6 +230,17 @@ PinoySpeak/
 
 ---
 
+## Presentation Materials
+
+| File | Description |
+|------|-------------|
+| [sp2_Pinoy_Speak.pdf](presentation/sp2_Pinoy_Speak.pdf) | Manuscript / signed first page |
+| [Pinoy_Speak_Poster.png](presentation/Pinoy_Speak_Poster.png) | Symposium poster |
+| [Pinoy_Speak_SP_Presentation.pptx](presentation/Pinoy_Speak_SP_Presentation.pptx) | Presentation slides |
+| [Demo video](https://drive.google.com/drive/folders/1Yhxc2JjrRZ5tGxGg_YoBJxC0LADxbmuD?usp=drive_link) | Screen recording (Google Drive) |
+
+---
+
 ## License
 
 This project was built as an academic/research tool for studying Filipino internet language evolution.
