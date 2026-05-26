@@ -18,10 +18,18 @@ data/shard_*
 # Migration script (one-time use)
 migrate_to_sqlite.py
 
+# Runtime state (generated at runtime, not source)
+data/.last_sync_ts
+data/*.bak
+
 # Node / Next.js
 frontend/node_modules/
 frontend/.next/
 frontend/.env.local
+frontend/tsconfig.tsbuildinfo
+
+# Reference / template folders (not project code)
+ics-template/
 
 # OS
 .DS_Store

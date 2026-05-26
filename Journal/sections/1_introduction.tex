@@ -1,0 +1,45 @@
+\section{Introduction}
+
+\IEEEPARstart{T}{he} Philippines has a highly active digital communication environment where informal language evolves rapidly across social media platforms, messaging applications, and online communities. In these spaces, Filipino users frequently combine Filipino, English, and localized internet expressions to form \textit{Taglish}. This mixed-language practice is not random; previous linguistic work describes code-switching as a structured discourse strategy that can express identity, solidarity, emphasis, humor, and contextual meaning \cite{b1,b2,b3}.
+
+However, this same flexibility creates challenges for computational language processing. Many existing NLP tools are designed around formal, standardized, and high-resource language settings. Informal Filipino text often contains non-standard spelling, creative abbreviations, borrowed English words with localized meanings, syllable reversals, alphanumeric spellings, and context-dependent expressions. As a result, traditional dictionaries and static NLP resources may fail to recognize terms that are widely understood by Filipino internet users.
+
+In this study, \textbf{slang} refers to informal or non-standard lexical items and expressions that are used within specific communities, often as markers of social identity or shared cultural knowledge. In Filipino digital discourse, slang may appear as a completely new word, a modified form of an existing word, or a familiar English or Filipino word that has acquired a new meaning in local online contexts. For example, terms such as \textit{omsim} and \textit{forda} are structurally novel, while words such as \textit{bet}, \textit{solid}, and \textit{awit} require surrounding context to determine whether they are being used in their ordinary or slang sense.
+
+\subsection{Research Gap}
+Existing Filipino language resources are largely static and cannot easily reflect the pace of language change in online communities. A word may emerge, trend, shift meaning, and decline within a short period. Static dictionaries may eventually record some of these expressions, but they do not provide a mechanism for tracking when terms become popular, how they are used in context, or how meanings change across time.
+
+Recent work on semantic change and diachronic word embeddings shows that changes in word meaning can be studied computationally by examining distributional patterns across time \cite{b7,b8,b9}. However, such methods are rarely applied to informal Filipino and Taglish data. In addition, Filipino internet slang often combines lexical novelty with code-switching, making it insufficient to rely only on dictionary lookup, word frequency, or direct translation.
+
+\subsection{Objectives}
+This study aims to develop and evaluate \textit{Pinoy Speak}, a dynamic lexicon and trend-analysis system for informal Filipino text. Specifically, the study aims to:
+
+\begin{itemize}
+    \item collect public informal Filipino and Taglish text from selected online sources;
+    \item detect emerging slang candidates using lexical novelty, temporal burstiness, and semantic shift indicators;
+    \item reduce false positives through morphological filtering and context-window disambiguation;
+    \item enrich verified slang entries with definitions, examples, formation types, and usage context;
+    \item provide user-facing tools such as a searchable dictionary, trend dashboard, concordance search, sentence analyzer, translator, and tutoring chatbot; and
+    \item evaluate the usability and perceived usefulness of the deployed web application through beta user testing.
+\end{itemize}
+
+\subsection{Scope and Delimitations}
+The study focuses on public informal Filipino and Taglish text from online sources where slang usage is expected to be frequent. The implemented Reddit collector targets 15 high-slang-density communities: \textit{r/peyups}, \textit{r/ADMU}, \textit{r/dlsu}, \textit{r/Tomasino}, \textit{r/RateUPProfs}, \textit{r/studentsph}, \textit{r/CasualPH}, \textit{r/OffMyChestPH}, \textit{r/mobilelegendsPINAS}, \textit{r/phgaming}, \textit{r/OPM}, \textit{r/PinoyProgrammer}, \textit{r/ChikaPH}, \textit{r/TiktokPH}, and \textit{r/BPOinPH}. These communities were selected because they represent student life, university discourse, gaming, entertainment, technology, workplace experiences, and Gen Z trend spaces.
+
+The current implementation also includes YouTube comments from selected Filipino channels and limited user chat interactions from the deployed system. As of the current live build, the corpus contains 175,481 archived records across Reddit, YouTube, and chat sources. The study does not process private messages, private groups, images, audio, or video content. It also does not claim to provide a complete dictionary of all Filipino slang. Instead, it demonstrates a working system for dynamic slang collection, detection, enrichment, and user interaction.
+
+\subsection{Significance of the Study}
+This study contributes to Filipino NLP by treating informal language not merely as noisy text but as meaningful linguistic data. By combining corpus collection, burstiness analysis, contextual classification, and LLM-assisted enrichment, \textit{Pinoy Speak} provides a practical framework for studying rapidly evolving Filipino internet slang.
+
+The system also has educational value. Filipino slang often creates an intergenerational and intercultural comprehension gap, particularly when expressions are used in highly contextual online environments. A searchable, contextualized, and continuously updated lexicon can help students, educators, researchers, and general users understand how informal Filipino expressions are used.
+
+As an undergraduate Special Problem, the contribution of this work is application-oriented. The primary output is not only a model or isolated algorithm but a deployed system that integrates data collection, analysis, lexicon management, and user-facing learning tools into one usable web application.
+
+\subsection{Alignment with the UN Sustainable Development Goals}
+This study aligns with several United Nations Sustainable Development Goals (SDGs).
+
+\textbf{SDG 4: Quality Education.} The system supports language learning and comprehension by providing contextual explanations of informal Filipino expressions.
+
+\textbf{SDG 9: Industry, Innovation, and Infrastructure.} The project demonstrates locally relevant AI and NLP system development for a low-resource and code-switched language environment.
+
+\textbf{SDG 10: Reduced Inequalities.} By focusing on informal Filipino and Taglish rather than only formal English or formal Filipino, the system contributes to more inclusive language technology for Filipino users.
