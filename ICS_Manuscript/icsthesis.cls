@@ -220,11 +220,11 @@
 \newenvironment{biosketch}
 {
 	\patchcmd{\abstract}{\null\vfil}{}{}{}
-	\addcontentsline{toc}{chapter}{BIOGRAPHICAL SKETCH}
 	\renewcommand{\abstractname}{BIOGRAPHICAL SKETCH}
 	\begin{abstract}
 	\thispagestyle{plain}\addtocounter{pagecounter}{1}
 	\setcounter{page}{\value{pagecounter}}
+	\addcontentsline{toc}{chapter}{BIOGRAPHICAL SKETCH}
 	\setlength{\parindent}{5ex}
 	\hspace*{\parindent}
 }

@@ -174,7 +174,11 @@ The source code, manuscript-related materials, poster, video, and presentation f
 \addtocounter{pagecounter}{1}
 \setcounter{page}{\value{pagecounter}}
 \thispagestyle{plain}
-\addcontentsline{toc}{chapter}{PERMISSION PAGE}
+% Use \immediate\write so the TOC entry captures the page number NOW
+% (not at shipout, when the counter may have already advanced).
+\makeatletter
+\immediate\write\@auxout{\string\@writefile{toc}{\string\contentsline{chapter}{PERMISSION PAGE}{\thepage}{}}}
+\makeatother
 
 \begin{center}
 \includegraphics[height=2cm]{UPLB}\hspace{2cm}
